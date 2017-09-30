@@ -1,0 +1,32 @@
+{
+    "compilerOptions": {
+        "pretty": true,
+
+        "strict": true,
+        "allowJs": false,
+        "alwaysStrict": true,
+        "noImplicitAny": true,
+        "noImplicitThis": true,
+        "noUnusedLocals": true,
+        "strictNullChecks": true,
+        "noImplicitReturns": true,
+        "noUnusedParameters": true,
+        "allowUnusedLabels": false,
+        "allowUnreachableCode": false,
+        "noFallthroughCasesInSwitch": true,
+
+        "target": "es5",
+        "module": "commonjs",
+        "moduleResolution": "node",
+
+        "sourceMap": true,
+        "sourceRoot": "..",
+        "inlineSourceMap": false,
+        "inlineSources": true,
+        "noEmitOnError": true
+    },
+    "include": [
+        "**/*.ts",
+        "**/*.tsx"
+    ]
+}

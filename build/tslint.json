@@ -1,0 +1,16 @@
+{
+    "rules": {
+        "no-consecutive-blank-lines": true,
+        "eofline": true,
+        "no-var-keyword": true,
+        "no-var-requires": true,
+        "no-require-imports": true,
+        "semicolon": [true, "always"],
+        "quotemark": [true, "double"],
+        "indent": [true, "spaces", 4],
+        "trailing-comma": [true, {
+            "multiline": "never",
+            "singleline": "never"
+        }]
+    }
+}
