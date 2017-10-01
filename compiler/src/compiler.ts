@@ -1,6 +1,3 @@
-function greet(person: string) {
-    return "Hello, " + person;
+export function getFour() {
+    return 4;
 }
-
-const omar = greet("omar");
-console.log(omar);

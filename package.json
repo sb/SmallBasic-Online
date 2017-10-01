@@ -5,6 +5,10 @@
   "description": "An open-source IDE/runtime for the Small Basic programming language.",
   "author": "OmarTawfik",
   "license": "MIT",
+  "scripts": {
+    "compiler:build": "node node_modules/webpack/bin/webpack.js --config compiler/src/webpack.config.ts",
+    "compiler:test": "node node_modules/webpack/bin/webpack.js --config compiler/tests/webpack.config.ts"
+  },
   "dependencies": {
     "@types/webpack": "3.0.12",
     "esutils": "2.0.2",
@@ -15,6 +19,6 @@
     "tslint-loader": "3.5.3",
     "typescript": "2.5.3",
     "webpack": "3.6.0",
-    "webpack-dev-server": "2.9.1"
+    "webpack-node-externals": "1.6.0"
   }
 }
