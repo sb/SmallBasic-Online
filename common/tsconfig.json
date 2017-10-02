@@ -24,9 +24,5 @@
         "inlineSourceMap": false,
         "inlineSources": true,
         "noEmitOnError": true
-    },
-    "include": [
-        "**/*.ts",
-        "**/*.tsx"
-    ]
+    }
 }

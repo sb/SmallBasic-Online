@@ -1,0 +1,13 @@
+<Project>
+
+  <Import Project="..\..\common\common.msbuild.props" />
+
+  <PropertyGroup>
+    <WebpackEntryFile>$(MSBuildProjectDirectory)\tests.ts</WebpackEntryFile>
+    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration)\compiler\tests.js</WebpackOutputFile>
+    <WebpackTargetType>node</WebpackTargetType>
+  </PropertyGroup>
+  
+  <Import Project="$(CodebaseRoot)\common\common.webpack.proj" />
+
+</Project>

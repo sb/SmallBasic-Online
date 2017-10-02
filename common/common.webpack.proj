@@ -1,0 +1,30 @@
+<Project>
+
+  <Target Name="ValidateProps">
+    <Error Condition="'$(Configuration)' != 'Debug' and '$(Configuration)' != 'Release'" Text="Invalid Configuration: '$(Configuration)'. Accepted values are 'Debug' and 'Release'." />
+    <Error Condition="'$(WebpackEntryFile)' == '' or $([System.IO.Path]::FileExists('$(WebpackEntryFile)')) == false" Text="Invalid WebpackEntryFile: '$(WebpackEntryFile)'. Please set to the entry .ts file." />
+    <Error Condition="'$(WebpackOutputFile)' == ''" Text="Invalid WebpackOutputFile: '$(WebpackOutputFile)'. Please set to the output .js file path." />
+    <Error Condition="'$(WebpackTargetType)' == ''" Text="Missing WebpackTargetType. Only 'web' and 'node' are accepted." />
+  </Target>
+
+  <Target Name="Restore">
+    <Exec Command="npm install" WorkingDirectory="$(CodebaseRoot)" />
+  </Target>
+
+  <Target Name="Build" AfterTargets="ValidateProps">
+    <PropertyGroup>
+      <WebpackParameters>$(WebpackParameters) --config $(MSBuildThisFileDirectory)webpack.config.js</WebpackParameters>
+      <WebpackParameters>$(WebpackParameters) --env.entryFile $(WebpackEntryFile)</WebpackParameters>
+      <WebpackParameters>$(WebpackParameters) --env.outputFile $(WebpackOutputFile)</WebpackParameters>
+      <WebpackParameters>$(WebpackParameters) --env.targetType $(WebpackTargetType)</WebpackParameters>
+      <WebpackParameters Condition=" '$(Configuration)' == 'Release' ">$(WebpackParameters) --env.release</WebpackParameters>
+    </PropertyGroup>
+
+    <Exec Command="node $(CodebaseRoot)\node_modules\webpack\bin\webpack.js $(WebpackParameters)" />
+  </Target>
+
+  <Target Name="Test" AfterTargets="ValidateProps">
+    <Exec Command="node $(CodebaseRoot)\node_modules\jasmine\bin\jasmine.js $(WebpackOutputFile)" />
+  </Target>
+  
+</Project>
