@@ -1,0 +1,23 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "type": "node",
+                "request": "launch",
+                "name": "Debug Compiler Tests",
+                "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
+                "args": [
+                    "${workspaceRoot}/out/debug/compiler/tests.js"
+                ]
+            },
+            {
+                "type": "node",
+                "request": "launch",
+                "name": "Debug App Tests",
+                "program": "${workspaceRoot}/node_modules/jasmine/bin/jasmine.js",
+                "args": [
+                    "${workspaceRoot}/out/debug/app/tests.js"
+                ]
+            }
+        ]
+    }

@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <WebpackEntryFile>$(MSBuildProjectDirectory)\app.tsx</WebpackEntryFile>
-    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration)\app\app.js</WebpackOutputFile>
+    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration.ToLower())\app\app.js</WebpackOutputFile>
     <WebpackTargetType>web</WebpackTargetType>
     <WebpackExternal>react;react-dom</WebpackExternal>
   </PropertyGroup>

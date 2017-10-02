@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <WebpackEntryFile>$(MSBuildProjectDirectory)\tests.tsx</WebpackEntryFile>
-    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration)\app\tests.js</WebpackOutputFile>
+    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration.ToLower())\app\tests.js</WebpackOutputFile>
     <WebpackTargetType>node</WebpackTargetType>
   </PropertyGroup>
   

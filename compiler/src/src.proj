@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <WebpackEntryFile>$(MSBuildProjectDirectory)\compiler.ts</WebpackEntryFile>
-    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration)\compiler\compiler.js</WebpackOutputFile>
+    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration.ToLower())\compiler\compiler.js</WebpackOutputFile>
     <WebpackTargetType>web</WebpackTargetType>
   </PropertyGroup>
   

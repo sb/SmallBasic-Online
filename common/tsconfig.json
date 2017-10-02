@@ -21,7 +21,6 @@
         "moduleResolution": "node",
 
         "sourceMap": true,
-        "sourceRoot": "..",
         "inlineSourceMap": false,
         "inlineSources": true,
         "noEmitOnError": true
