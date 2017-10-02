@@ -10,8 +10,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <WebpackExternal Include="react" />
-    <WebpackExternal Include="react-dom" />
+    <WebpackExternal Include="react">
+      <Alias>React</Alias>
+    </WebpackExternal>
+    <WebpackExternal Include="react-dom">
+      <Alias>ReactDOM</Alias>
+    </WebpackExternal>
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">

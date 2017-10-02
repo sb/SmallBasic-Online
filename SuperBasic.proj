@@ -22,8 +22,4 @@
     <MSBuild Projects="@(TestProjects)" Properties="Configuration=$(Configuration)" Targets="Build" />
   </Target>
 
-  <Target Name="Test">
-    <MSBuild Projects="@(TestProjects)" Properties="Configuration=$(Configuration)" Targets="Test" />
-  </Target>
-
 </Project>

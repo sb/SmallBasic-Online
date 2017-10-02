@@ -6,6 +6,7 @@
     <WebpackEntryFile>$(MSBuildProjectDirectory)\tests.ts</WebpackEntryFile>
     <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration.ToLower())\compiler\tests.js</WebpackOutputFile>
     <WebpackTargetType>node</WebpackTargetType>
+    <RunJasmineTests>true</RunJasmineTests>
   </PropertyGroup>
   
   <Import Project="$(CodebaseRoot)\common\common.webpack.proj" />

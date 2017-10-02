@@ -1,5 +1,6 @@
 const webpack = require("webpack");
-var HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require("html-webpack-plugin");
+const WebpackShellPlugin = require("webpack-shell-plugin");
 
 const fs = require("fs");
 const path = require("path");
@@ -33,18 +34,16 @@ module.exports = function (env) {
                 }
             ]
         },
+
         resolve: {
             extensions: [".tsx", ".ts", ".jsx", ".js"]
         },
-        plugins: [],
-        externals: []
+        devServer: {
+            contentBase: path.parse(env.outputFile).dir
+        },
+        externals: {},
+        plugins: []
     };
-
-    if (env.release) {
-        config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true
-        }));
-    }
 
     if (env.ejsTemplate) {
         const htmlMinifierOptions = {
@@ -58,7 +57,6 @@ module.exports = function (env) {
 
         config.plugins.push(new HtmlWebpackPlugin({
             template: env.ejsTemplate,
-            inject: "head",
             minify: env.release ? htmlMinifierOptions : false,
             hash: true,
             showErrors: false,
@@ -66,8 +64,23 @@ module.exports = function (env) {
         }));
     }
 
+    if (env.release) {
+        config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+            sourceMap: true
+        }));
+    }
+
     if (env.external) {
-        config.externals = config.externals.concat(env.external.split(";"));
+        env.external.split(";").forEach(entry => {
+            let split = entry.split("=");
+            config.externals[split[0]] = split[1];
+        });
+    }
+
+    if (env.runJasmineTests) {
+        config.plugins.push(new WebpackShellPlugin({
+            onBuildEnd: [`node ${env.codebaseRoot}/node_modules/jasmine/bin/jasmine.js ${env.outputFile}`]
+        }));
     }
 
     return config;
