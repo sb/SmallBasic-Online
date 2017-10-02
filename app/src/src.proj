@@ -6,8 +6,23 @@
     <WebpackEntryFile>$(MSBuildProjectDirectory)\app.tsx</WebpackEntryFile>
     <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration.ToLower())\app\app.js</WebpackOutputFile>
     <WebpackTargetType>web</WebpackTargetType>
-    <WebpackExternal>react;react-dom</WebpackExternal>
+    <WebpackEjsTemplate>$(MSBuildProjectDirectory)\index.ejs</WebpackEjsTemplate>
   </PropertyGroup>
+
+  <ItemGroup>
+    <WebpackExternal Include="react" />
+    <WebpackExternal Include="react-dom" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <WebpackEjsTemplateScripts Include="https://cdnjs.cloudflare.com/ajax/libs/react/16.0.0/umd/react.development.js" />
+    <WebpackEjsTemplateScripts Include="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.0.0/umd/react-dom.development.js" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <WebpackEjsTemplateScripts Include="https://cdnjs.cloudflare.com/ajax/libs/react/16.0.0/umd/react.production.min.js" />
+    <WebpackEjsTemplateScripts Include="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.0.0/umd/react-dom.production.min.js" />
+  </ItemGroup>
 
   <Import Project="$(CodebaseRoot)\common\common.webpack.proj" />
 

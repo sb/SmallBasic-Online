@@ -17,7 +17,9 @@
       <WebpackParameters>$(WebpackParameters) --env.entryFile $(WebpackEntryFile)</WebpackParameters>
       <WebpackParameters>$(WebpackParameters) --env.outputFile $(WebpackOutputFile)</WebpackParameters>
       <WebpackParameters>$(WebpackParameters) --env.targetType $(WebpackTargetType)</WebpackParameters>
-      <WebpackParameters Condition=" '$(WebpackExternal)' != '' ">$(WebpackParameters) --env.external $(WebpackExternal)</WebpackParameters>
+      <WebpackParameters Condition=" '@(WebpackExternal)' != '' ">$(WebpackParameters) --env.external @(WebpackExternal)</WebpackParameters>
+      <WebpackParameters Condition=" '$(WebpackEjsTemplate)' != '' ">$(WebpackParameters) --env.ejsTemplate $(WebpackEjsTemplate)</WebpackParameters>
+      <WebpackParameters Condition=" '@(WebpackEjsTemplateScripts)' != '' ">$(WebpackParameters) --env.ejsTemplateScripts @(WebpackEjsTemplateScripts)</WebpackParameters>
       <WebpackParameters Condition=" '$(Configuration)' == 'Release' ">$(WebpackParameters) --env.release</WebpackParameters>
     </PropertyGroup>
 

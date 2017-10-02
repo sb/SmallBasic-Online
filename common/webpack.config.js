@@ -1,4 +1,6 @@
 const webpack = require("webpack");
+var HtmlWebpackPlugin = require('html-webpack-plugin');
+
 const fs = require("fs");
 const path = require("path");
 
@@ -44,7 +46,27 @@ module.exports = function (env) {
         }));
     }
 
-    if (env.external && env.external.length) {
+    if (env.ejsTemplate) {
+        const htmlMinifierOptions = {
+            caseSensitive: true,
+            collapseWhitespace: true,
+            conservativeCollapse: true,
+            minifyCSS: true,
+            minifiJS: true,
+            removeComments: true
+        };
+
+        config.plugins.push(new HtmlWebpackPlugin({
+            template: env.ejsTemplate,
+            inject: "head",
+            minify: env.release ? htmlMinifierOptions : false,
+            hash: true,
+            showErrors: false,
+            scripts: env.ejsTemplateScripts ? env.ejsTemplateScripts.split(";") : []
+        }));
+    }
+
+    if (env.external) {
         config.externals = config.externals.concat(env.external.split(";"));
     }
 
