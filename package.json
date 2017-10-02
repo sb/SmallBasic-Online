@@ -6,12 +6,17 @@
   "author": "OmarTawfik",
   "license": "MIT",
   "scripts": {
-    "compiler:build": "node node_modules/webpack/bin/webpack.js --config compiler/src/webpack.config.ts",
-    "compiler:test": "node node_modules/webpack/bin/webpack.js --config compiler/tests/webpack.config.ts"
+    "compiler-build-debug": "node node_modules/webpack/bin/webpack.js --config compiler/src/webpack.config.ts",
+    "compiler-test-debug": "node node_modules/webpack/bin/webpack.js --config compiler/tests/webpack.config.ts && node node_modules/jasmine/bin/jasmine.js dist/compiler/debug/tests.js",
+
+    "compiler-build-release": "node node_modules/webpack/bin/webpack.js --config compiler/src/webpack.config.ts --env.release",
+    "compiler-test-release": "node node_modules/webpack/bin/webpack.js --config compiler/tests/webpack.config.ts --env.release && node node_modules/jasmine/bin/jasmine.js dist/compiler/release/tests.js"
   },
   "dependencies": {
+    "@types/jasmine": "2.6.0",
     "@types/webpack": "3.0.12",
     "esutils": "2.0.2",
+    "jasmine": "2.8.0",
     "source-map-loader": "0.2.1",
     "ts-loader": "2.3.7",
     "ts-node": "3.3.0",
