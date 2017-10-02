@@ -4,10 +4,12 @@
 
   <ItemGroup>
     <SourceProjects Include="$(CodebaseRoot)\compiler\src\src.proj" />
+    <SourceProjects Include="$(CodebaseRoot)\app\src\src.proj" />
   </ItemGroup>
   
   <ItemGroup>
     <TestProjects Include="$(CodebaseRoot)\compiler\tests\tests.proj" />
+    <TestProjects Include="$(CodebaseRoot)\app\tests\tests.proj" />
   </ItemGroup>
 
   <Target Name="Restore">

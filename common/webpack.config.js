@@ -3,20 +3,13 @@ const fs = require("fs");
 const path = require("path");
 
 module.exports = function (env) {
-    const releasePlugins = [
-        new webpack.optimize.UglifyJsPlugin()
-    ];
-
-    const nodeModulesPath = path.resolve(__dirname, "../node_modules");
-    const nodeExternals = fs.readdirSync(nodeModulesPath).filter(folder => fs.lstatSync(path.resolve(nodeModulesPath, folder)).isDirectory());
-
-    return {
+    let config = {
         entry: env.entryFile,
         output: {
             filename: path.parse(env.outputFile).base,
             path: path.parse(env.outputFile).dir
         },
-        target: "web",
+        target: env.targetType,
         devtool: "source-map",
         module: {
             rules: [{
@@ -29,7 +22,7 @@ module.exports = function (env) {
                 },
                 {
                     test: /\.tsx?$/,
-                    loader: "ts-loader"
+                    loader: "awesome-typescript-loader"
                 },
                 {
                     test: /\.jsx?$/,
@@ -39,9 +32,21 @@ module.exports = function (env) {
             ]
         },
         resolve: {
-            extensions: [".tsx", ".ts"]
+            extensions: [".tsx", ".ts", ".jsx", ".js"]
         },
-        plugins: !!env.release ? releasePlugins : [],
-        externals: env.targetType === "node" ? nodeExternals : []
+        plugins: [],
+        externals: []
     };
+
+    if (env.release) {
+        config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+            sourceMap: true
+        }));
+    }
+
+    if (env.external && env.external.length) {
+        config.externals = config.externals.concat(env.external.split(";"));
+    }
+
+    return config;
 }

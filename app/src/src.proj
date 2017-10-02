@@ -1,0 +1,14 @@
+<Project>
+
+  <Import Project="..\..\common\common.msbuild.props" />
+
+  <PropertyGroup>
+    <WebpackEntryFile>$(MSBuildProjectDirectory)\app.tsx</WebpackEntryFile>
+    <WebpackOutputFile>$(CodebaseRoot)\out\$(Configuration)\app\app.js</WebpackOutputFile>
+    <WebpackTargetType>web</WebpackTargetType>
+    <WebpackExternal>react;react-dom</WebpackExternal>
+  </PropertyGroup>
+
+  <Import Project="$(CodebaseRoot)\common\common.webpack.proj" />
+
+</Project>
