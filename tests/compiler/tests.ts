@@ -1,5 +1,5 @@
 import "jasmine";
-import * as compiler from "../src/compiler";
+import * as compiler from "../../src/app/compiler/compiler";
 
 describe("compiler.ts", () => {
     it("gets four", () => {
