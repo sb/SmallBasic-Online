@@ -14,7 +14,7 @@ export interface IFactoryParams {
     entryPath: string;
     outputRelativePath: string;
     outputFile: string;
-    target: "web" | "node";
+    target: "web" | "node" | "electron-main";
     ejsTemplate?: {
         templatePath: string;
         scripts: {
@@ -76,6 +76,13 @@ export function factory(params: IFactoryParams): webpack.Configuration {
         externals: params.externals,
         plugins: []
     };
+
+    if (params.target == "electron-main") {
+        config.node = {
+            __dirname: false,
+            __filename: false
+        };
+    }
 
     if (params.ejsTemplate) {
         const htmlMinifierOptions = release ? {
