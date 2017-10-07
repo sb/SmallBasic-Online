@@ -9,3 +9,7 @@ app.on("ready", () => {
     mainWindow.setMenu(null);
     mainWindow.loadURL(`file://${__dirname}/index.html`);
 });
+
+app.on("window-all-closed", function () {
+    app.quit();
+});

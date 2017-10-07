@@ -8,7 +8,7 @@
   "scripts": {
     "gulp": "node node_modules/gulp/bin/gulp.js"
   },
-  "dependencies": {
+  "devDependencies": {
     "@types/electron": "1.6.10",
     "@types/es6-promise": "0.0.33",
     "@types/gulp": "3.8.33",
@@ -21,6 +21,7 @@
     "@types/webpack": "3.0.12",
     "awesome-typescript-loader": "3.2.3",
     "electron": "1.7.8",
+    "electron-builder": "19.34.2",
     "esutils": "2.0.2",
     "gulp": "3.9.1",
     "html-webpack-plugin": "2.30.1",
