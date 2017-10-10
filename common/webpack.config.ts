@@ -1,9 +1,12 @@
 import * as path from "path";
-import { lstatSync, readdirSync } from "fs";
 import * as webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
+import * as ExtractTextPlugin from "extract-text-webpack-plugin";
 
-const codebaseRoot = path.resolve(__dirname, "..");
+import * as helpers from "./gulp-helpers";
+
+const extractCSS = new ExtractTextPlugin("[name].fonts.css");
+const extractSCSS = new ExtractTextPlugin("[name].styles.css");
 
 export interface IExternalParams {
     release?: boolean | string | string[];
@@ -12,31 +15,17 @@ export interface IExternalParams {
 export interface IFactoryParams {
     env?: IExternalParams;
     entryPath: string;
-    outputRelativePath: string;
     outputFile: string;
+    outputRelativePath: string;
     target: "web" | "node" | "electron-main";
-    ejsTemplate?: {
-        templatePath: string;
-        scripts: {
-            debug: string;
-            release: string;
-        }[];
-    };
-    externals?: { [name: string]: string } | string[];
-}
-
-export function getNodeModules(): string[] {
-    const packagesFolder = path.join(codebaseRoot, "node_modules");
-
-    return readdirSync(packagesFolder)
-        .map(name => path.join(packagesFolder, name))
-        .filter(item => lstatSync(item).isDirectory())
-        .map(item => `commonjs ${path.parse(item).base}`);
+    ejsTemplate?: string;
 }
 
 export function factory(params: IFactoryParams): webpack.Configuration {
-    const release = params.env && params.env.release;
-    const outputFolder = `${codebaseRoot}/out/${params.outputRelativePath}`;
+    const release = !!params.env && (params.env.release === true || params.env.release === "true");
+    const outputFolder = path.resolve("out", params.outputRelativePath);
+
+    console.log(`Building ${release ? "release" : "debug"} configuration to folder: ${outputFolder}`);
 
     const config: webpack.Configuration = {
         entry: params.entryPath,
@@ -64,6 +53,46 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                     test: /\.jsx?$/,
                     loader: "source-map-loader",
                     enforce: "pre"
+                },
+                {
+                    test: /\.scss$/,
+                    use: ["css-hot-loader"].concat(<string[]>extractSCSS.extract({
+                        fallback: "style-loader",
+                        use: [
+                            {
+                                loader: "css-loader",
+                                options: { alias: { "../img": "../public/img" } }
+                            },
+                            {
+                                loader: "sass-loader"
+                            }
+                        ]
+                    }))
+                },
+                {
+                    test: /\.css$/,
+                    use: extractCSS.extract({
+                        fallback: "style-loader",
+                        use: "css-loader"
+                    })
+                },
+                {
+                    test: /\.(png|jpg|jpeg|gif|ico)$/,
+                    use: [
+                        {
+                            loader: "file-loader",
+                            options: {
+                                name: "./img/[name].[hash].[ext]"
+                            }
+                        }
+                    ]
+                },
+                {
+                    test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+                    loader: "file-loader",
+                    options: {
+                        name: "./fonts/[name].[hash].[ext]"
+                    }
                 }
             ]
         },
@@ -73,11 +102,20 @@ export function factory(params: IFactoryParams): webpack.Configuration {
         devServer: {
             contentBase: outputFolder
         },
-        externals: params.externals,
-        plugins: []
+        plugins: [
+            new webpack.DefinePlugin({
+                "process.env": {
+                    "NODE_ENV": JSON.stringify(release ? "production" : "dev")
+                }
+            }),
+            new webpack.HotModuleReplacementPlugin(),
+            new webpack.NamedModulesPlugin(),
+            extractCSS,
+            extractSCSS
+        ]
     };
 
-    if (params.target == "electron-main") {
+    if (params.target === "electron-main") {
         config.node = {
             __dirname: false,
             __filename: false
@@ -95,17 +133,21 @@ export function factory(params: IFactoryParams): webpack.Configuration {
         } : false;
 
         config.plugins!.push(new HtmlWebpackPlugin({
-            template: params.ejsTemplate.templatePath,
+            template: params.ejsTemplate,
             minify: htmlMinifierOptions,
             hash: true,
-            showErrors: false,
-            scripts: params.ejsTemplate.scripts.map(script => release ? script.release : script.debug)
+            showErrors: false
         }));
+    }
+
+    if (params.target !== "web") {
+        config.externals = helpers.getNodeModules();
     }
 
     if (release) {
         config.plugins!.push(new webpack.optimize.UglifyJsPlugin({
-            sourceMap: true
+            sourceMap: true,
+            comments: false
         }));
     }
 

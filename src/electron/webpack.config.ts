@@ -5,9 +5,8 @@ export default function (env?: base.IExternalParams) {
     return base.factory({
         env: env,
         entryPath: path.resolve(__dirname, "index.ts"),
-        outputRelativePath: "electron/app",
+        outputRelativePath: "electron",
         outputFile: "index.js",
-        target: "electron-main",
-        externals: base.getNodeModules()
+        target: "electron-main"
     });
 }

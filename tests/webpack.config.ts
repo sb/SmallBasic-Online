@@ -7,7 +7,6 @@ export default function (env?: base.IExternalParams) {
         entryPath: path.resolve(__dirname, "imports.ts"),
         outputRelativePath: "tests",
         outputFile: "tests.js",
-        target: "node",
-        externals: base.getNodeModules()
+        target: "node"
     });
 }
