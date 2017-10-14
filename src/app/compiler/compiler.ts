@@ -1,3 +1,3 @@
-export function getFour() {
+export function getFour(): number {
     return 4;
 }

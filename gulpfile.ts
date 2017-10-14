@@ -3,54 +3,82 @@ import * as gulp from "gulp";
 import * as path from "path";
 import * as helpers from "./common/gulp-helpers";
 
-const jasminePath = path.resolve(__dirname, "./node_modules/jasmine/bin/jasmine.js");
-const webpackPath = path.resolve(__dirname, "./node_modules/webpack/bin/webpack.js");
-const electronBuilderPath = path.resolve(__dirname, "./node_modules/.bin/electron-builder.cmd");
-const webpackDevServerPath = path.resolve(__dirname, "./node_modules/webpack-dev-server/bin/webpack-dev-server.js");
+gulp.task("build", () => helpers.runWebpack({
+    projectPath: "./src/app/webpack.config.ts",
+    release: false,
+    watch: false
+}));
 
-const deploymentRepository = "https://github.com/OmarTawfik/SuperBasic-Deployment";
+gulp.task("start", () => helpers.runWebpack({
+    projectPath: "./src/app/webpack.config.ts",
+    release: false,
+    watch: true
+}));
 
-const appProjectPath = path.resolve(__dirname, "./src/app/webpack.config.ts");
-const testsProjectPath = path.resolve(__dirname, "./tests/webpack.config.ts");
-const electronProjectPath = path.resolve(__dirname, "./src/electron/webpack.config.ts");
+gulp.task("release", () => helpers.rimrafToPromise("./out/app")
+    .then(() => helpers.runWebpack({
+        projectPath: "./src/app/webpack.config.ts",
+        release: true,
+        watch: false
+    })));
 
-gulp.task("build", () => helpers.cmdToPromise("node", [webpackPath, "--config", appProjectPath]));
-
-gulp.task("dev", () => helpers.cmdToPromise("node", [webpackDevServerPath, "--config", appProjectPath]));
-
-gulp.task("test", () => {
-    return helpers.cmdToPromise("node", [webpackPath, "--config", testsProjectPath]).then(() => {
-        return helpers.cmdToPromise("node", [jasminePath, "./out/tests/tests.js"]);
-    });
+gulp.task("test", ["build"], () => {
+    return helpers.runWebpack({
+        projectPath: "./tests/webpack.config.ts",
+        release: false,
+        watch: false
+    }).then(() => helpers.cmdToPromise("node", [
+        "./node_modules/jasmine/bin/jasmine.js",
+        "./out/tests/tests.js"
+    ]));
 });
 
-gulp.task("deploy", () => {
-    return helpers.rimrafToPromise("./out/web")
-        .then(() => helpers.cmdToPromise("git", ["clone", deploymentRepository, "./out/web"]))
-        .then(() => helpers.rimrafToPromise("./out/web/!(.git)"))
-        .then(() => helpers.cmdToPromise("node", [webpackPath, "--config", appProjectPath, "--env.release"]))
-        .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest("./out/web"))))
-        .then(() => helpers.cmdToPromise("git", ["add", "*"], "./out/web"))
-        .then(() => helpers.cmdToPromise("git", ["commit", "-m", "Local Deployment"], "./out/web"))
-        .then(() => helpers.cmdToPromise("git", ["push"], "./out/web"));
+gulp.task("deploy", ["release"], () => {
+    const gitserverPath = "./out/gitserver";
+    const deploymentRepository = "https://github.com/OmarTawfik/SuperBasic-Deployment";
+
+    return helpers.rimrafToPromise(gitserverPath)
+        .then(() => helpers.cmdToPromise("git", ["clone", deploymentRepository, gitserverPath]))
+        .then(() => helpers.rimrafToPromise(path.resolve(gitserverPath, "!(.git)")))
+        .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest(gitserverPath))))
+        .then(() => helpers.cmdToPromise("git", ["add", "*"], gitserverPath))
+        .then(() => helpers.cmdToPromise("git", ["commit", "-m", "Local Deployment"], gitserverPath))
+        .then(() => helpers.cmdToPromise("git", ["push"], gitserverPath));
 });
 
-gulp.task("package", () => {
-    return helpers.cmdToPromise("node", [webpackPath, "--config", electronProjectPath])
-        .then(() => helpers.cmdToPromise("node", [webpackPath, "--config", appProjectPath]))
-        .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest("./out/electron/app"))))
-        .then(() => helpers.streamToPromise(gulp.src("./package.json").pipe(gulp.dest("./out/electron/app"))))
-        .then(() => new Promise<void>(resolve => {
+gulp.task("package", ["release"], () => {
+    const setupConfigPath = "./out/electron/electron-builder-config.json";
+    const electronBuilderPath = path.resolve(__dirname, "./node_modules/.bin/electron-builder.cmd");
+
+    return helpers.rimrafToPromise("./out/electron")
+        .then(() => helpers.runWebpack({
+            projectPath: "./src/electron/webpack.config.ts",
+            release: true,
+            watch: false
+        }))
+        .then(() => helpers.streamToPromise(gulp.src("./out/app/*").pipe(gulp.dest("./out/electron"))))
+        .then(() => helpers.streamToPromise(gulp.src("./package.json").pipe(gulp.dest("./out/electron"))))
+        .then(() => helpers.rimrafToPromise("./out/installers"))
+        .then(() => new Promise<void>((resolve, reject) => {
             const config = {
                 productName: "SmallBasic",
                 directories: {
-                    app: path.resolve(__dirname, "./out/electron/app"),
-                    output: path.relative(__dirname, "./out/electron/dist")
+                    app: "./out/electron",
+                    output: "./out/installers"
                 },
-                win: { target: [{ target: "nsis", arch: ["ia32"] }] }
+                win: {
+                    target: [
+                        { target: "nsis", arch: ["ia32"] }
+                    ]
+                }
             };
-            fs.writeFileSync("./out/electron/config.json", JSON.stringify(config), "utf8");
-            resolve();
+            fs.writeFile(setupConfigPath, JSON.stringify(config), "utf8", error => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
         }))
-        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", "./out/electron/config.json"]));
+        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath]));
 });
