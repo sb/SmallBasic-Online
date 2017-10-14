@@ -1,9 +1,9 @@
 import * as path from "path";
 import * as webpack from "webpack";
-import * as base from "../common/webpack.config";
+import { factory } from "../common/webpack.config";
 
-export default function (env?: base.IExternalParams): webpack.Configuration {
-    return base.factory({
+export default function (env: any): webpack.Configuration {
+    return factory({
         env: env,
         entryPath: path.resolve(__dirname, "imports.ts"),
         outputRelativePath: "tests",

@@ -1,27 +1,32 @@
 import * as path from "path";
 import * as webpack from "webpack";
+import * as helpers from "./gulp-helpers";
 import * as ExtractTextPlugin from "extract-text-webpack-plugin";
 
-import * as helpers from "./gulp-helpers";
-
-const extractCSS = new ExtractTextPlugin("[name].fonts.css");
-const extractSCSS = new ExtractTextPlugin("[name].styles.css");
-
 export interface IExternalParams {
-    release?: boolean | string | string[];
+    release: boolean;
 }
 
 export interface IFactoryParams {
-    env?: IExternalParams;
+    env: any;
     entryPath: string;
     outputFile: string;
     outputRelativePath: string;
     target: "web" | "node" | "electron-main";
 }
 
+export function parseEnvArguments(env: any): IExternalParams {
+    return {
+        release: !!env && (env.release === true || env.release === "true")
+    };
+}
+
 export function factory(params: IFactoryParams): webpack.Configuration {
-    const release = !!params.env && (params.env.release === true || params.env.release === "true");
+    const release = parseEnvArguments(params.env).release;
     const outputFolder = path.resolve("out", params.outputRelativePath);
+
+    const extractCSS = new ExtractTextPlugin("[name].fonts.css");
+    const extractSCSS = new ExtractTextPlugin("[name].styles.css");
 
     console.log(`Building ${release ? "release" : "debug"} configuration to folder: ${outputFolder}`);
 

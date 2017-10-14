@@ -56,7 +56,7 @@ gulp.task("package", ["release"], () => {
             release: true,
             watch: false
         }))
-        .then(() => helpers.streamToPromise(gulp.src("./out/app/*").pipe(gulp.dest("./out/electron"))))
+        .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest("./out/electron"))))
         .then(() => helpers.streamToPromise(gulp.src("./package.json").pipe(gulp.dest("./out/electron"))))
         .then(() => helpers.rimrafToPromise("./out/installers"))
         .then(() => new Promise<void>((resolve, reject) => {

@@ -1,5 +1,5 @@
-import { Dashboard } from "./components/dashboard/dashboard";
-import { About } from "./components/about/about";
+import { About } from "./about";
+import { Dashboard } from "./dashboard";
 
 interface ISection {
     name: string;

@@ -1,9 +1,8 @@
 import * as React from "react";
-import { Switch, Route, Redirect, RouteComponentProps, NavLink } from "react-router-dom";
+import { strings } from "../loc";
+import { sections, defaultSection } from "./navigation";
 import { Container, NavbarToggler, NavbarBrand, Nav, NavItem } from "reactstrap";
-
-import { default as packageInfo } from "../../package-info";
-import { sections, defaultSection } from "../../navigation";
+import { Switch, Route, Redirect, RouteComponentProps, NavLink } from "react-router-dom";
 
 export class Main extends React.Component<RouteComponentProps<{}>> {
   private sidebarToggle(e: React.FormEvent<HTMLElement>): void {
@@ -53,9 +52,9 @@ export class Main extends React.Component<RouteComponentProps<{}>> {
         </div>
         <footer className="app-footer">
           <span>
-            <a href={packageInfo.repository} target="_blank">{packageInfo.title} {packageInfo.version}</a>
+            <a href="https://github.com/OmarTawfik/SuperBasic" target="_blank">{strings.app.productName} {strings.app.productVersion}</a>
             &nbsp;
-            {packageInfo.description}
+            {strings.app.productDescription}
           </span>
         </footer>
       </div>

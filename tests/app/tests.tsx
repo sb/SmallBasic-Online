@@ -2,7 +2,7 @@ import "jasmine";
 import * as React from "react";
 import * as ReactTestRenderer from "react-test-renderer";
 
-import { About } from "../../src/app/components/about/about";
+import { About } from "../../src/app/components/about";
 
 describe("Hello", () => {
     it("shows about text", () => {

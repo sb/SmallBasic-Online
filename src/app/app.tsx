@@ -1,15 +1,15 @@
 import * as React from "react";
+import { strings } from "./loc";
 import * as ReactDOM from "react-dom";
 import { HashRouter, Route, Switch } from "react-router-dom";
-import { default as packageInfo } from "./package-info";
 
 import "font-awesome/css/font-awesome.min.css";
 import "simple-line-icons/css/simple-line-icons.css";
 import "@coreui/react/React_Starter/scss/style.scss";
 
-import { Main } from "./components/main/main";
+import { Main } from "./components";
 
-window.document.title = packageInfo.title;
+window.document.title = strings.app.productName;
 
 ReactDOM.render((
     <HashRouter>

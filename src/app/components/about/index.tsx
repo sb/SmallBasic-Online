@@ -1,10 +1,11 @@
 import * as React from "react";
+import { strings } from "../../loc";
 
-export class Dashboard extends React.Component {
+export class About extends React.Component {
   public render(): JSX.Element {
     return (
       <div className="animated fadeIn">
-        Hello World
+        {strings.app.aboutText}
       </div>
     );
   }
