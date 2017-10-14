@@ -1,10 +1,15 @@
 {
   "name": "superbasic",
+  "title": "SuperBasic",
   "version": "1.0.0",
   "private": true,
   "description": "An open-source IDE/runtime for the Small Basic programming language.",
   "author": "OmarTawfik",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OmarTawfik/SuperBasic.git"
+  },
   "scripts": {
     "gulp": "node node_modules/gulp/bin/gulp.js"
   },
@@ -50,9 +55,7 @@
     "tslint-loader": "3.5.3",
     "typescript": "2.5.3",
     "webpack": "3.6.0",
-    "webpack-dev-server": "2.9.1"
-  },
-  "dependencies": {
+    "webpack-dev-server": "2.9.1",
     "file-loader": "1.1.5",
     "node-sass": "4.5.3"
   }

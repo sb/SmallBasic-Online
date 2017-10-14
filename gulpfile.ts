@@ -40,7 +40,7 @@ gulp.task("deploy", ["release"], () => {
     return helpers.rimrafToPromise(gitserverPath)
         .then(() => helpers.cmdToPromise("git", ["clone", deploymentRepository, gitserverPath]))
         .then(() => helpers.rimrafToPromise(path.resolve(gitserverPath, "!(.git)")))
-        .then(() => helpers.streamToPromise(gulp.src("./out/app/*").pipe(gulp.dest(gitserverPath))))
+        .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest(gitserverPath))))
         .then(() => helpers.cmdToPromise("git", ["add", "*"], gitserverPath))
         .then(() => helpers.cmdToPromise("git", ["commit", "-m", "Local Deployment"], gitserverPath))
         .then(() => helpers.cmdToPromise("git", ["push"], gitserverPath));

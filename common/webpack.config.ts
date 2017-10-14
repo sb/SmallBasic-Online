@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as webpack from "webpack";
-import * as HtmlWebpackPlugin from "html-webpack-plugin";
 import * as ExtractTextPlugin from "extract-text-webpack-plugin";
 
 import * as helpers from "./gulp-helpers";
@@ -18,7 +17,6 @@ export interface IFactoryParams {
     outputFile: string;
     outputRelativePath: string;
     target: "web" | "node" | "electron-main";
-    ejsTemplate?: string;
 }
 
 export function factory(params: IFactoryParams): webpack.Configuration {
@@ -61,7 +59,11 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                         use: [
                             {
                                 loader: "css-loader",
-                                options: { alias: { "../img": "../public/img" } }
+                                options: {
+                                    alias: {
+                                        "../img": path.resolve(__dirname, "../src/app/view/images")
+                                    }
+                                }
                             },
                             {
                                 loader: "sass-loader"
@@ -120,24 +122,6 @@ export function factory(params: IFactoryParams): webpack.Configuration {
             __dirname: false,
             __filename: false
         };
-    }
-
-    if (params.ejsTemplate) {
-        const htmlMinifierOptions = release ? {
-            caseSensitive: true,
-            collapseWhitespace: true,
-            conservativeCollapse: true,
-            minifyCSS: true,
-            minifiJS: true,
-            removeComments: true
-        } : false;
-
-        config.plugins!.push(new HtmlWebpackPlugin({
-            template: params.ejsTemplate,
-            minify: htmlMinifierOptions,
-            hash: true,
-            showErrors: false
-        }));
     }
 
     if (params.target !== "web") {
