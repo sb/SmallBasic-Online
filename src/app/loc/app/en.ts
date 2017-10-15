@@ -2,8 +2,8 @@ import { IAppStrings } from ".";
 
 export const enAppStrings: IAppStrings = {
     codeEditorTitle: "Code Editor",
-
     runTitle: "Run",
+    debugTitle: "Debug",
 
     productName: "SuperBasic",
     productVersion: "1.0",

@@ -32,6 +32,13 @@ $navbar-brand-minimized-logo: $navbar-brand-logo; // It should be a smaller imag
     word-break: break-all;
     font-size: 18px;
     flex: 1;
-    height: 600px;
     padding: 1em;
+}
+
+.text-output-big {
+    height: 600px;
+}
+
+.text-output-small {
+    height: 200px;
 }

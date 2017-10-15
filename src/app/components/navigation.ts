@@ -1,4 +1,5 @@
 import { Run } from "./run";
+import { Debug } from "./debug";
 import { strings } from "../loc";
 import { CodeEditor } from "./code-editor";
 
@@ -23,5 +24,11 @@ export const sections: ISection[] = [
         url: "/about",
         icon: "icon-control-play",
         component: Run
+    },
+    {
+        name: strings.app.debugTitle,
+        url: "/debug",
+        icon: "icon-magnifier-add",
+        component: Debug
     }
 ];

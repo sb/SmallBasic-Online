@@ -1,14 +1,14 @@
 import * as React from "react";
 import { default as MonacoEditor } from "react-monaco-editor";
-import { Row, Col, Card, CardBlock } from "reactstrap";
+import { Row, Col, Card, CardBlock, CardHeader } from "reactstrap";
 
 interface IState {
   code: string;
   options: monaco.editor.IEditorOptions;
 }
 
-const defaultContents: string =
-`'Welcome to Small Basic!
+const defaultContents: string = `
+'Welcome to Small Basic!
 'Below is a sample code to print 'Hello, World!' on the screen.
 'Press Run for output.
 TextWindow.WriteLine("Hello, World!")`;
@@ -44,7 +44,10 @@ export class CodeEditor extends React.Component<{}, IState> {
       <div className="animated fadeIn">
         <Row>
           <Col>
-            <Card>
+          <Card className="card-accent-info">
+              <CardHeader>
+                Code
+              </CardHeader>
               <CardBlock className="card-body">
                 <MonacoEditor language="sb" width="100%" height="600" value={this.state.code} options={this.state.options} ref="monaco" />
               </CardBlock>
