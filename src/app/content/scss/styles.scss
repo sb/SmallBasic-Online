@@ -22,3 +22,16 @@ $navbar-brand-minimized-logo: $navbar-brand-logo; // It should be a smaller imag
 .main-page-container {
     padding-top: 1.5em;
 }
+
+.text-output {
+    color: #ffffff;
+    background-color: black;
+    color: white;
+    font-family: "Consolas", "Monaco", monospace;
+    overflow-y: auto;
+    word-break: break-all;
+    font-size: 18px;
+    flex: 1;
+    height: 600px;
+    padding: 1em;
+}

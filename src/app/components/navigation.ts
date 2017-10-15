@@ -1,4 +1,4 @@
-import { About } from "./about";
+import { Run } from "./run";
 import { strings } from "../loc";
 import { CodeEditor } from "./code-editor";
 
@@ -19,9 +19,9 @@ export const sections: ISection[] = [
         component: CodeEditor
     },
     {
-        name: strings.app.aboutTitle,
+        name: strings.app.runTitle,
         url: "/about",
-        icon: "icon-info",
-        component: About
+        icon: "icon-control-play",
+        component: Run
     }
 ];

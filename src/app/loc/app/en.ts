@@ -3,8 +3,7 @@ import { IAppStrings } from ".";
 export const enAppStrings: IAppStrings = {
     codeEditorTitle: "Code Editor",
 
-    aboutTitle: "About",
-    aboutText: "Hello from About!",
+    runTitle: "Run",
 
     productName: "SuperBasic",
     productVersion: "1.0",

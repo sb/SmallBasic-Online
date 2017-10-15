@@ -7,13 +7,19 @@ interface IState {
   options: monaco.editor.IEditorOptions;
 }
 
+const defaultContents: string =
+`'Welcome to Small Basic!
+'Below is a sample code to print 'Hello, World!' on the screen.
+'Press Run for output.
+TextWindow.WriteLine("Hello, World!")`;
+
 export class CodeEditor extends React.Component<{}, IState> {
   public constructor(props: {}) {
     super(props);
     this.updateDimensions = this.updateDimensions.bind(this);
 
     this.state = {
-      code: "Hello!",
+      code: defaultContents,
       options: {
         selectOnLineNumbers: true
       }

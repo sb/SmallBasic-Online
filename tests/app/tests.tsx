@@ -1,14 +1,7 @@
 import "jasmine";
-import * as React from "react";
-import * as ReactTestRenderer from "react-test-renderer";
 
-import { About } from "../../src/app/components/about";
-
-describe("Hello", () => {
-    it("shows about text", () => {
-        const hello = ReactTestRenderer.create(<About />).toJSON();
-
-        expect(hello.type).toEqual("div");
-        expect(hello.children).toEqual(["About"]);
+describe("Tests", () => {
+    it("can add two numbers", () => {
+        expect(1 + 1).toEqual(2);
     });
 });

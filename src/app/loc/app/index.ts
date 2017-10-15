@@ -4,8 +4,7 @@ import { ISupportedLanguages } from "..";
 export interface IAppStrings {
     codeEditorTitle: string;
 
-    aboutTitle: string;
-    aboutText: string;
+    runTitle: string;
 
     productName: string;
     productVersion: string;
