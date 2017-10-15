@@ -64,13 +64,13 @@ export class Debug extends React.Component<{}, IState> {
               <FormGroup>
               <InputGroup>
                 <InputGroupAddon >name</InputGroupAddon>
-                <Input type="text" value="John" />
+                <Input type="text" value="John" onChange={() => {}} />
               </InputGroup>
               </FormGroup>
                 <FormGroup>
                 <InputGroup>
                   <InputGroupAddon >age</InputGroupAddon>
-                  <Input type="text" value="19" />
+                  <Input type="text" value="19" onChange={() => {}} />
                 </InputGroup>
                 </FormGroup>
               </Form>
