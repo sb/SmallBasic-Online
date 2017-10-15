@@ -20,11 +20,11 @@ export default function (env: any): webpack.Configuration {
     } : undefined;
 
     config.plugins!.push(new HtmlWebpackPlugin({
-        template: path.resolve(__dirname, "view/index.ejs"),
+        template: path.resolve(__dirname, "content/index.ejs"),
         minify: minifyOptions,
         hash: true,
         showErrors: false,
-        favicon: path.resolve(__dirname, "view/images/favicon.png")
+        favicon: path.resolve(__dirname, "content/favicon.png")
     }));
 
     return config;

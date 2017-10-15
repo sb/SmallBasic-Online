@@ -1,0 +1,18 @@
+// Ordering here is important:
+
+// Bootstrap CoreUI overrides then the actual library
+@import "~@coreui/react/React_Full_Project/scss/_bootstrap-variables.scss";
+@import "~bootstrap/scss/bootstrap.scss";
+
+// Then font-awesome
+$fa-font-path: "~font-awesome/fonts";
+@import "~font-awesome/scss/font-awesome.scss";
+
+// Then simple-line-icons
+$simple-line-font-path: "~simple-line-icons/fonts/";
+@import "~simple-line-icons/scss/simple-line-icons.scss";
+
+// Then CoreUI
+$navbar-brand-logo: url("../images/logo.png");
+$navbar-brand-minimized-logo: $navbar-brand-logo; // It should be a smaller image, but it is not used in the current UI anyways
+@import "~@coreui/react/React_Full_Project/scss/core/core.scss";

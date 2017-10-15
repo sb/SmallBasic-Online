@@ -25,10 +25,9 @@ export function factory(params: IFactoryParams): webpack.Configuration {
     const release = parseEnvArguments(params.env).release;
     const outputFolder = path.resolve("out", params.outputRelativePath);
 
-    const extractCSS = new ExtractTextPlugin("[name].fonts.css");
-    const extractSCSS = new ExtractTextPlugin("[name].styles.css");
-
     console.log(`Building ${release ? "release" : "debug"} configuration to folder: ${outputFolder}`);
+
+    const extractSCSS = new ExtractTextPlugin("styles.css");
 
     const config: webpack.Configuration = {
         entry: params.entryPath,
@@ -59,28 +58,9 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                 },
                 {
                     test: /\.scss$/,
-                    use: ["css-hot-loader"].concat(<string[]>extractSCSS.extract({
+                    use: extractSCSS.extract({
                         fallback: "style-loader",
-                        use: [
-                            {
-                                loader: "css-loader",
-                                options: {
-                                    alias: {
-                                        "../img": path.resolve(__dirname, "../src/app/view/images")
-                                    }
-                                }
-                            },
-                            {
-                                loader: "sass-loader"
-                            }
-                        ]
-                    }))
-                },
-                {
-                    test: /\.css$/,
-                    use: extractCSS.extract({
-                        fallback: "style-loader",
-                        use: "css-loader"
+                        use: ["css-loader?sourceMap", "sass-loader?sourceMap"]
                     })
                 },
                 {
@@ -89,7 +69,7 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                         {
                             loader: "file-loader",
                             options: {
-                                name: "./img/[name].[hash].[ext]"
+                                name: "./images/[name].[hash].[ext]"
                             }
                         }
                     ]
@@ -104,7 +84,7 @@ export function factory(params: IFactoryParams): webpack.Configuration {
             ]
         },
         resolve: {
-            extensions: [".tsx", ".ts", ".jsx", ".js"]
+            extensions: [".tsx", ".ts", ".jsx", ".js", ".scss"]
         },
         devServer: {
             contentBase: outputFolder
@@ -117,7 +97,6 @@ export function factory(params: IFactoryParams): webpack.Configuration {
             }),
             new webpack.HotModuleReplacementPlugin(),
             new webpack.NamedModulesPlugin(),
-            extractCSS,
             extractSCSS
         ]
     };
