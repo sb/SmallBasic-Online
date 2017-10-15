@@ -4,6 +4,7 @@ export const enAppStrings: IAppStrings = {
     codeEditorTitle: "Code Editor",
     runTitle: "Run",
     debugTitle: "Debug",
+    learnTitle: "Learn",
 
     productName: "SuperBasic",
     productVersion: "1.0",

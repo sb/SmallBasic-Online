@@ -1,4 +1,5 @@
 import { Run } from "./run";
+import { Learn } from "./learn";
 import { Debug } from "./debug";
 import { strings } from "../loc";
 import { CodeEditor } from "./code-editor";
@@ -30,5 +31,11 @@ export const sections: ISection[] = [
         url: "/debug",
         icon: "icon-magnifier-add",
         component: Debug
+    },
+    {
+        name: strings.app.learnTitle,
+        url: "/learn",
+        icon: "icon-book-open",
+        component: Learn
     }
 ];
