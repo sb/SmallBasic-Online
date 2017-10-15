@@ -2,7 +2,9 @@ import { enAppStrings } from "./en";
 import { ISupportedLanguages } from "..";
 
 export interface IAppStrings {
-    dashboardText: string;
+    codeEditorTitle: string;
+
+    aboutTitle: string;
     aboutText: string;
 
     productName: string;

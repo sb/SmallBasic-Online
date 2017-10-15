@@ -1,5 +1,6 @@
 import { About } from "./about";
-import { Dashboard } from "./dashboard";
+import { strings } from "../loc";
+import { CodeEditor } from "./code-editor";
 
 interface ISection {
     name: string;
@@ -8,17 +9,17 @@ interface ISection {
     component: React.ComponentClass;
 }
 
-export const defaultSection = "/dashboard";
+export const defaultSection = "/editor";
 
 export const sections: ISection[] = [
     {
-        name: "Dashboard",
-        url: "/dashboard",
-        icon: "icon-speedometer",
-        component: Dashboard
+        name: strings.app.codeEditorTitle,
+        url: "/editor",
+        icon: "icon-note",
+        component: CodeEditor
     },
     {
-        name: "About",
+        name: strings.app.aboutTitle,
         url: "/about",
         icon: "icon-info",
         component: About
