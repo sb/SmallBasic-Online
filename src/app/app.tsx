@@ -1,15 +1,11 @@
 import * as React from "react";
+import { Main } from "./components";
 import * as ReactDOM from "react-dom";
 import { HashRouter, Route, Switch } from "react-router-dom";
-import { default as packageInfo } from "./package-info";
 
-import "font-awesome/css/font-awesome.min.css";
-import "simple-line-icons/css/simple-line-icons.css";
-import "@coreui/react/React_Starter/scss/style.scss";
+import "./content/scss/styles.scss";
 
-import { Main } from "./components/main/main";
-
-window.document.title = packageInfo.title;
+window.document.title = "SuperBasic";
 
 ReactDOM.render((
     <HashRouter>

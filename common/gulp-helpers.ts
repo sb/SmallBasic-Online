@@ -32,7 +32,7 @@ export function rimrafToPromise(path: string): Promise<void> {
 }
 
 export function streamToPromise(stream: NodeJS.ReadWriteStream): Promise<void> {
-    return new Promise<void>(function (resolve, reject) {
+    return new Promise<void>((resolve, reject) => {
         stream.on("finish", resolve).on("error", reject);
     });
 }
@@ -46,7 +46,7 @@ export function getNodeModules(): string[] {
         .map(item => `commonjs ${path.parse(item).base}`);
 }
 
-export function runWebpack(params: { projectPath: string; release: boolean; watch: boolean }) {
+export function runWebpack(params: { projectPath: string; release: boolean; watch: boolean }): Promise<void> {
     return cmdToPromise("node", [
         params.watch
             ? path.resolve(__dirname, "../node_modules/webpack-dev-server/bin/webpack-dev-server.js")

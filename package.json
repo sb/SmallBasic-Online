@@ -14,7 +14,7 @@
     "gulp": "node node_modules/gulp/bin/gulp.js"
   },
   "devDependencies": {
-    "@coreui/react": "1.0.0",
+    "@coreui/react": "1.0.1",
     "@types/electron": "1.6.10",
     "@types/es6-promise": "0.0.33",
     "@types/extract-text-webpack-plugin": "3.0.0",
@@ -29,17 +29,20 @@
     "@types/rimraf": "2.0.2",
     "@types/webpack": "3.0.12",
     "awesome-typescript-loader": "3.2.3",
-    "css-hot-loader": "1.3.2",
+    "bootstrap": "4.0.0-beta",
     "css-loader": "0.28.7",
     "electron": "1.7.8",
     "electron-builder": "19.34.2",
     "esutils": "2.0.2",
     "extract-text-webpack-plugin": "3.0.1",
+    "file-loader": "1.1.5",
     "font-awesome": "4.7.0",
     "gulp": "3.9.1",
     "html-webpack-plugin": "2.30.1",
     "jasmine": "2.8.0",
+    "node-sass": "4.5.3",
     "react": "16.0.0",
+    "react-ace": "5.4.0",
     "react-dom": "16.0.0",
     "react-router-dom": "4.2.2",
     "react-test-renderer": "16.0.0",
@@ -55,8 +58,6 @@
     "tslint-loader": "3.5.3",
     "typescript": "2.5.3",
     "webpack": "3.6.0",
-    "webpack-dev-server": "2.9.1",
-    "file-loader": "1.1.5",
-    "node-sass": "4.5.3"
+    "webpack-dev-server": "2.9.1"
   }
 }

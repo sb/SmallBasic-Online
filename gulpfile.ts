@@ -56,12 +56,12 @@ gulp.task("package", ["release"], () => {
             release: true,
             watch: false
         }))
-        .then(() => helpers.streamToPromise(gulp.src("./out/app/*").pipe(gulp.dest("./out/electron"))))
+        .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest("./out/electron"))))
         .then(() => helpers.streamToPromise(gulp.src("./package.json").pipe(gulp.dest("./out/electron"))))
         .then(() => helpers.rimrafToPromise("./out/installers"))
         .then(() => new Promise<void>((resolve, reject) => {
             const config = {
-                productName: "SmallBasic",
+                productName: "SuperBasic",
                 directories: {
                     app: "./out/electron",
                     output: "./out/installers"
@@ -69,7 +69,8 @@ gulp.task("package", ["release"], () => {
                 win: {
                     target: [
                         { target: "nsis", arch: ["ia32"] }
-                    ]
+                    ],
+                    icon: "./src/electron/installer"
                 }
             };
             fs.writeFile(setupConfigPath, JSON.stringify(config), "utf8", error => {

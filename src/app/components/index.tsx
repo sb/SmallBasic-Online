@@ -1,9 +1,7 @@
 import * as React from "react";
-import { Switch, Route, Redirect, RouteComponentProps, NavLink } from "react-router-dom";
+import * as navigation from "./navigation";
 import { Container, NavbarToggler, NavbarBrand, Nav, NavItem } from "reactstrap";
-
-import { default as packageInfo } from "../../package-info";
-import { sections, defaultSection } from "../../navigation";
+import { Switch, Route, Redirect, RouteComponentProps, NavLink } from "react-router-dom";
 
 export class Main extends React.Component<RouteComponentProps<{}>> {
   private sidebarToggle(e: React.FormEvent<HTMLElement>): void {
@@ -32,7 +30,7 @@ export class Main extends React.Component<RouteComponentProps<{}>> {
           <div className="sidebar">
             <nav className="sidebar-nav">
               <Nav>
-                {sections.map((item, index) =>
+                {navigation.sections.filter(section => section.showInSideBar).map((item, index) =>
                   <NavItem key={index}>
                     <NavLink to={item.url} className={this.activeRoute(item.url)} onClick={this.sidebarCollapse}>
                       <i className={item.icon}></i>{item.name}
@@ -44,18 +42,22 @@ export class Main extends React.Component<RouteComponentProps<{}>> {
           </div>
           <main className="main">
             <Container fluid>
-              <Switch>
-                {sections.map(section => <Route key={section.name} path={section.url} component={section.component} />)}
-                <Redirect from="/" to={defaultSection} />
-              </Switch>
+              <div className="main-page-container">
+                <Switch>
+                  {navigation.sections.map(section =>
+                    <Route key={section.name} path={section.url} component={section.component} />
+                  )}
+                  <Redirect from="/" to={navigation.defaultSection} />
+                </Switch>
+              </div>
             </Container>
           </main>
         </div>
         <footer className="app-footer">
           <span>
-            <a href={packageInfo.repository} target="_blank">{packageInfo.title} {packageInfo.version}</a>
+            <a href="https://github.com/OmarTawfik/SuperBasic" target="_blank">SuperBasic 1.0</a>
             &nbsp;
-            {packageInfo.description}
+            An open-source IDE/runtime for the Small Basic programming language.
           </span>
         </footer>
       </div>
