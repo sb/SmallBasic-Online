@@ -1,11 +1,6 @@
 import * as React from "react";
+import AceEditor from "react-ace";
 import { Row, Col, Card, CardBlock, CardHeader, Form, FormGroup, InputGroup, InputGroupAddon, Input } from "reactstrap";
-import { default as MonacoEditor } from "react-monaco-editor";
-
-interface IState {
-  code: string;
-  options: monaco.editor.IEditorOptions;
-}
 
 const defaultContents: string = `
 'Welcome to Small Basic!
@@ -13,31 +8,9 @@ const defaultContents: string = `
 'Press Run for output.
 TextWindow.WriteLine("Hello, World!")`;
 
-export class Debug extends React.Component<{}, IState> {
+export class Debug extends React.Component {
   public constructor(props: {}) {
     super(props);
-    this.updateDimensions = this.updateDimensions.bind(this);
-
-    this.state = {
-      code: defaultContents,
-      options: {
-        selectOnLineNumbers: true,
-        readOnly: true
-      }
-    };
-  }
-
-  public componentDidMount(): void {
-    window.addEventListener("resize", this.updateDimensions);
-  }
-
-  public componentWillUnmount(): void {
-    window.removeEventListener("resize", this.updateDimensions);
-  }
-
-  private updateDimensions(): void {
-    const editor: monaco.editor.IEditor = (this.refs.monaco as any).editor;
-    editor.layout();
   }
 
   public render(): JSX.Element {
@@ -50,7 +23,12 @@ export class Debug extends React.Component<{}, IState> {
                 Code
               </CardHeader>
               <CardBlock className="card-body">
-                <MonacoEditor language="sb" width="100%" height="400" value={this.state.code} options={this.state.options} ref="monaco" />
+                <AceEditor
+                  mode="smallbasic"
+                  name="code-editor-page-editor-id"
+                  value={defaultContents}
+                  editorProps={{ $blockScrolling: true }}
+                />
               </CardBlock>
             </Card>
           </Col>
@@ -59,22 +37,22 @@ export class Debug extends React.Component<{}, IState> {
               <CardHeader>
                 Variables
             </CardHeader>
-            <CardBlock className="card-body">
-              <Form>
-              <FormGroup>
-              <InputGroup>
-                <InputGroupAddon >name</InputGroupAddon>
-                <Input type="text" value="John" onChange={() => {}} />
-              </InputGroup>
-              </FormGroup>
-                <FormGroup>
-                <InputGroup>
-                  <InputGroupAddon >age</InputGroupAddon>
-                  <Input type="text" value="19" onChange={() => {}} />
-                </InputGroup>
-                </FormGroup>
-              </Form>
-            </CardBlock>
+              <CardBlock className="card-body">
+                <Form>
+                  <FormGroup>
+                    <InputGroup>
+                      <InputGroupAddon >name</InputGroupAddon>
+                      <Input type="text" value="John" onChange={() => { }} />
+                    </InputGroup>
+                  </FormGroup>
+                  <FormGroup>
+                    <InputGroup>
+                      <InputGroupAddon >age</InputGroupAddon>
+                      <Input type="text" value="19" onChange={() => { }} />
+                    </InputGroup>
+                  </FormGroup>
+                </Form>
+              </CardBlock>
             </Card>
           </Col>
         </Row>

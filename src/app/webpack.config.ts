@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import * as CopyWebpackPlugin from "copy-webpack-plugin";
 import { factory, parseEnvArguments } from "../../common/webpack.config";
 
 export default function (env: any): webpack.Configuration {
@@ -29,13 +28,6 @@ export default function (env: any): webpack.Configuration {
         showErrors: false,
         favicon: path.resolve(__dirname, "content/favicon.png")
     }));
-
-    config.plugins!.push(new CopyWebpackPlugin([{
-        from: parsedArgs.release
-            ? path.resolve(__dirname, "../../node_modules/monaco-editor/min/vs")
-            : path.resolve(__dirname, "../../node_modules/monaco-editor/dev/vs"),
-        to: "vs"
-    }]));
 
     return config;
 }
