@@ -2,10 +2,11 @@ import * as React from "react";
 import AceEditor from "react-ace";
 import { Row, Col, Card, CardBlock, CardHeader } from "reactstrap";
 
-const defaultContents: string = `
-"Welcome to Small Basic!
+const defaultContents: string =
+`"Welcome to Small Basic!
 "Below is a sample code to print "Hello, World!" on the screen.
 "Press Run for output.
+
 TextWindow.WriteLine("Hello, World!")`;
 
 export class CodeEditor extends React.Component {

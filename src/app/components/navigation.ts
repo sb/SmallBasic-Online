@@ -22,7 +22,7 @@ export const sections: ISection[] = [
     },
     {
         name: strings.app.runTitle,
-        url: "/about",
+        url: "/run",
         icon: "icon-control-play",
         component: Run
     },
