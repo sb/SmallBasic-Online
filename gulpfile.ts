@@ -61,7 +61,7 @@ gulp.task("package", ["release"], () => {
         .then(() => helpers.rimrafToPromise("./out/installers"))
         .then(() => new Promise<void>((resolve, reject) => {
             const config = {
-                productName: "SmallBasic",
+                productName: "SuperBasic",
                 directories: {
                     app: "./out/electron",
                     output: "./out/installers"
@@ -69,7 +69,8 @@ gulp.task("package", ["release"], () => {
                 win: {
                     target: [
                         { target: "nsis", arch: ["ia32"] }
-                    ]
+                    ],
+                    icon: "./src/electron/installer"
                 }
             };
             fs.writeFile(setupConfigPath, JSON.stringify(config), "utf8", error => {
