@@ -1,5 +1,4 @@
 import * as React from "react";
-import { strings } from "../loc";
 import * as navigation from "./navigation";
 import { Container, NavbarToggler, NavbarBrand, Nav, NavItem } from "reactstrap";
 import { Switch, Route, Redirect, RouteComponentProps, NavLink } from "react-router-dom";
@@ -56,9 +55,9 @@ export class Main extends React.Component<RouteComponentProps<{}>> {
         </div>
         <footer className="app-footer">
           <span>
-            <a href="https://github.com/OmarTawfik/SuperBasic" target="_blank">{strings.app.productName} {strings.app.productVersion}</a>
+            <a href="https://github.com/OmarTawfik/SuperBasic" target="_blank">SuperBasic 1.0</a>
             &nbsp;
-            {strings.app.productDescription}
+            An open-source IDE/runtime for the Small Basic programming language.
           </span>
         </footer>
       </div>

@@ -44,7 +44,6 @@
     "react": "16.0.0",
     "react-ace": "5.4.0",
     "react-dom": "16.0.0",
-    "react-localization": "0.1.2",
     "react-router-dom": "4.2.2",
     "react-test-renderer": "16.0.0",
     "react-transition-group": "2.2.1",

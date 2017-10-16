@@ -1,7 +1,6 @@
 import { Run } from "./run";
 import { Learn } from "./learn";
 import { Debug } from "./debug";
-import { strings } from "../loc";
 import { CodeEditor } from "./code-editor";
 import { Lesson } from "./lesson";
 
@@ -17,35 +16,35 @@ export const defaultSection = "/editor";
 
 export const sections: ISection[] = [
     {
-        name: strings.app.codeEditorTitle,
+        name: "Code Editor",
         url: "/editor",
         icon: "icon-note",
         component: CodeEditor,
         showInSideBar: true
     },
     {
-        name: strings.app.runTitle,
+        name: "Run",
         url: "/run",
         icon: "icon-control-play",
         component: Run,
         showInSideBar: true
     },
     {
-        name: strings.app.debugTitle,
+        name: "Debug",
         url: "/debug",
         icon: "icon-magnifier-add",
         component: Debug,
         showInSideBar: true
     },
     {
-        name: strings.app.learnTitle,
+        name: "Learn",
         url: "/learn",
         icon: "icon-notebook",
         component: Learn,
         showInSideBar: true
     },
     {
-        name: strings.app.lessonTitle,
+        name: "Lesson",
         url: "/lesson",
         icon: "icon-book-open",
         component: Lesson,
