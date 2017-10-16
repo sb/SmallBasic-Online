@@ -6,6 +6,7 @@ export interface IAppStrings {
     runTitle: string;
     debugTitle: string;
     learnTitle: string;
+    lessonTitle: string;
 
     productName: string;
     productVersion: string;

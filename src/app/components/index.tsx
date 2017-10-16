@@ -31,7 +31,7 @@ export class Main extends React.Component<RouteComponentProps<{}>> {
           <div className="sidebar">
             <nav className="sidebar-nav">
               <Nav>
-                {navigation.sections.map((item, index) =>
+                {navigation.sections.filter(section => section.showInSideBar).map((item, index) =>
                   <NavItem key={index}>
                     <NavLink to={item.url} className={this.activeRoute(item.url)} onClick={this.sidebarCollapse}>
                       <i className={item.icon}></i>{item.name}

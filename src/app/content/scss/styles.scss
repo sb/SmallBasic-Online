@@ -14,6 +14,7 @@ $simple-line-font-path: "~simple-line-icons/fonts/";
 
 // Then CoreUI
 $navbar-brand-logo: url("../images/logo.png");
+$navbar-brand-logo-size: 100px auto;
 $navbar-brand-minimized-logo: $navbar-brand-logo; // It should be a smaller image, but it is not used in the current UI anyways
 @import "~@coreui/react/React_Full_Project/scss/core/core.scss";
 

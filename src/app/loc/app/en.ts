@@ -5,6 +5,7 @@ export const enAppStrings: IAppStrings = {
     runTitle: "Run",
     debugTitle: "Debug",
     learnTitle: "Learn",
+    lessonTitle: "Lesson",
 
     productName: "SuperBasic",
     productVersion: "1.0",
