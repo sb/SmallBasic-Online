@@ -1,0 +1,48 @@
+{
+    "Error_UnrecognizedCharacter": "I don't understand this character '{0}'.",
+    "Error_UnterminatedStringLiteral": "This string is missing its right double quotes.",
+
+    "Error_UnrecognizedCommand": "'{0}' is not a valid command.",
+    "Error_UnexpectedToken_ExpectingExpression": "Unexpected '{0}' here. I was expecting an expression instead.",
+    "Error_UnexpectedToken_ExpectingToken": "Unexpected '{0}' here. I was expecting a token of type '{1}' instead.",
+    "Error_UnexpectedToken_ExpectingEOL": "Unexpected '{0}' here. I was expecting a new line after the previous command.",
+    "Error_UnexpectedEOL_ExpectingExpression": "Unexpected end of line here. I was expecting an expression instead.",
+    "Error_UnexpectedEOL_ExpectingToken": "Unexpected end of line here. I was expecting a token of type '{0}' instead.",
+   
+    "Error_UnexpectedCommand_ExpectingCommand": "Unexpected command of type '{0}'. I was expecting a command of type '{1}'.",
+    "Error_UnexpectedEOF_ExpectingCommand": "Unexpected end of file. I was expecting a command of type '{0}'.",
+    "Error_CannotDefineASubInsideAnotherSub": "You cannot define a sub-module inside another sub-module.",
+    "Error_CannotHaveCommandWithoutPreviousCommand": "You cannot write '{0}' without an earlier '{1}'.",
+ 
+    "Error_TwoSubModulesWithTheSameName": "Another sub-module with the same name '{0}' is already defined.",
+    "Error_LabelDoesNotExist": "No label with the name '{0}' exists in the same module.",
+    "Error_InvalidExpressionStatement": "This value is not assigned to anything. Did you mean to assign it to a variable?",
+    "Error_UnexpectedVoid_ExpectingValue": "This expression must return a value to be used here.",
+    "Error_UnsupportedArrayBaseExpression": "This expression is not a valid array.",
+    "Error_UnsupportedCallBaseExpression": "This expression is not a valid submodule or method to be called.",
+    "Error_UnexpectedArgumentsCount": "I was expecting {0} arguments, but found {1} instead.",
+    "Error_PropertyHasNoSetter": "This property cannot be set. You can only get its value.",
+    "Error_UnsupportedDotBaseExpression": "You can only use dot access with a library. Did you mean to use an existing library instead?",
+    "Error_LibraryMemberNotFound": "The library '{0}' has no member named '{1}'.",
+    "Error_ValueIsNotANumber": "The value '{0}' is not a valid number.",
+    "Error_ValueIsNotAssignable": "You cannot assign to this expression. Did you mean to use a variable instead?",
+    
+    "TokenKind_Identifier": "identifier",
+    "TokenKind_StringLiteral": "string",
+    "TokenKind_NumberLiteral": "number",
+    "TokenKind_Comment": "comment",
+
+    "SyntaxKind_IfCommandSyntax": "If command",
+    "SyntaxKind_ElseCommandSyntax": "Else command",
+    "SyntaxKind_ElseIfCommandSyntax": "ElseIf command",
+    "SyntaxKind_EndIfCommandSyntax": "EndIf command",
+    "SyntaxKind_ForCommandSyntax": "For command",
+    "SyntaxKind_EndForCommandSyntax": "EndFor command",
+    "SyntaxKind_WhileCommandSyntax": "While command",
+    "SyntaxKind_EndWhileCommandSyntax": "EndWhile command",
+    "SyntaxKind_LabelCommandSyntax": "label command",
+    "SyntaxKind_GoToCommandSyntax": "GoTo command",
+    "SyntaxKind_SubCommandSyntax": "Sub command",
+    "SyntaxKind_EndSubCommandSyntax": "EndSub command",
+    "SyntaxKind_ExpressionCommandSyntax": "expression command"
+}

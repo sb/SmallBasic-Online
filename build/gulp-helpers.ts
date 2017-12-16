@@ -1,8 +1,10 @@
 import * as fs from "fs";
 import * as path from "path";
+import * as xml2js from "xml2js";
 import * as rimraf from "rimraf";
 import { spawn } from "child_process";
 import { lstatSync, readdirSync } from "fs";
+import { parseNumbers, parseBooleans } from "xml2js/lib/processors";
 
 export function cmdToPromise(command: string, args: string[], cwd?: string): Promise<void> {
     console.log(`Executing command: ${command} ${args.join(" ")}`);
@@ -53,4 +55,40 @@ export function runWebpack(params: { projectPath: string; release: boolean; watc
             : path.resolve(__dirname, "../node_modules/webpack/bin/webpack.js"),
         "--config", params.projectPath,
         "--env.release", params.release ? "true" : "false"]);
+}
+
+export function convertFilePromise(inputPath: string, outputPath: string, converter: (value: string) => Promise<string>): Promise<void> {
+    console.log(`Transforming input file ${inputPath} to output file ${outputPath} `);
+    const input = fs.readFileSync(inputPath, "utf8");
+
+    return converter(input).then(output => {
+        fs.writeFileSync(outputPath, output, "utf8");
+        return Promise.resolve();
+    });
+}
+
+export function convertXMLFilePromise(inputPath: string, outputPath: string, converter: (value: any) => Promise<string>): Promise<void> {
+    return convertFilePromise(inputPath, outputPath, value => {
+        return new Promise<string>((resolve, reject) => {
+            const options: xml2js.OptionsV2 = {
+                strict: true,
+                attrkey: "attributes",
+                childkey: "children",
+                explicitRoot: false,
+                explicitArray: true,
+                explicitChildren: true,
+                preserveChildrenOrder: true,
+                attrValueProcessors: [parseNumbers, parseBooleans]
+            };
+
+            xml2js.parseString(value, options, (error, result) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve(converter(result));
+                }
+            });
+
+        });
+    });
 }

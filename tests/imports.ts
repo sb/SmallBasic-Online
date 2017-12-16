@@ -1,1 +1,2 @@
-import "./app/tests.tsx";
+import "./app";
+import "./compiler";

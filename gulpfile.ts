@@ -2,8 +2,27 @@ import * as fs from "fs";
 import * as gulp from "gulp";
 import * as path from "path";
 import * as helpers from "./build/gulp-helpers";
+import { generateModels } from "./build/generate-models";
+import { generateLocStrings } from "./build/generate-loc-strings";
 
-gulp.task("build-source", () => helpers.runWebpack({
+gulp.task("generate-loc-strings", generateLocStrings);
+
+gulp.task("generate-syntax-expressions", () => generateModels("syntax-expressions"));
+gulp.task("generate-syntax-commands", () => generateModels("syntax-commands"));
+gulp.task("generate-syntax-statements", () => generateModels("syntax-statements"));
+gulp.task("generate-bound-statements", () => generateModels("bound-statements"));
+gulp.task("generate-bound-expressions", () => generateModels("bound-expressions"));
+
+gulp.task("run-generators", [
+    "generate-loc-strings",
+    "generate-syntax-expressions",
+    "generate-syntax-commands",
+    "generate-syntax-statements",
+    "generate-bound-expressions",
+    "generate-bound-statements"
+]);
+
+gulp.task("build-source", ["run-generators"], () => helpers.runWebpack({
     projectPath: "./src/app/webpack.config.ts",
     release: false,
     watch: false
