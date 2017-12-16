@@ -1,0 +1,7 @@
+{
+    "editor.detectIndentation": false,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "typescriptHero.resolver.stringQuoteStyle": "\"",
+    "typescriptHero.resolver.organizeOnSave": true
+}

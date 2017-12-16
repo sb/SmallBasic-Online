@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [{
+        "type": "node",
+        "request": "launch",
+        "name": "Run Tests",
+        "preLaunchTask": "build-tests",
+        "program": "${workspaceFolder}/node_modules/jasmine/bin/jasmine.js",
+        "args": [
+            "${workspaceFolder}/out/tests/tests.js"
+        ],
+        "outFiles": [
+            "${workspaceFolder}/out/tests/**"
+        ]
+    }]
+}
