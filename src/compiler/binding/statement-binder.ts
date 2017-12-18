@@ -50,7 +50,7 @@ export class StatementBinder {
         this.goToStatements.forEach(statement => {
             const identifier = statement.command.labelToken;
             if (!this.DefinedLabels[identifier.text]) {
-                this.diagnostics.push(new Diagnostic(ErrorCode.Error_LabelDoesNotExist, identifier.range, identifier.text));
+                this.diagnostics.push(new Diagnostic(ErrorCode.LabelDoesNotExist, identifier.range, identifier.text));
             }
         });
     }
@@ -141,7 +141,7 @@ export class StatementBinder {
 
                 if (!binaryExpression.rightExpression.info.hasError && !binaryExpression.rightExpression.info.hasValue) {
                     this.diagnostics.push(new Diagnostic(
-                        ErrorCode.Error_UnexpectedVoid_ExpectingValue,
+                        ErrorCode.UnexpectedVoid_ExpectingValue,
                         getExpressionRange(binaryExpression.rightExpression.syntax)));
                 }
 
@@ -160,7 +160,7 @@ export class StatementBinder {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
                         if (!SupportedLibraries[property.library].properties[property.name].hasSet) {
-                            this.diagnostics.push(new Diagnostic(ErrorCode.Error_PropertyHasNoSetter, getExpressionRange(property.syntax)));
+                            this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, getExpressionRange(property.syntax)));
                         }
 
                         return BoundStatementFactory.PropertyAssignment(syntax, property.library, property.name, binaryExpression.rightExpression);
@@ -188,7 +188,7 @@ export class StatementBinder {
                     case BoundExpressionKind.SubModule:
                     case BoundExpressionKind.SubModuleCall: {
                         this.diagnostics.push(new Diagnostic(
-                            ErrorCode.Error_ValueIsNotAssignable,
+                            ErrorCode.ValueIsNotAssignable,
                             getExpressionRange(binaryExpression.leftExpression.syntax)));
 
                         return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
@@ -230,7 +230,7 @@ export class StatementBinder {
             case BoundExpressionKind.StringLiteral:
             case BoundExpressionKind.NumberLiteral:
             case BoundExpressionKind.SubModule: {
-                this.diagnostics.push(new Diagnostic(ErrorCode.Error_InvalidExpressionStatement, getExpressionRange(syntax.command.expression)));
+                this.diagnostics.push(new Diagnostic(ErrorCode.InvalidExpressionStatement, getExpressionRange(syntax.command.expression)));
                 return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
             }
         }

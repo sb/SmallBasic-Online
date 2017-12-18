@@ -63,7 +63,7 @@ export function convertFilePromise(inputPath: string, outputPath: string, conver
 
     return converter(input).then(output => {
         fs.writeFileSync(outputPath, output, "utf8");
-        return Promise.resolve();
+        return Promise.resolve<void>();
     });
 }
 

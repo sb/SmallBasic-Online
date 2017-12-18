@@ -41,7 +41,7 @@ export class ExpressionBinder {
         this.result = this.bindExpression(syntax);
 
         if (expectedValue && !this.result.info.hasValue) {
-            this.reportError(this.result, ErrorCode.Error_UnexpectedVoid_ExpectingValue);
+            this.reportError(this.result, ErrorCode.UnexpectedVoid_ExpectingValue);
             this.result.info.hasError = true;
         }
     }
@@ -68,7 +68,7 @@ export class ExpressionBinder {
 
         if (!indexExpression.info.hasValue) {
             hasError = true;
-            this.reportError(indexExpression, ErrorCode.Error_UnexpectedVoid_ExpectingValue);
+            this.reportError(indexExpression, ErrorCode.UnexpectedVoid_ExpectingValue);
         }
 
         let name: string;
@@ -88,7 +88,7 @@ export class ExpressionBinder {
             }
             default: {
                 hasError = true;
-                this.reportError(baseExpression, ErrorCode.Error_UnsupportedArrayBaseExpression);
+                this.reportError(baseExpression, ErrorCode.UnsupportedArrayBaseExpression);
                 name = "";
                 indices = [indexExpression];
                 break;
@@ -111,7 +111,7 @@ export class ExpressionBinder {
 
             if (!arg.info.hasValue) {
                 hasError = true;
-                this.reportError(arg, ErrorCode.Error_UnexpectedVoid_ExpectingValue);
+                this.reportError(arg, ErrorCode.UnexpectedVoid_ExpectingValue);
             }
         });
 
@@ -122,7 +122,7 @@ export class ExpressionBinder {
 
                 if (argumentsList.length !== definition.argumentsCount) {
                     hasError = true;
-                    this.reportError(baseExpression, ErrorCode.Error_UnexpectedArgumentsCount, definition.argumentsCount.toString(), argumentsList.length.toString());
+                    this.reportError(baseExpression, ErrorCode.UnexpectedArgumentsCount, definition.argumentsCount.toString(), argumentsList.length.toString());
                 }
 
                 return BoundExpressionFactory.LibraryMethodCall(
@@ -135,7 +135,7 @@ export class ExpressionBinder {
             case BoundExpressionKind.SubModule: {
                 if (argumentsList.length !== 0) {
                     hasError = true;
-                    this.reportError(baseExpression, ErrorCode.Error_UnexpectedArgumentsCount, "0", argumentsList.length.toString());
+                    this.reportError(baseExpression, ErrorCode.UnexpectedArgumentsCount, "0", argumentsList.length.toString());
                 }
 
                 const name = (baseExpression as SubModuleBoundExpression).name;
@@ -143,7 +143,7 @@ export class ExpressionBinder {
             }
             default: {
                 hasError = true;
-                this.reportError(baseExpression, ErrorCode.Error_UnsupportedCallBaseExpression);
+                this.reportError(baseExpression, ErrorCode.UnsupportedCallBaseExpression);
                 return BoundExpressionFactory.LibraryMethodCall(syntax, { hasError: hasError, hasValue: true }, "", "", argumentsList);
             }
         }
@@ -156,7 +156,7 @@ export class ExpressionBinder {
 
         if (leftHandSide.kind !== BoundExpressionKind.LibraryType) {
             hasError = true;
-            this.reportError(leftHandSide, ErrorCode.Error_UnsupportedDotBaseExpression);
+            this.reportError(leftHandSide, ErrorCode.UnsupportedDotBaseExpression);
             return BoundExpressionFactory.LibraryProperty(syntax, { hasError: hasError, hasValue: true }, "", rightHandSide);
         }
 
@@ -173,7 +173,7 @@ export class ExpressionBinder {
         }
 
         hasError = true;
-        this.reportError(leftHandSide, ErrorCode.Error_LibraryMemberNotFound, libraryType.library, rightHandSide);
+        this.reportError(leftHandSide, ErrorCode.LibraryMemberNotFound, libraryType.library, rightHandSide);
         return BoundExpressionFactory.LibraryProperty(syntax, { hasError: hasError, hasValue: true }, libraryType.library, rightHandSide);
     }
 
@@ -210,7 +210,7 @@ export class ExpressionBinder {
 
         if (!expression.info.hasValue) {
             hasError = true;
-            this.reportError(expression, ErrorCode.Error_UnexpectedVoid_ExpectingValue);
+            this.reportError(expression, ErrorCode.UnexpectedVoid_ExpectingValue);
         }
 
         switch (syntax.operatorToken.kind) {
@@ -231,12 +231,12 @@ export class ExpressionBinder {
 
         if (!leftHandSide.info.hasValue) {
             hasError = true;
-            this.reportError(leftHandSide, ErrorCode.Error_UnexpectedVoid_ExpectingValue);
+            this.reportError(leftHandSide, ErrorCode.UnexpectedVoid_ExpectingValue);
         }
 
         if (!rightHandSide.info.hasValue) {
             hasError = true;
-            this.reportError(rightHandSide, ErrorCode.Error_UnexpectedVoid_ExpectingValue);
+            this.reportError(rightHandSide, ErrorCode.UnexpectedVoid_ExpectingValue);
         }
 
         const info = { hasError: hasError, hasValue: true };

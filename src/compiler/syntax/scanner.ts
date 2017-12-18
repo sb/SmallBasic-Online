@@ -74,7 +74,7 @@ export class Scanner {
         }
 
         const token = this.addToken(current, TokenKind.UnrecognizedToken);
-        this.diagnostics.push(new Diagnostic(ErrorCode.Error_UnrecognizedCharacter, token.range, current));
+        this.diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, token.range, current));
 
         return true;
     }
@@ -102,7 +102,7 @@ export class Scanner {
                 case "\r":
                 case "\n":
                     const token = this.addToken(this.text.substr(this.index, lookAhead - this.index), TokenKind.StringLiteral);
-                    this.diagnostics.push(new Diagnostic(ErrorCode.Error_UnterminatedStringLiteral, token.range));
+                    this.diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, token.range));
                     return;
                 default:
                     lookAhead++;
@@ -111,7 +111,7 @@ export class Scanner {
         }
 
         const unrecognizedToken = this.addToken(this.text.substr(this.index, lookAhead - this.index), TokenKind.StringLiteral);
-        this.diagnostics.push(new Diagnostic(ErrorCode.Error_UnterminatedStringLiteral, unrecognizedToken.range));
+        this.diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, unrecognizedToken.range));
     }
 
     private scanNumberToken(): void {

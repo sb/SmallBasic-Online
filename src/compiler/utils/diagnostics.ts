@@ -1,38 +1,38 @@
 import { TextRange } from "../syntax/text-markers";
-import { ErrorToString } from "./strings";
+import { ErrorResources } from "../strings/errors";
 
 export enum ErrorCode {
     // Scanner Errors
-    Error_UnrecognizedCharacter,
-    Error_UnterminatedStringLiteral,
+    UnrecognizedCharacter,
+    UnterminatedStringLiteral,
 
     // Line Parser Errors
-    Error_UnrecognizedCommand,
-    Error_UnexpectedToken_ExpectingExpression,
-    Error_UnexpectedToken_ExpectingToken,
-    Error_UnexpectedToken_ExpectingEOL,
-    Error_UnexpectedEOL_ExpectingExpression,
-    Error_UnexpectedEOL_ExpectingToken,
+    UnrecognizedCommand,
+    UnexpectedToken_ExpectingExpression,
+    UnexpectedToken_ExpectingToken,
+    UnexpectedToken_ExpectingEOL,
+    UnexpectedEOL_ExpectingExpression,
+    UnexpectedEOL_ExpectingToken,
 
     // Tree Parser Errors
-    Error_UnexpectedCommand_ExpectingCommand,
-    Error_UnexpectedEOF_ExpectingCommand,
-    Error_CannotDefineASubInsideAnotherSub,
-    Error_CannotHaveCommandWithoutPreviousCommand,
-    Error_ValueIsNotANumber,
+    UnexpectedCommand_ExpectingCommand,
+    UnexpectedEOF_ExpectingCommand,
+    CannotDefineASubInsideAnotherSub,
+    CannotHaveCommandWithoutPreviousCommand,
+    ValueIsNotANumber,
 
     // Binder Errors
-    Error_TwoSubModulesWithTheSameName,
-    Error_LabelDoesNotExist,
-    Error_InvalidExpressionStatement,
-    Error_UnexpectedVoid_ExpectingValue,
-    Error_UnsupportedArrayBaseExpression,
-    Error_UnsupportedCallBaseExpression,
-    Error_UnexpectedArgumentsCount,
-    Error_PropertyHasNoSetter,
-    Error_UnsupportedDotBaseExpression,
-    Error_LibraryMemberNotFound,
-    Error_ValueIsNotAssignable
+    TwoSubModulesWithTheSameName,
+    LabelDoesNotExist,
+    InvalidExpressionStatement,
+    UnexpectedVoid_ExpectingValue,
+    UnsupportedArrayBaseExpression,
+    UnsupportedCallBaseExpression,
+    UnexpectedArgumentsCount,
+    PropertyHasNoSetter,
+    UnsupportedDotBaseExpression,
+    LibraryMemberNotFound,
+    ValueIsNotAssignable
 }
 
 export class Diagnostic {
@@ -45,7 +45,45 @@ export class Diagnostic {
     }
 
     public toString(): string {
-        const template = ErrorToString(this.code);
+        const template = errorCodeToString(this.code);
         return template.replace(/{[0-9]+}/g, match => this.args[parseInt(match.replace(/^{/, "").replace(/}$/, ""))]);
+    }
+}
+
+function errorCodeToString(code: ErrorCode): string {
+    switch (code) {
+        // Scanner Errors
+        case ErrorCode.UnrecognizedCharacter: return ErrorResources.toString(ErrorResources.Keys.UnrecognizedCharacter);
+        case ErrorCode.UnterminatedStringLiteral: return ErrorResources.toString(ErrorResources.Keys.UnterminatedStringLiteral);
+
+        // Line Parser Errors
+        case ErrorCode.UnrecognizedCommand: return ErrorResources.toString(ErrorResources.Keys.UnrecognizedCommand);
+        case ErrorCode.UnexpectedToken_ExpectingExpression: return ErrorResources.toString(ErrorResources.Keys.UnexpectedToken_ExpectingExpression);
+        case ErrorCode.UnexpectedToken_ExpectingToken: return ErrorResources.toString(ErrorResources.Keys.UnexpectedToken_ExpectingToken);
+        case ErrorCode.UnexpectedToken_ExpectingEOL: return ErrorResources.toString(ErrorResources.Keys.UnexpectedToken_ExpectingEOL);
+        case ErrorCode.UnexpectedEOL_ExpectingExpression: return ErrorResources.toString(ErrorResources.Keys.UnexpectedEOL_ExpectingExpression);
+        case ErrorCode.UnexpectedEOL_ExpectingToken: return ErrorResources.toString(ErrorResources.Keys.UnexpectedEOL_ExpectingToken);
+
+        // Tree Parser Errors
+        case ErrorCode.UnexpectedCommand_ExpectingCommand: return ErrorResources.toString(ErrorResources.Keys.UnexpectedCommand_ExpectingCommand);
+        case ErrorCode.UnexpectedEOF_ExpectingCommand: return ErrorResources.toString(ErrorResources.Keys.UnexpectedEOF_ExpectingCommand);
+        case ErrorCode.CannotDefineASubInsideAnotherSub: return ErrorResources.toString(ErrorResources.Keys.CannotDefineASubInsideAnotherSub);
+        case ErrorCode.CannotHaveCommandWithoutPreviousCommand: return ErrorResources.toString(ErrorResources.Keys.CannotHaveCommandWithoutPreviousCommand);
+        case ErrorCode.ValueIsNotANumber: return ErrorResources.toString(ErrorResources.Keys.ValueIsNotANumber);
+
+        // Binder Errors
+        case ErrorCode.TwoSubModulesWithTheSameName: return ErrorResources.toString(ErrorResources.Keys.TwoSubModulesWithTheSameName);
+        case ErrorCode.LabelDoesNotExist: return ErrorResources.toString(ErrorResources.Keys.LabelDoesNotExist);
+        case ErrorCode.InvalidExpressionStatement: return ErrorResources.toString(ErrorResources.Keys.InvalidExpressionStatement);
+        case ErrorCode.UnexpectedVoid_ExpectingValue: return ErrorResources.toString(ErrorResources.Keys.UnexpectedVoid_ExpectingValue);
+        case ErrorCode.UnsupportedArrayBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedArrayBaseExpression);
+        case ErrorCode.UnsupportedCallBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedCallBaseExpression);
+        case ErrorCode.UnexpectedArgumentsCount: return ErrorResources.toString(ErrorResources.Keys.UnexpectedArgumentsCount);
+        case ErrorCode.PropertyHasNoSetter: return ErrorResources.toString(ErrorResources.Keys.PropertyHasNoSetter);
+        case ErrorCode.UnsupportedDotBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedDotBaseExpression);
+        case ErrorCode.LibraryMemberNotFound: return ErrorResources.toString(ErrorResources.Keys.LibraryMemberNotFound);
+        case ErrorCode.ValueIsNotAssignable: return ErrorResources.toString(ErrorResources.Keys.ValueIsNotAssignable);
+
+        default: throw `Unexpected error code: ${code}`;
     }
 }

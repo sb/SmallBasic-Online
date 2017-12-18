@@ -54,7 +54,7 @@ export class StatementsParser {
                     if (startModuleCommand) {
                         this.eat(current.kind);
                         diagnostics.push(new Diagnostic(
-                            ErrorCode.Error_CannotDefineASubInsideAnotherSub,
+                            ErrorCode.CannotDefineASubInsideAnotherSub,
                             getCommandRange(current)));
                     } else {
                         this.parseTree.mainModule.push(...currentModuleStatements);
@@ -77,7 +77,7 @@ export class StatementsParser {
                     } else {
                         this.eat(current.kind);
                         diagnostics.push(new Diagnostic(
-                            ErrorCode.Error_CannotHaveCommandWithoutPreviousCommand,
+                            ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                             getCommandRange(current),
                             CommandSyntaxKindToString(CommandSyntaxKind.EndSub),
                             CommandSyntaxKindToString(CommandSyntaxKind.Sub)));
@@ -116,7 +116,7 @@ export class StatementsParser {
             case CommandSyntaxKind.EndIf: {
                 this.eat(current.kind);
                 this.diagnostics.push(new Diagnostic(
-                    ErrorCode.Error_CannotHaveCommandWithoutPreviousCommand,
+                    ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     getCommandRange(current),
                     CommandSyntaxKindToString(current.kind),
                     CommandSyntaxKindToString(CommandSyntaxKind.If)));
@@ -128,7 +128,7 @@ export class StatementsParser {
             case CommandSyntaxKind.EndFor: {
                 this.eat(current.kind);
                 this.diagnostics.push(new Diagnostic(
-                    ErrorCode.Error_CannotHaveCommandWithoutPreviousCommand,
+                    ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     getCommandRange(current),
                     CommandSyntaxKindToString(current.kind),
                     CommandSyntaxKindToString(CommandSyntaxKind.For)));
@@ -140,7 +140,7 @@ export class StatementsParser {
             case CommandSyntaxKind.EndWhile: {
                 this.eat(current.kind);
                 this.diagnostics.push(new Diagnostic(
-                    ErrorCode.Error_CannotHaveCommandWithoutPreviousCommand,
+                    ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     getCommandRange(current),
                     CommandSyntaxKindToString(current.kind),
                     CommandSyntaxKindToString(CommandSyntaxKind.While)));
@@ -253,7 +253,7 @@ export class StatementsParser {
             else {
                 const range = getCommandRange(current);
                 this.diagnostics.push(new Diagnostic(
-                    ErrorCode.Error_UnexpectedCommand_ExpectingCommand,
+                    ErrorCode.UnexpectedCommand_ExpectingCommand,
                     range,
                     CommandSyntaxKindToString(current.kind),
                     CommandSyntaxKindToString(kind)));
@@ -262,7 +262,7 @@ export class StatementsParser {
         } else {
             const range = getCommandRange(this.commands[this.commands.length - 1]);
             this.diagnostics.push(new Diagnostic(
-                ErrorCode.Error_UnexpectedEOF_ExpectingCommand,
+                ErrorCode.UnexpectedEOF_ExpectingCommand,
                 range,
                 CommandSyntaxKindToString(kind)));
             return CommandSyntaxFactory.Missing(range, kind);

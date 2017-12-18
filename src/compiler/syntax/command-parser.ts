@@ -90,14 +90,14 @@ export class CommandsParser {
 
                 default:
                     this.eat(current.kind);
-                    this.reportError(new Diagnostic(ErrorCode.Error_UnrecognizedCommand, current.range, current.text));
+                    this.reportError(new Diagnostic(ErrorCode.UnrecognizedCommand, current.range, current.text));
                     break;
             }
         }
 
         current = this.peek();
         if (current) {
-            this.reportError(new Diagnostic(ErrorCode.Error_UnexpectedToken_ExpectingEOL, current.range, current.text));
+            this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingEOL, current.range, current.text));
         }
     }
 
@@ -277,7 +277,7 @@ export class CommandsParser {
                                     }
                                     default: {
                                         this.reportError(new Diagnostic(
-                                            ErrorCode.Error_UnexpectedToken_ExpectingToken,
+                                            ErrorCode.UnexpectedToken_ExpectingToken,
                                             current.range,
                                             current.text,
                                             TokenKindToString(TokenKind.Comma)));
@@ -312,7 +312,7 @@ export class CommandsParser {
         const current = this.peek();
         if (!current) {
             const range = this.tokens[this.index - 1].range;
-            this.reportError(new Diagnostic(ErrorCode.Error_UnexpectedEOL_ExpectingExpression, range));
+            this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingExpression, range));
             return ExpressionSyntaxFactory.Missing(range);
         }
 
@@ -326,7 +326,7 @@ export class CommandsParser {
                 let value = parseFloat(numberToken.text);
 
                 if (isNaN(value)) {
-                    this.reportError(new Diagnostic(ErrorCode.Error_ValueIsNotANumber, numberToken.range, numberToken.text));
+                    this.reportError(new Diagnostic(ErrorCode.ValueIsNotANumber, numberToken.range, numberToken.text));
                     value = 0;
                 }
 
@@ -355,7 +355,7 @@ export class CommandsParser {
                 return ExpressionSyntaxFactory.Parenthesis(leftParen, expression, rightParen);
             }
             default: {
-                this.reportError(new Diagnostic(ErrorCode.Error_UnexpectedToken_ExpectingExpression, current.range, current.text));
+                this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingExpression, current.range, current.text));
                 return ExpressionSyntaxFactory.Missing(current.range);
             }
         }
@@ -387,20 +387,20 @@ export class CommandsParser {
                     return current;
                 } else {
                     this.reportError(new Diagnostic(
-                        ErrorCode.Error_UnexpectedToken_ExpectingToken,
+                        ErrorCode.UnexpectedToken_ExpectingToken,
                         current.range,
                         current.text,
                         TokenKindToString(kind)));
                 }
             } else {
                 this.reportError(new Diagnostic(
-                    ErrorCode.Error_UnexpectedEOL_ExpectingToken,
+                    ErrorCode.UnexpectedEOL_ExpectingToken,
                     this.tokens[this.index - 1].range,
                     TokenKindToString(kind)));
             }
         } else {
             this.reportError(new Diagnostic(
-                ErrorCode.Error_UnexpectedEOL_ExpectingToken,
+                ErrorCode.UnexpectedEOL_ExpectingToken,
                 this.tokens[this.index - 1].range,
                 TokenKindToString(kind)));
         }

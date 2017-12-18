@@ -1,6 +1,6 @@
 import "jasmine";
 import { verifyErrors } from "../helpers";
-import { Diagnostic, ErrorCode } from "../../../compiler/utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
 describe(__filename, () => {
     it("reports sub-modules with duplicate names", () => {
@@ -16,6 +16,6 @@ EndSub`,
             // Sub x
             //     ^
             // Another sub-module with the same name 'x' is already defined.
-            new Diagnostic(ErrorCode.Error_TwoSubModulesWithTheSameName, { line: 7, start: 4, end: 5 }, "x"));
+            new Diagnostic(ErrorCode.TwoSubModulesWithTheSameName, { line: 7, start: 4, end: 5 }, "x"));
     });
 });

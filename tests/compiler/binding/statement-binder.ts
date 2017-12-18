@@ -1,6 +1,6 @@
 import "jasmine";
 import { verifyErrors } from "../helpers";
-import { Diagnostic, ErrorCode } from "../../../compiler/utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
 describe(__filename, () => {
     it("reports errors on goto statements to non-existent labels", () => {
@@ -11,7 +11,7 @@ GoTo label2`,
             // GoTo label2
             //      ^^^^^^
             // No label with the name 'label2' exists in the same module.
-            new Diagnostic(ErrorCode.Error_LabelDoesNotExist, { line: 3, start: 5, end: 11 }, "label2"));
+            new Diagnostic(ErrorCode.LabelDoesNotExist, { line: 3, start: 5, end: 11 }, "label2"));
     });
 
     it("reports errors on main module goto statements to sub-module labels", () => {
@@ -24,7 +24,7 @@ GoTo label`,
             // GoTo label
             //      ^^^^^
             // No label with the name 'label' exists in the same module.
-            new Diagnostic(ErrorCode.Error_LabelDoesNotExist, { line: 5, start: 5, end: 10 }, "label"));
+            new Diagnostic(ErrorCode.LabelDoesNotExist, { line: 5, start: 5, end: 10 }, "label"));
     });
 
     it("reports errors on sub-module goto statements to main module labels", () => {
@@ -37,7 +37,7 @@ GoTo label`,
             //     GoTo label
             //          ^^^^^
             // No label with the name 'label' exists in the same module.
-            new Diagnostic(ErrorCode.Error_LabelDoesNotExist, { line: 3, start: 9, end: 14 }, "label"));
+            new Diagnostic(ErrorCode.LabelDoesNotExist, { line: 3, start: 9, end: 14 }, "label"));
     });
 
     it("reports error on non-value in for loop from expression", () => {
@@ -47,7 +47,7 @@ EndFor`,
             // For x = TextWindow.WriteLine("") To 5
             //         ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 32 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 32 }));
     });
 
     it("reports error on non-value in for loop to expression", () => {
@@ -57,7 +57,7 @@ EndFor`,
             // For x = 1 To TextWindow.WriteLine("")
             //              ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 13, end: 37 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 13, end: 37 }));
     });
 
     it("reports error on non-value in for loop step expression", () => {
@@ -67,7 +67,7 @@ EndFor`,
             // For x = 1 To 10 Step TextWindow.WriteLine("")
             //                      ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 21, end: 45 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 21, end: 45 }));
     });
 
     it("reports error on non-value in if statement expression", () => {
@@ -77,7 +77,7 @@ EndIf`,
             // If TextWindow.WriteLine("") Then
             //    ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 3, end: 27 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 3, end: 27 }));
     });
 
     it("reports error on non-value in else-if statement expression", () => {
@@ -88,7 +88,7 @@ EndIf`,
             // ElseIf TextWindow.WriteLine("") Then
             //        ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 2, start: 7, end: 31 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 2, start: 7, end: 31 }));
     });
 
     it("reports error on non-value in while statement expression", () => {
@@ -98,7 +98,7 @@ EndWhile`,
             // While TextWindow.WriteLine("")
             //       ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 6, end: 30 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 6, end: 30 }));
     });
 
     it("reports only one error on expressions that have errors", () => {
@@ -108,7 +108,7 @@ TextWindow.WriteLine() = 5`,
             // TextWindow.WriteLine() = 5
             // ^^^^^^^^^^^^^^^^^^^^
             // I was expecting 1 arguments, but found 0 instead.
-            new Diagnostic(ErrorCode.Error_UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "0"));
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "0"));
     });
 
     it("reports error on LHS of assignment not assignable", () => {
@@ -117,7 +117,7 @@ TextWindow.WriteLine(0) = 5`,
             // TextWindow.WriteLine(0) = 5
             // ^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 23 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 23 }));
     });
 
     it("reports error on assigning to property without a setter", () => {
@@ -126,7 +126,7 @@ Clock.Time = 5`,
             // Clock.Time = 5
             // ^^^^^^^^^^
             // This property cannot be set. You can only get its value.
-            new Diagnostic(ErrorCode.Error_PropertyHasNoSetter, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.PropertyHasNoSetter, { line: 1, start: 0, end: 10 }));
     });
 
     it("reports error on invalid LHS expressions - parenthesis", () => {
@@ -135,7 +135,7 @@ Clock.Time = 5`,
             // ( x + y ) = 5
             // ^^^^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 9 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 9 }));
     });
 
     it("reports error on invalid LHS expressions - and", () => {
@@ -144,7 +144,7 @@ x and y = 5`,
             // x and y = 5
             // ^^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 7 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 7 }));
     });
 
     it("reports error on invalid LHS expressions - or", () => {
@@ -153,7 +153,7 @@ x or y = 5`,
             // x or y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
     });
 
     it("reports error on invalid LHS expressions - negation", () => {
@@ -162,7 +162,7 @@ x or y = 5`,
             // -x = 5
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.Error_InvalidExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 1, start: 0, end: 6 }));
     });
 
     it("reports error on invalid LHS expressions - equal", () => {
@@ -171,7 +171,7 @@ x = y = 5`,
             // x = y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - not equal", () => {
@@ -180,7 +180,7 @@ x <> y = 5`,
             // x <> y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
     });
 
     it("reports error on invalid LHS expressions - addition", () => {
@@ -189,7 +189,7 @@ x + y = 5`,
             // x + y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - subtraction", () => {
@@ -198,7 +198,7 @@ x - y = 5`,
             // x - y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - multiplication", () => {
@@ -207,7 +207,7 @@ x * y = 5`,
             // x * y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - division", () => {
@@ -216,7 +216,7 @@ x / y = 5`,
             // x / y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - greater than", () => {
@@ -225,7 +225,7 @@ x > y = 5`,
             // x > y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - greater than or equal", () => {
@@ -234,7 +234,7 @@ x >= y = 5`,
             // x >= y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
     });
 
     it("reports error on invalid LHS expressions - less than", () => {
@@ -243,7 +243,7 @@ x < y = 5`,
             // x < y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
     });
 
     it("reports error on invalid LHS expressions - less than or equal", () => {
@@ -252,7 +252,7 @@ x <= y = 5`,
             // x <= y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
     });
 
     it("reports error on invalid LHS expressions -library method", () => {
@@ -261,7 +261,7 @@ TextWindow.WriteLine = 5`,
             // TextWindow.WriteLine = 5
             // ^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 20 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 20 }));
     });
 
     it("reports error on invalid LHS expressions - library method call", () => {
@@ -270,7 +270,7 @@ TextWindow.WriteLine("") = 5`,
             // TextWindow.WriteLine("") = 5
             // ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 24 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 24 }));
     });
 
     it("reports error on invalid LHS expressions - library type", () => {
@@ -279,7 +279,7 @@ TextWindow = 5`,
             // TextWindow = 5
             // ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 10 }));
     });
 
     it("reports error on invalid LHS expressions - number literal", () => {
@@ -288,7 +288,7 @@ TextWindow = 5`,
             // 6 = 5
             // ^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 1 }));
     });
 
     it("reports error on invalid LHS expressions - string literal", () => {
@@ -297,7 +297,7 @@ TextWindow = 5`,
             // "literal" = 5
             // ^^^^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.Error_ValueIsNotAssignable, { line: 1, start: 0, end: 9 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 9 }));
     });
 
     it("reports error on invalid LHS expressions - submodule", () => {
@@ -309,7 +309,7 @@ M = 5`,
             // M = 5
             // ^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 1 }));
     });
 
     it("reports error on invalid LHS expressions - submodule call", () => {
@@ -321,6 +321,6 @@ M() = 5`,
             // M() = 5
             // ^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.Error_UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 3 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 3 }));
     });
 });

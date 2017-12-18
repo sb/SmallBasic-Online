@@ -24,7 +24,7 @@ export class ModuleBinder {
             const nameToken = subModule.subCommand.nameToken;
             if (subModuleNames[nameToken.text]) {
                 diagnostics.push(new Diagnostic(
-                    ErrorCode.Error_TwoSubModulesWithTheSameName,
+                    ErrorCode.TwoSubModulesWithTheSameName,
                     nameToken.range,
                     nameToken.text));
             } else {

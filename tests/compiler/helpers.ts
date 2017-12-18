@@ -1,6 +1,6 @@
 import "jasmine";
-import { Compilation } from "../../compiler/compilation";
-import { Diagnostic, ErrorCode } from "../../compiler/utils/diagnostics";
+import { Compilation } from "../../src/compiler/compilation";
+import { Diagnostic, ErrorCode } from "../../src/compiler/utils/diagnostics";
 
 export function verifyErrors(text: string, ...expected: Diagnostic[]): void {
     const actual = new Compilation(text).diagnostics;

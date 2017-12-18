@@ -1,39 +1,32 @@
 import { convertFilePromise } from "./gulp-helpers";
 import * as path from "path";
 
-function generateContents(entries: { [entryName: string]: string }): string {
+function generateContents(identifier: string, entries: { [entryName: string]: string }): string {
     return `// This file is generated through a build task. Do not edit by hand.
 
-import {ErrorCode} from "./diagnostics";
+export module ${identifier} {
+    export enum Keys {
+${Object.keys(entries).map(entryName => `        ${entryName}`).join(",\n")}
+    }
 
-export enum StringKey {
-${Object.keys(entries).map(entryName => `    ${entryName}`).join(",\n")}
-}
-
-export function KeyToString(key: StringKey): string {
-    return dictionary(StringKey[key]);
-}
-
-export function ErrorToString(code: ErrorCode): string {
-    return dictionary(ErrorCode[code]);
-}
-
-function dictionary(key: string): string {
-    switch (key) {${Object.keys(entries).map(entryName => `
-        case "${entryName}":
-            return "${entries[entryName]}";`).join("")}
-        default:
-            throw "Key not found" + key;
+    export function toString(key: Keys): string {
+        switch (key) {${Object.keys(entries).map(entryName => `
+            case Keys.${entryName}:
+                return "${entries[entryName]}";`).join("")}
+            default:
+                throw "Key not found: " + key;
+        }
     }
 }
 `;
 }
 
-export function generateLocStrings(): Promise<void> {
-    const inputPath = path.resolve(__dirname, "./loc/compiler/en.json");
-    const outputPath = path.resolve(__dirname, "../src/compiler/utils/strings.ts");
+export function generateLocStrings(identifier: string, resource: string): Promise<void> {
+    const language = "en";
+    const inputPath = path.resolve(__dirname, `./strings/${language}/${resource}.json`);
+    const outputPath = path.resolve(__dirname, `../src/compiler/strings/${resource}.ts`);
 
     return convertFilePromise(inputPath, outputPath, value => {
-        return Promise.resolve(generateContents(JSON.parse(value)));
+        return Promise.resolve(generateContents(identifier, JSON.parse(value)));
     });
 }

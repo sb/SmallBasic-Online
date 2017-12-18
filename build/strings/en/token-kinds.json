@@ -1,0 +1,6 @@
+{
+    "Identifier": "identifier",
+    "StringLiteral": "string",
+    "NumberLiteral": "number",
+    "Comment": "comment"
+}
