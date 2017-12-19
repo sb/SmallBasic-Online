@@ -1,7 +1,7 @@
 import * as path from "path";
 import * as webpack from "webpack";
 import * as HtmlWebpackPlugin from "html-webpack-plugin";
-import { factory, parseEnvArguments } from "../../common/webpack.config";
+import { factory, parseEnvArguments } from "../../build/webpack.config";
 
 export default function (env: any): webpack.Configuration {
     const parsedArgs = parseEnvArguments(env);

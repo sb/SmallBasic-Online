@@ -1,0 +1,77 @@
+<root kind="BoundStatement">
+    <_baseMembers>
+        <syntax type="BaseStatementSyntax" />
+    </_baseMembers>
+
+    <IfBoundStatement>
+        <ifPart type="IfConditionPartBoundStatement" />
+        <elseIfParts type="ElseIfConditionPartBoundStatement" array="true" />
+        <elsePart type="ElseConditionPartBoundStatement" optional="true" />
+    </IfBoundStatement>
+
+    <IfConditionPartBoundStatement>
+        <condition type="BaseBoundExpression" />
+        <statementsList type="BaseBoundStatement" array="true" />
+    </IfConditionPartBoundStatement>
+
+    <ElseIfConditionPartBoundStatement>
+        <condition type="BaseBoundExpression" />
+        <statementsList type="BaseBoundStatement" array="true" />
+    </ElseIfConditionPartBoundStatement>
+
+    <ElseConditionPartBoundStatement>
+        <statementsList type="BaseBoundStatement" array="true" />
+    </ElseConditionPartBoundStatement>
+
+    <WhileBoundStatement>
+        <condition type="BaseBoundExpression" />
+        <statementsList type="BaseBoundStatement" array="true" />
+    </WhileBoundStatement>
+
+    <ForBoundStatement>
+        <identifier type="string" />
+        <fromExpression type="BaseBoundExpression" />
+        <toExpression type="BaseBoundExpression" />
+        <stepExpression type="BaseBoundExpression" optional="true" />
+        <statementsList type="BaseBoundStatement" array="true" />
+    </ForBoundStatement>
+
+    <LabelBoundStatement>
+        <identifier type="string" />
+    </LabelBoundStatement>
+
+    <GoToBoundStatement>
+        <identifier type="string" />
+    </GoToBoundStatement>
+
+    <SubModuleCallBoundStatement>
+        <name type="string" />
+    </SubModuleCallBoundStatement>
+
+    <LibraryMethodCallBoundStatement>
+        <library type="string" />
+        <method type="string" />
+        <argumentsList type="BaseBoundExpression" array="true" />
+    </LibraryMethodCallBoundStatement>
+
+    <VariableAssignmentBoundStatement>
+        <identifier type="string" />
+        <value type="BaseBoundExpression" />
+    </VariableAssignmentBoundStatement>
+
+    <PropertyAssignmentBoundStatement>
+        <library type="string" />
+        <property type="string" />
+        <value type="BaseBoundExpression" />
+    </PropertyAssignmentBoundStatement>
+
+    <ArrayAssignmentBoundStatement>
+        <identifier type="string" />
+        <indexes type="BaseBoundExpression" array="true" />
+        <value type="BaseBoundExpression" />
+    </ArrayAssignmentBoundStatement>
+
+    <InvalidExpressionBoundStatement>
+        <expression type="BaseBoundExpression" />
+    </InvalidExpressionBoundStatement>
+</root>

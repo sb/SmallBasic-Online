@@ -28,6 +28,7 @@
     "@types/reactstrap": "4.6.4",
     "@types/rimraf": "2.0.2",
     "@types/webpack": "3.0.12",
+    "@types/xml2js": "0.4.2",
     "awesome-typescript-loader": "3.2.3",
     "bootstrap": "4.0.0-beta",
     "css-loader": "0.28.7",
@@ -58,6 +59,7 @@
     "tslint-loader": "3.5.3",
     "typescript": "2.5.3",
     "webpack": "3.6.0",
-    "webpack-dev-server": "2.9.1"
+    "webpack-dev-server": "2.9.1",
+    "xml2js": "0.4.19"
   }
 }
