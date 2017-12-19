@@ -162,7 +162,7 @@ x or y = 5`,
             // -x = 5
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
     });
 
     it("reports error on invalid LHS expressions - equal", () => {
@@ -322,5 +322,196 @@ M() = 5`,
             // ^^^
             // This expression must return a value to be used here.
             new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 3 }));
+    });
+    
+    it("reports error on invalid expression statements - variable", () => {
+        verifyErrors(`
+x`,
+            // x
+            // ^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 1 }));
+    });
+    
+    it("reports error on invalid expression statements - array access", () => {
+        verifyErrors(`
+ar[0]`,
+            // ar[0]
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - library property", () => {
+        verifyErrors(`
+Clock.Time`,
+            // Clock.Time
+            // ^^^^^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 10 }));
+    });
+    
+    it("reports error on invalid expression statements - parenthesis", () => {
+        verifyErrors(`
+(x)`,
+            // (x)
+            // ^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 3 }));
+    });
+    
+    it("reports error on invalid expression statements - and", () => {
+        verifyErrors(`
+x and y`,
+            // x and y
+            // ^^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 7 }));
+    });
+    
+    it("reports error on invalid expression statements - or", () => {
+        verifyErrors(`
+x or y`,
+            // x or y
+            // ^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+    });
+    
+    it("reports error on invalid expression statements - negation", () => {
+        verifyErrors(`
+-5`,
+            // -5
+            // ^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 2 }));
+    });
+    
+    it("reports error on invalid expression statements - not equal", () => {
+        verifyErrors(`
+x <> y`,
+            // x <> y
+            // ^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+    });
+    
+    it("reports error on invalid expression statements - addition", () => {
+        verifyErrors(`
+x + y`,
+            // x + y
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - subtraction", () => {
+        verifyErrors(`
+x - y`,
+            // x - y
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - multiplication", () => {
+        verifyErrors(`
+x * y`,
+            // x * y
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - division", () => {
+        verifyErrors(`
+x / y`,
+            // x / y
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - greater than", () => {
+        verifyErrors(`
+x < y`,
+            // x < y
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - less than", () => {
+        verifyErrors(`
+x > y`,
+            // x > y
+            // ^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - greater than or equal", () => {
+        verifyErrors(`
+x <= y`,
+            // x <= y
+            // ^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+    });
+    
+    it("reports error on invalid expression statements - less than or equal", () => {
+        verifyErrors(`
+x >= y`,
+            // x >= y
+            // ^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+    });
+    
+    it("reports error on invalid expression statements - library method", () => {
+        verifyErrors(`
+TextWindow.WriteLine`,
+            // TextWindow.WriteLine
+            // ^^^^^^^^^^^^^^^^^^^^
+            // This expression is not a valid statement.
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 1, start: 0, end: 20 }));
+    });
+    
+    it("reports error on invalid expression statements - library type", () => {
+        verifyErrors(`
+Clock`,
+            // Clock
+            // ^^^^^
+            // This expression is not a valid statement.
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 1, start: 0, end: 5 }));
+    });
+    
+    it("reports error on invalid expression statements - string literal", () => {
+        verifyErrors(`
+"test"`,
+            // "test"
+            // ^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+    });
+    
+    it("reports error on invalid expression statements - number literal", () => {
+        verifyErrors(`
+5`,
+            // 5
+            // ^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 1 }));
+    });
+    
+    it("reports error on invalid expression statements - submodule", () => {
+        verifyErrors(`
+Sub x
+EndSub
+x`,
+            // x
+            // ^
+            // This expression is not a valid statement.
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 3, start: 0, end: 1 }));
     });
 });

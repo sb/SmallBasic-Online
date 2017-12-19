@@ -38,38 +38,38 @@ export class ExpressionBinder {
     public readonly result: BaseBoundExpression;
 
     public constructor(syntax: BaseExpressionSyntax, private definedSubModules: DefinedModulesMap, private diagnostics: Diagnostic[], expectedValue: boolean) {
-        this.result = this.bindExpression(syntax);
-
-        if (expectedValue && !this.result.info.hasValue) {
-            this.reportError(this.result, ErrorCode.UnexpectedVoid_ExpectingValue);
-            this.result.info.hasError = true;
-        }
+        this.result = this.bindExpression(syntax, expectedValue);
     }
 
-    private bindExpression(syntax: BaseExpressionSyntax): BaseBoundExpression {
+    private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
+        let expression: BaseBoundExpression;
+
         switch (syntax.kind) {
-            case ExpressionSyntaxKind.ArrayAccess: return this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax);
-            case ExpressionSyntaxKind.BinaryOperator: return this.bindBinaryOperator(syntax as BinaryOperatorExpressionSyntax);
-            case ExpressionSyntaxKind.Call: return this.bindCall(syntax as CallExpressionSyntax);
-            case ExpressionSyntaxKind.ObjectAccess: return this.bindObjectAccess(syntax as ObjectAccessExpressionSyntax);
-            case ExpressionSyntaxKind.Parenthesis: return this.bindParenthesis(syntax as ParenthesisExpressionSyntax);
-            case ExpressionSyntaxKind.NumberLiteral: return this.bindNumberLiteral(syntax as NumberLiteralExpressionSyntax);
-            case ExpressionSyntaxKind.StringLiteral: return this.bindStringLiteral(syntax as StringLiteralExpressionSyntax);
-            case ExpressionSyntaxKind.Identifier: return this.bindIdentifier(syntax as IdentifierExpressionSyntax);
-            case ExpressionSyntaxKind.UnaryOperator: return this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax);
-            case ExpressionSyntaxKind.Missing: return this.bindMissing(syntax as MissingExpressionSyntax);
+            case ExpressionSyntaxKind.ArrayAccess: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
+            case ExpressionSyntaxKind.BinaryOperator: expression = this.bindBinaryOperator(syntax as BinaryOperatorExpressionSyntax); break;
+            case ExpressionSyntaxKind.Call: expression = this.bindCall(syntax as CallExpressionSyntax); break;
+            case ExpressionSyntaxKind.ObjectAccess: expression = this.bindObjectAccess(syntax as ObjectAccessExpressionSyntax); break;
+            case ExpressionSyntaxKind.Parenthesis: expression = this.bindParenthesis(syntax as ParenthesisExpressionSyntax); break;
+            case ExpressionSyntaxKind.NumberLiteral: expression = this.bindNumberLiteral(syntax as NumberLiteralExpressionSyntax); break;
+            case ExpressionSyntaxKind.StringLiteral: expression = this.bindStringLiteral(syntax as StringLiteralExpressionSyntax); break;
+            case ExpressionSyntaxKind.Identifier: expression = this.bindIdentifier(syntax as IdentifierExpressionSyntax); break;
+            case ExpressionSyntaxKind.UnaryOperator: expression = this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax); break;
+            case ExpressionSyntaxKind.Missing: expression = this.bindMissing(syntax as MissingExpressionSyntax); break;
+            default: throw `Invalid syntax kind: ${ExpressionSyntaxKind[syntax.kind]}`;
         }
+
+        if (expectedValue && !expression.info.hasValue) {
+            this.reportError(expression, ErrorCode.UnexpectedVoid_ExpectingValue);
+            expression.info.hasError = true;
+        }
+
+        return expression;
     }
 
     private bindArrayAccess(syntax: ArrayAccessExpressionSyntax): ArrayAccessBoundExpression {
-        const baseExpression = this.bindExpression(syntax.baseExpression);
-        const indexExpression = this.bindExpression(syntax.indexExpression);
+        const baseExpression = this.bindExpression(syntax.baseExpression, true);
+        const indexExpression = this.bindExpression(syntax.indexExpression, true);
         let hasError = baseExpression.info.hasError || indexExpression.info.hasError;
-
-        if (!indexExpression.info.hasValue) {
-            hasError = true;
-            this.reportError(indexExpression, ErrorCode.UnexpectedVoid_ExpectingValue);
-        }
 
         let name: string;
         let indices: BaseBoundExpression[];
@@ -99,21 +99,10 @@ export class ExpressionBinder {
     }
 
     private bindCall(syntax: CallExpressionSyntax): BaseBoundExpression {
-        const baseExpression = this.bindExpression(syntax.baseExpression);
-        const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg));
+        const baseExpression = this.bindExpression(syntax.baseExpression, false);
+        const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg, true));
 
-        let hasError = baseExpression.info.hasError;
-
-        argumentsList.forEach(arg => {
-            if (arg.info.hasError) {
-                hasError = true;
-            }
-
-            if (!arg.info.hasValue) {
-                hasError = true;
-                this.reportError(arg, ErrorCode.UnexpectedVoid_ExpectingValue);
-            }
-        });
+        let hasError = baseExpression.info.hasError || argumentsList.some(arg => arg.info.hasError);
 
         switch (baseExpression.kind) {
             case BoundExpressionKind.LibraryMethod: {
@@ -150,7 +139,7 @@ export class ExpressionBinder {
     }
 
     private bindObjectAccess(syntax: ObjectAccessExpressionSyntax): BaseBoundExpression {
-        const leftHandSide = this.bindExpression(syntax.baseExpression);
+        const leftHandSide = this.bindExpression(syntax.baseExpression, false);
         const rightHandSide = syntax.identifierToken.text;
         let hasError = leftHandSide.info.hasError;
 
@@ -178,7 +167,7 @@ export class ExpressionBinder {
     }
 
     private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression {
-        const expression = this.bindExpression(syntax.expression);
+        const expression = this.bindExpression(syntax.expression, true);
         return BoundExpressionFactory.Parenthesis(syntax, expression.info, expression);
     }
 
@@ -205,17 +194,11 @@ export class ExpressionBinder {
     }
 
     private bindUnaryOperator(syntax: UnaryOperatorExpressionSyntax): NegationBoundExpression {
-        const expression = this.bindExpression(syntax.expression);
-        let hasError = expression.info.hasError;
-
-        if (!expression.info.hasValue) {
-            hasError = true;
-            this.reportError(expression, ErrorCode.UnexpectedVoid_ExpectingValue);
-        }
+        const expression = this.bindExpression(syntax.expression, true);
 
         switch (syntax.operatorToken.kind) {
             case TokenKind.Minus: {
-                return BoundExpressionFactory.Negation(syntax, { hasError: hasError, hasValue: true }, expression);
+                return BoundExpressionFactory.Negation(syntax, expression.info, expression);
             }
             default: {
                 throw `Unsupported token kind: ${TokenKind[syntax.operatorToken.kind]}`;
@@ -224,22 +207,14 @@ export class ExpressionBinder {
     }
 
     private bindBinaryOperator(syntax: BinaryOperatorExpressionSyntax): BaseBoundExpression {
-        const leftHandSide = this.bindExpression(syntax.leftExpression);
-        const rightHandSide = this.bindExpression(syntax.rightExpression);
+        const leftHandSide = this.bindExpression(syntax.leftExpression, true);
+        const rightHandSide = this.bindExpression(syntax.rightExpression, true);
 
-        let hasError = leftHandSide.info.hasError || rightHandSide.info.hasError;
+        const info = {
+            hasError: leftHandSide.info.hasError || rightHandSide.info.hasError,
+            hasValue: true
+        };
 
-        if (!leftHandSide.info.hasValue) {
-            hasError = true;
-            this.reportError(leftHandSide, ErrorCode.UnexpectedVoid_ExpectingValue);
-        }
-
-        if (!rightHandSide.info.hasValue) {
-            hasError = true;
-            this.reportError(rightHandSide, ErrorCode.UnexpectedVoid_ExpectingValue);
-        }
-
-        const info = { hasError: hasError, hasValue: true };
         switch (syntax.operatorToken.kind) {
             case TokenKind.Or: return BoundExpressionFactory.Or(syntax, info, leftHandSide, rightHandSide);
             case TokenKind.And: return BoundExpressionFactory.And(syntax, info, leftHandSide, rightHandSide);

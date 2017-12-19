@@ -139,12 +139,6 @@ export class StatementBinder {
             case BoundExpressionKind.Equal: {
                 const binaryExpression = boundExpression as EqualBoundExpression;
 
-                if (!binaryExpression.rightExpression.info.hasError && !binaryExpression.rightExpression.info.hasValue) {
-                    this.diagnostics.push(new Diagnostic(
-                        ErrorCode.UnexpectedVoid_ExpectingValue,
-                        getExpressionRange(binaryExpression.rightExpression.syntax)));
-                }
-
                 switch (binaryExpression.leftExpression.kind) {
                     case BoundExpressionKind.Variable: {
                         const variable = binaryExpression.leftExpression as VariableBoundExpression;
@@ -166,35 +160,12 @@ export class StatementBinder {
                         return BoundStatementFactory.PropertyAssignment(syntax, property.library, property.name, binaryExpression.rightExpression);
                     }
 
-                    case BoundExpressionKind.Parenthesis:
-                    case BoundExpressionKind.And:
-                    case BoundExpressionKind.Or:
-                    case BoundExpressionKind.Negation:
-                    case BoundExpressionKind.Equal:
-                    case BoundExpressionKind.NotEqual:
-                    case BoundExpressionKind.Addition:
-                    case BoundExpressionKind.Subtraction:
-                    case BoundExpressionKind.Multiplication:
-                    case BoundExpressionKind.Division:
-                    case BoundExpressionKind.GreaterThan:
-                    case BoundExpressionKind.GreaterThanOrEqual:
-                    case BoundExpressionKind.LessThan:
-                    case BoundExpressionKind.LessThanOrEqual:
-                    case BoundExpressionKind.LibraryMethod:
-                    case BoundExpressionKind.LibraryMethodCall:
-                    case BoundExpressionKind.LibraryType:
-                    case BoundExpressionKind.StringLiteral:
-                    case BoundExpressionKind.NumberLiteral:
-                    case BoundExpressionKind.SubModule:
-                    case BoundExpressionKind.SubModuleCall: {
+                    default: {
                         this.diagnostics.push(new Diagnostic(
                             ErrorCode.ValueIsNotAssignable,
                             getExpressionRange(binaryExpression.leftExpression.syntax)));
 
                         return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
-                    }
-                    default: {
-                        throw `Unsupported bound expression of type ${BoundExpressionKind[binaryExpression.leftExpression.kind]}`;
                     }
                 }
             }
@@ -208,32 +179,14 @@ export class StatementBinder {
                 const call = boundExpression as SubModuleCallBoundExpression;
                 return BoundStatementFactory.SubModuleCall(syntax, call.name);
             }
-
-            case BoundExpressionKind.Variable:
-            case BoundExpressionKind.ArrayAccess:
-            case BoundExpressionKind.LibraryProperty:
-            case BoundExpressionKind.Parenthesis:
-            case BoundExpressionKind.And:
-            case BoundExpressionKind.Or:
-            case BoundExpressionKind.Negation:
-            case BoundExpressionKind.NotEqual:
-            case BoundExpressionKind.Addition:
-            case BoundExpressionKind.Subtraction:
-            case BoundExpressionKind.Multiplication:
-            case BoundExpressionKind.Division:
-            case BoundExpressionKind.GreaterThan:
-            case BoundExpressionKind.GreaterThanOrEqual:
-            case BoundExpressionKind.LessThan:
-            case BoundExpressionKind.LessThanOrEqual:
-            case BoundExpressionKind.LibraryMethod:
-            case BoundExpressionKind.LibraryType:
-            case BoundExpressionKind.StringLiteral:
-            case BoundExpressionKind.NumberLiteral:
-            case BoundExpressionKind.SubModule: {
-                this.diagnostics.push(new Diagnostic(ErrorCode.InvalidExpressionStatement, getExpressionRange(syntax.command.expression)));
-                return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
-            }
         }
+
+        const errorCode = boundExpression.info.hasValue
+            ? ErrorCode.UnassignedExpressionStatement
+            : ErrorCode.InvalidExpressionStatement;
+
+        this.diagnostics.push(new Diagnostic(errorCode, getExpressionRange(syntax.command.expression)));
+        return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
     }
 
     private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression {

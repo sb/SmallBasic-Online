@@ -24,6 +24,7 @@ export enum ErrorCode {
     // Binder Errors
     TwoSubModulesWithTheSameName,
     LabelDoesNotExist,
+    UnassignedExpressionStatement,
     InvalidExpressionStatement,
     UnexpectedVoid_ExpectingValue,
     UnsupportedArrayBaseExpression,
@@ -74,6 +75,7 @@ function errorCodeToString(code: ErrorCode): string {
         // Binder Errors
         case ErrorCode.TwoSubModulesWithTheSameName: return ErrorResources.toString(ErrorResources.Keys.TwoSubModulesWithTheSameName);
         case ErrorCode.LabelDoesNotExist: return ErrorResources.toString(ErrorResources.Keys.LabelDoesNotExist);
+        case ErrorCode.UnassignedExpressionStatement: return ErrorResources.toString(ErrorResources.Keys.UnassignedExpressionStatement);
         case ErrorCode.InvalidExpressionStatement: return ErrorResources.toString(ErrorResources.Keys.InvalidExpressionStatement);
         case ErrorCode.UnexpectedVoid_ExpectingValue: return ErrorResources.toString(ErrorResources.Keys.UnexpectedVoid_ExpectingValue);
         case ErrorCode.UnsupportedArrayBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedArrayBaseExpression);
@@ -83,7 +85,5 @@ function errorCodeToString(code: ErrorCode): string {
         case ErrorCode.UnsupportedDotBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedDotBaseExpression);
         case ErrorCode.LibraryMemberNotFound: return ErrorResources.toString(ErrorResources.Keys.LibraryMemberNotFound);
         case ErrorCode.ValueIsNotAssignable: return ErrorResources.toString(ErrorResources.Keys.ValueIsNotAssignable);
-
-        default: throw `Unexpected error code: ${code}`;
     }
 }

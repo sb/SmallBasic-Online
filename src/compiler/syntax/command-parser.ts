@@ -202,19 +202,12 @@ export class CommandsParser {
     }
 
     private parseBaseExpression(): BaseExpressionSyntax {
-        if (this.isNext(TokenKind.Minus)) {
-            const minusToken = this.eat(TokenKind.Minus);
-            const expression = this.parseBaseExpression();
-
-            return ExpressionSyntaxFactory.UnaryOperator(minusToken, expression);
-        }
-
         return this.parseBinaryOperator(0);
     }
 
     private parseBinaryOperator(precedence: number): BaseExpressionSyntax {
         if (precedence >= CommandsParser.BinaryOperatorPrecedence.length) {
-            return this.parseCoreExpression();
+            return this.parseUnaryOperator();
         }
 
         let expression = this.parseBinaryOperator(precedence + 1);
@@ -228,6 +221,17 @@ export class CommandsParser {
         }
 
         return expression;
+    }
+
+    private parseUnaryOperator(): BaseExpressionSyntax {
+        if (this.isNext(TokenKind.Minus)) {
+            const minusToken = this.eat(TokenKind.Minus);
+            const expression = this.parseBaseExpression();
+
+            return ExpressionSyntaxFactory.UnaryOperator(minusToken, expression);
+        }
+
+        return this.parseCoreExpression();
     }
 
     private parseCoreExpression(): BaseExpressionSyntax {

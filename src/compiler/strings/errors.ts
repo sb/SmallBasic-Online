@@ -16,6 +16,7 @@ export module ErrorResources {
         CannotHaveCommandWithoutPreviousCommand,
         TwoSubModulesWithTheSameName,
         LabelDoesNotExist,
+        UnassignedExpressionStatement,
         InvalidExpressionStatement,
         UnexpectedVoid_ExpectingValue,
         UnsupportedArrayBaseExpression,
@@ -58,8 +59,10 @@ export module ErrorResources {
                 return "Another sub-module with the same name '{0}' is already defined.";
             case Keys.LabelDoesNotExist:
                 return "No label with the name '{0}' exists in the same module.";
-            case Keys.InvalidExpressionStatement:
+            case Keys.UnassignedExpressionStatement:
                 return "This value is not assigned to anything. Did you mean to assign it to a variable?";
+            case Keys.InvalidExpressionStatement:
+                return "This expression is not a valid statement.";
             case Keys.UnexpectedVoid_ExpectingValue:
                 return "This expression must return a value to be used here.";
             case Keys.UnsupportedArrayBaseExpression:
