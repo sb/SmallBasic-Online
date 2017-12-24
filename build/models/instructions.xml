@@ -1,0 +1,101 @@
+<root kind="Instruction">
+    <TempLabelInstruction>
+        <name type="string" />
+    </TempLabelInstruction>
+
+    <TempJumpInstruction>
+        <target type="string" />
+    </TempJumpInstruction>
+
+    <TempJumpIfFalseInstruction>
+        <target type="string" />
+    </TempJumpIfFalseInstruction>
+
+    <JumpInstruction>
+        <target type="number" />
+    </JumpInstruction>
+
+    <JumpIfFalseInstruction>
+        <target type="number" />
+    </JumpIfFalseInstruction>
+
+    <CallSubModuleInstruction>
+        <name type="string" />
+    </CallSubModuleInstruction>
+
+    <CallLibraryMethodInstruction>
+        <library type="string" />
+        <method type="string" />
+    </CallLibraryMethodInstruction>
+
+    <PauseInstruction>
+        <line type="number" />
+        <userDefined type="boolean" />
+    </PauseInstruction>
+
+    <HaltInstruction>
+    </HaltInstruction>
+
+    <StoreVariableInstruction>
+        <name type="string" />
+    </StoreVariableInstruction>
+    
+    <StoreArrayInstruction>
+        <name type="string" />
+        <indices type="number" />
+    </StoreArrayInstruction>
+
+    <StorePropertyInstruction>
+        <type type="string" />
+        <name type="string" />
+    </StorePropertyInstruction>
+
+    <LoadVariableInstruction>
+        <name type="string" />
+    </LoadVariableInstruction>
+
+    <LoadArrayInstruction>
+        <name type="string" />
+        <indices type="number" />
+    </LoadArrayInstruction>
+
+    <LoadPropertyInstruction>
+        <type type="string" />
+        <name type="string" />
+    </LoadPropertyInstruction>
+
+    <LoadMethodCallInstruction>
+        <type type="string" />
+        <name type="string" />
+        <argumentsCount type="number" />
+    </LoadMethodCallInstruction>
+
+    <NegateInstruction>
+    </NegateInstruction>
+    
+    <EqualInstruction>
+    </EqualInstruction>
+
+    <LessThanInstruction>
+    </LessThanInstruction>
+
+    <AddInstruction>
+    </AddInstruction>
+
+    <SubtractInstruction>
+    </SubtractInstruction>
+
+    <MultiplyInstruction>
+    </MultiplyInstruction>
+
+    <DivideInstruction>
+    </DivideInstruction>
+
+    <PushNumberInstruction>
+        <value type="number" />
+    </PushNumberInstruction>
+    
+    <PushStringInstruction>
+        <value type="string" />
+    </PushStringInstruction>
+</root>

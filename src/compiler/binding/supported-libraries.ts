@@ -30,5 +30,12 @@ export const SupportedLibraries: SupportedLibrariesDefinition = {
         properties: {
             "Time": { hasGet: true, hasSet: false }
         }
+    },
+    "Program": {
+        methods: {
+            "End": { argumentsCount: 0, returnsValue: false },
+            "Pause": { argumentsCount: 0, returnsValue: false }
+        },
+        properties: {}
     }
 };
