@@ -1,21 +1,19 @@
-import { ModuleDefinition } from "../binding/module-binder";
 import { BaseInstruction, InstructionFactory, InstructionKind, TempLabelInstruction, TempJumpInstruction, TempJumpIfFalseInstruction } from "../models/instructions";
 import { BaseBoundStatement, BoundStatementKind, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement } from "../models/bound-statements";
-import { getExpressionRange } from "../syntax/text-markers";
-import { BaseBoundExpression, BoundExpressionKind, NegationBoundExpression, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, GreaterThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, GreaterThanOrEqualBoundExpression, LessThanOrEqualBoundExpression } from "../models/bound-expressions";
-import { ExpressionStatementSyntax, GoToStatementSyntax } from "../models/syntax-statements";
-
-const programLibraryType = "Program", pauseLibraryMethod = "Pause", endLibraryMethod = "End";
-const trueValue = "True", falseValue = "False";
+import { getExpressionRange, getCommandRange } from "../syntax/text-markers";
+import { BaseBoundExpression, BoundExpressionKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, GreaterThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, GreaterThanOrEqualBoundExpression, LessThanOrEqualBoundExpression, NegationBoundExpression } from "../models/bound-expressions";
+import { ExpressionStatementSyntax, GoToStatementSyntax, ForStatementSyntax } from "../models/syntax-statements";
+import { Constants } from "./values/base-value";
 
 export class ModuleEmitter {
-    private jumpLabelCounter = 1;
+    private jumpLabelCounter: number = 1;
 
     public readonly instructions: BaseInstruction[];
 
-    public constructor(module: ModuleDefinition) {
+    public constructor(statements: BaseBoundStatement[]) {
         this.instructions = [];
-        module.statements.forEach(statement => this.emitStatement(statement));
+        statements.forEach(statement => this.emitStatement(statement));
+        this.instructions.push(InstructionFactory.Return());
         this.replaceTempInstructions();
     }
 
@@ -51,7 +49,7 @@ export class ModuleEmitter {
 
     private emitIfPart(condition: BaseBoundExpression, statements: BaseBoundStatement[], endOfBlockLabel: string): void {
         const lineNumber = getExpressionRange(condition.syntax).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(condition);
 
@@ -66,7 +64,7 @@ export class ModuleEmitter {
 
     private emitWhileStatement(statement: WhileBoundStatement): void {
         const lineNumber = getExpressionRange(statement.condition.syntax).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(statement.condition);
 
@@ -81,12 +79,12 @@ export class ModuleEmitter {
         const endOfBlockLabel = this.generateJumpLabel();
         const lineNumber = getExpressionRange(statement.fromExpression.syntax).line;
 
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
         this.emitExpression(statement.fromExpression);
         this.instructions.push(InstructionFactory.StoreVariable(statement.identifier));
 
         const beforeCheckLabel = this.generateJumpLabel();
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
         this.instructions.push(InstructionFactory.TempLabel(beforeCheckLabel));
         this.emitExpression(statement.toExpression);
         this.instructions.push(InstructionFactory.LoadVariable(statement.identifier));
@@ -95,7 +93,7 @@ export class ModuleEmitter {
 
         statement.statementsList.forEach(statement => this.emitStatement(statement));
 
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
         this.instructions.push(InstructionFactory.LoadVariable(statement.identifier));
 
         if (statement.stepExpression) {
@@ -104,7 +102,7 @@ export class ModuleEmitter {
             this.instructions.push(InstructionFactory.PushNumber(1));
         }
 
-        this.instructions.push(InstructionFactory.Add());
+        this.instructions.push(InstructionFactory.Add(getCommandRange((statement.syntax as ForStatementSyntax).forCommand)));
         this.instructions.push(InstructionFactory.StoreVariable(statement.identifier));
         this.instructions.push(InstructionFactory.TempJump(beforeCheckLabel));
 
@@ -117,53 +115,46 @@ export class ModuleEmitter {
 
     private emitGoToStatement(statement: GoToBoundStatement): void {
         const lineNumber = (statement.syntax as GoToStatementSyntax).command.labelToken.range.line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.instructions.push(InstructionFactory.TempJump(statement.identifier));
     }
 
     private emitLibraryMethodCall(statement: LibraryMethodCallBoundStatement): void {
-        const isUserDefinedPause = statement.library === programLibraryType && statement.method === pauseLibraryMethod;
         const lineNumber = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, isUserDefinedPause));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
-        if (!isUserDefinedPause) {
-            if (statement.library === programLibraryType && statement.method === endLibraryMethod) {
-                this.instructions.push(InstructionFactory.Halt());
-            } else {
-                this.instructions.push(InstructionFactory.CallLibraryMethod(statement.library, statement.method));
-            }
-        }
+        this.instructions.push(InstructionFactory.CallLibraryMethod(statement.library, statement.method));
     }
 
     private emitSubModuleCall(statement: SubModuleCallBoundStatement): void {
         const lineNumber = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.instructions.push(InstructionFactory.CallSubModule(statement.name));
     }
 
     private emitVariableAssignment(statement: VariableAssignmentBoundStatement): void {
         const lineNumber = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(statement.value);
         this.instructions.push(InstructionFactory.StoreVariable(statement.identifier));
     }
 
     private emitArrayAssignment(statement: ArrayAssignmentBoundStatement): void {
-        const lineNumber = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        const range = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression);
+        this.instructions.push(InstructionFactory.StatementStart(range.line));
 
-        statement.indices.forEach(index => this.emitExpression(index));
+        statement.indices.reverse().forEach(index => this.emitExpression(index));
         this.emitExpression(statement.value);
 
-        this.instructions.push(InstructionFactory.StoreArray(statement.identifier, statement.indices.length));
+        this.instructions.push(InstructionFactory.StoreArray(statement.identifier, statement.indices.length, range));
     }
 
     private emitPropertyAssignment(statement: PropertyAssignmentBoundStatement): void {
         const lineNumber = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression).line;
-        this.instructions.push(InstructionFactory.Pause(lineNumber, false));
+        this.instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(statement.value);
         this.instructions.push(InstructionFactory.StoreProperty(statement.library, statement.property));
@@ -216,11 +207,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.TempJump(trueLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(trueLabel));
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(falseLabel));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -234,11 +225,11 @@ export class ModuleEmitter {
         this.emitExpression(expression.rightExpression);
         this.instructions.push(InstructionFactory.TempJumpIfFalse(falseLabel));
 
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(falseLabel));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -253,11 +244,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.Equal());
         this.instructions.push(InstructionFactory.TempJumpIfFalse(notEqualLabel));
 
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(notEqualLabel));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -272,11 +263,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.Equal());
         this.instructions.push(InstructionFactory.TempJumpIfFalse(notEqualLabel));
 
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(notEqualLabel));
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -291,11 +282,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.LessThan());
         this.instructions.push(InstructionFactory.TempJumpIfFalse(notLessThan));
 
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(notLessThan));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -310,11 +301,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.LessThan());
         this.instructions.push(InstructionFactory.TempJumpIfFalse(notGreaterThan));
 
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(notGreaterThan));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -329,11 +320,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.LessThan());
         this.instructions.push(InstructionFactory.TempJumpIfFalse(greaterThanLabel));
 
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(greaterThanLabel));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -348,11 +339,11 @@ export class ModuleEmitter {
         this.instructions.push(InstructionFactory.LessThan());
         this.instructions.push(InstructionFactory.TempJumpIfFalse(lessThanLabel));
 
-        this.instructions.push(InstructionFactory.PushString(trueValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.True));
         this.instructions.push(InstructionFactory.TempJump(endLabel));
 
         this.instructions.push(InstructionFactory.TempLabel(lessThanLabel));
-        this.instructions.push(InstructionFactory.PushString(falseValue));
+        this.instructions.push(InstructionFactory.PushString(Constants.False));
 
         this.instructions.push(InstructionFactory.TempLabel(endLabel));
     }
@@ -360,30 +351,30 @@ export class ModuleEmitter {
     private emitAdditionExpression(expression: AdditionBoundExpression): void {
         this.emitExpression(expression.leftExpression);
         this.emitExpression(expression.rightExpression);
-        this.instructions.push(InstructionFactory.Add());
+        this.instructions.push(InstructionFactory.Add(getExpressionRange(expression.syntax)));
     }
 
     private emitSubtractionExpression(expression: SubtractionBoundExpression): void {
         this.emitExpression(expression.leftExpression);
         this.emitExpression(expression.rightExpression);
-        this.instructions.push(InstructionFactory.Subtract());
+        this.instructions.push(InstructionFactory.Subtract(getExpressionRange(expression.syntax)));
     }
 
     private emitMultiplicationExpression(expression: MultiplicationBoundExpression): void {
         this.emitExpression(expression.leftExpression);
         this.emitExpression(expression.rightExpression);
-        this.instructions.push(InstructionFactory.Multiply());
+        this.instructions.push(InstructionFactory.Multiply(getExpressionRange(expression.syntax)));
     }
 
     private emitDivisionExpression(expression: DivisionBoundExpression): void {
         this.emitExpression(expression.leftExpression);
         this.emitExpression(expression.rightExpression);
-        this.instructions.push(InstructionFactory.Divide());
+        this.instructions.push(InstructionFactory.Divide(getExpressionRange(expression.syntax)));
     }
 
     private emitArrayAccessExpression(expression: ArrayAccessBoundExpression): void {
         expression.indices.forEach(index => this.emitExpression(index));
-        this.instructions.push(InstructionFactory.LoadArray(expression.name, expression.indices.length));
+        this.instructions.push(InstructionFactory.LoadArray(expression.name, expression.indices.length, getExpressionRange(expression.syntax)));
     }
 
     private emitLibraryPropertyExpression(expression: LibraryPropertyBoundExpression): void {
@@ -392,7 +383,7 @@ export class ModuleEmitter {
 
     private emitLibraryMethodCallExpression(expression: LibraryMethodCallBoundExpression): void {
         expression.argumentsList.forEach(argument => this.emitExpression(argument));
-        this.instructions.push(InstructionFactory.LoadMethodCall(expression.library, expression.name, expression.argumentsList.length));
+        this.instructions.push(InstructionFactory.MethodCall(expression.library, expression.name, expression.argumentsList.length));
     }
 
     private emitVariableExpression(expression: VariableBoundExpression): void {

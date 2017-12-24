@@ -1,6 +1,5 @@
-import { SupportedLibraries } from "./supported-libraries";
+import { SupportedLibraries } from "../runtime/supported-libraries";
 import { getExpressionRange } from "../syntax/text-markers";
-import { DefinedModulesMap } from "./module-binder";
 import { Diagnostic, ErrorCode } from "../utils/diagnostics";
 import {
     ArrayAccessBoundExpression,
@@ -37,7 +36,7 @@ export interface ExpressionInfo {
 export class ExpressionBinder {
     public readonly result: BaseBoundExpression;
 
-    public constructor(syntax: BaseExpressionSyntax, private definedSubModules: DefinedModulesMap, private diagnostics: Diagnostic[], expectedValue: boolean) {
+    public constructor(syntax: BaseExpressionSyntax, private definedSubModules: { [name: string]: boolean }, private diagnostics: Diagnostic[], expectedValue: boolean) {
         this.result = this.bindExpression(syntax, expectedValue);
     }
 
@@ -153,7 +152,7 @@ export class ExpressionBinder {
         const propertyInfo = SupportedLibraries[libraryType.library].properties[rightHandSide];
 
         if (propertyInfo) {
-            return BoundExpressionFactory.LibraryProperty(syntax, { hasError: hasError, hasValue: true }, libraryType.library, rightHandSide);
+            return BoundExpressionFactory.LibraryProperty(syntax, { hasError: hasError, hasValue: !!propertyInfo.getter }, libraryType.library, rightHandSide);
         }
 
         const methodInfo = SupportedLibraries[libraryType.library].methods[rightHandSide];

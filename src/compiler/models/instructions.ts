@@ -1,6 +1,9 @@
 // This file is generated through a build task. Do not edit by hand.
 
+import { TextRange } from "../syntax/text-markers";
+
 export enum InstructionKind {
+    StatementStart,
     TempLabel,
     TempJump,
     TempJumpIfFalse,
@@ -8,15 +11,13 @@ export enum InstructionKind {
     JumpIfFalse,
     CallSubModule,
     CallLibraryMethod,
-    Pause,
-    Halt,
     StoreVariable,
     StoreArray,
     StoreProperty,
     LoadVariable,
     LoadArray,
     LoadProperty,
-    LoadMethodCall,
+    MethodCall,
     Negate,
     Equal,
     LessThan,
@@ -25,11 +26,16 @@ export enum InstructionKind {
     Multiply,
     Divide,
     PushNumber,
-    PushString
+    PushString,
+    Return
 }
 
 export interface BaseInstruction {
     readonly kind: InstructionKind;
+}
+
+export interface StatementStartInstruction extends BaseInstruction {
+    readonly line: number;
 }
 
 export interface TempLabelInstruction extends BaseInstruction {
@@ -61,14 +67,6 @@ export interface CallLibraryMethodInstruction extends BaseInstruction {
     readonly method: string;
 }
 
-export interface PauseInstruction extends BaseInstruction {
-    readonly line: number;
-    readonly userDefined: boolean;
-}
-
-export interface HaltInstruction extends BaseInstruction {
-}
-
 export interface StoreVariableInstruction extends BaseInstruction {
     readonly name: string;
 }
@@ -76,11 +74,12 @@ export interface StoreVariableInstruction extends BaseInstruction {
 export interface StoreArrayInstruction extends BaseInstruction {
     readonly name: string;
     readonly indices: number;
+    readonly sourceRange: TextRange;
 }
 
 export interface StorePropertyInstruction extends BaseInstruction {
-    readonly type: string;
-    readonly name: string;
+    readonly library: string;
+    readonly property: string;
 }
 
 export interface LoadVariableInstruction extends BaseInstruction {
@@ -90,16 +89,17 @@ export interface LoadVariableInstruction extends BaseInstruction {
 export interface LoadArrayInstruction extends BaseInstruction {
     readonly name: string;
     readonly indices: number;
+    readonly sourceRange: TextRange;
 }
 
 export interface LoadPropertyInstruction extends BaseInstruction {
-    readonly type: string;
-    readonly name: string;
+    readonly library: string;
+    readonly property: string;
 }
 
-export interface LoadMethodCallInstruction extends BaseInstruction {
-    readonly type: string;
-    readonly name: string;
+export interface MethodCallInstruction extends BaseInstruction {
+    readonly library: string;
+    readonly method: string;
     readonly argumentsCount: number;
 }
 
@@ -113,15 +113,19 @@ export interface LessThanInstruction extends BaseInstruction {
 }
 
 export interface AddInstruction extends BaseInstruction {
+    readonly sourceRange: TextRange;
 }
 
 export interface SubtractInstruction extends BaseInstruction {
+    readonly sourceRange: TextRange;
 }
 
 export interface MultiplyInstruction extends BaseInstruction {
+    readonly sourceRange: TextRange;
 }
 
 export interface DivideInstruction extends BaseInstruction {
+    readonly sourceRange: TextRange;
 }
 
 export interface PushNumberInstruction extends BaseInstruction {
@@ -132,8 +136,20 @@ export interface PushStringInstruction extends BaseInstruction {
     readonly value: string;
 }
 
+export interface ReturnInstruction extends BaseInstruction {
+}
+
 export class InstructionFactory {
     private constructor() {
+    }
+
+    public static StatementStart(
+        line: number)
+        : StatementStartInstruction {
+        return {
+            kind: InstructionKind.StatementStart,
+            line: line
+        };
     }
 
     public static TempLabel(
@@ -201,24 +217,6 @@ export class InstructionFactory {
         };
     }
 
-    public static Pause(
-        line: number,
-        userDefined: boolean)
-        : PauseInstruction {
-        return {
-            kind: InstructionKind.Pause,
-            line: line,
-            userDefined: userDefined
-        };
-    }
-
-    public static Halt()
-        : HaltInstruction {
-        return {
-            kind: InstructionKind.Halt
-        };
-    }
-
     public static StoreVariable(
         name: string)
         : StoreVariableInstruction {
@@ -230,23 +228,25 @@ export class InstructionFactory {
 
     public static StoreArray(
         name: string,
-        indices: number)
+        indices: number,
+        sourceRange: TextRange)
         : StoreArrayInstruction {
         return {
             kind: InstructionKind.StoreArray,
             name: name,
-            indices: indices
+            indices: indices,
+            sourceRange: sourceRange
         };
     }
 
     public static StoreProperty(
-        type: string,
-        name: string)
+        library: string,
+        property: string)
         : StorePropertyInstruction {
         return {
             kind: InstructionKind.StoreProperty,
-            type: type,
-            name: name
+            library: library,
+            property: property
         };
     }
 
@@ -261,35 +261,37 @@ export class InstructionFactory {
 
     public static LoadArray(
         name: string,
-        indices: number)
+        indices: number,
+        sourceRange: TextRange)
         : LoadArrayInstruction {
         return {
             kind: InstructionKind.LoadArray,
             name: name,
-            indices: indices
+            indices: indices,
+            sourceRange: sourceRange
         };
     }
 
     public static LoadProperty(
-        type: string,
-        name: string)
+        library: string,
+        property: string)
         : LoadPropertyInstruction {
         return {
             kind: InstructionKind.LoadProperty,
-            type: type,
-            name: name
+            library: library,
+            property: property
         };
     }
 
-    public static LoadMethodCall(
-        type: string,
-        name: string,
+    public static MethodCall(
+        library: string,
+        method: string,
         argumentsCount: number)
-        : LoadMethodCallInstruction {
+        : MethodCallInstruction {
         return {
-            kind: InstructionKind.LoadMethodCall,
-            type: type,
-            name: name,
+            kind: InstructionKind.MethodCall,
+            library: library,
+            method: method,
             argumentsCount: argumentsCount
         };
     }
@@ -315,31 +317,39 @@ export class InstructionFactory {
         };
     }
 
-    public static Add()
+    public static Add(
+        sourceRange: TextRange)
         : AddInstruction {
         return {
-            kind: InstructionKind.Add
+            kind: InstructionKind.Add,
+            sourceRange: sourceRange
         };
     }
 
-    public static Subtract()
+    public static Subtract(
+        sourceRange: TextRange)
         : SubtractInstruction {
         return {
-            kind: InstructionKind.Subtract
+            kind: InstructionKind.Subtract,
+            sourceRange: sourceRange
         };
     }
 
-    public static Multiply()
+    public static Multiply(
+        sourceRange: TextRange)
         : MultiplyInstruction {
         return {
-            kind: InstructionKind.Multiply
+            kind: InstructionKind.Multiply,
+            sourceRange: sourceRange
         };
     }
 
-    public static Divide()
+    public static Divide(
+        sourceRange: TextRange)
         : DivideInstruction {
         return {
-            kind: InstructionKind.Divide
+            kind: InstructionKind.Divide,
+            sourceRange: sourceRange
         };
     }
 
@@ -358,6 +368,13 @@ export class InstructionFactory {
         return {
             kind: InstructionKind.PushString,
             value: value
+        };
+    }
+
+    public static Return()
+        : ReturnInstruction {
+        return {
+            kind: InstructionKind.Return
         };
     }
 }

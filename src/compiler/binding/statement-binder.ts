@@ -1,6 +1,5 @@
-import { SupportedLibraries } from "./supported-libraries";
+import { SupportedLibraries } from "../runtime/supported-libraries";
 import { ExpressionBinder } from "./expression-binder";
-import { DefinedModulesMap, ModuleDefinition } from "./module-binder";
 import { getExpressionRange } from "../syntax/text-markers";
 import { Diagnostic } from "../utils/diagnostics";
 import { ErrorCode } from "../utils/diagnostics";
@@ -40,12 +39,10 @@ export class StatementBinder {
     private DefinedLabels: { [name: string]: boolean } = {};
     private goToStatements: GoToStatementSyntax[] = [];
 
-    public readonly module: ModuleDefinition;
+    public readonly module: BaseBoundStatement[];
 
-    public constructor(statements: BaseStatementSyntax[], private definedSubModules: DefinedModulesMap, private diagnostics: Diagnostic[]) {
-        this.module = {
-            statements: statements.map(statement => this.bindStatement(statement))
-        };
+    public constructor(statements: BaseStatementSyntax[], private definedSubModules: { [name: string]: boolean }, private diagnostics: Diagnostic[]) {
+        this.module = statements.map(statement => this.bindStatement(statement));
 
         this.goToStatements.forEach(statement => {
             const identifier = statement.command.labelToken;
@@ -153,7 +150,7 @@ export class StatementBinder {
                     case BoundExpressionKind.LibraryProperty: {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
-                        if (!SupportedLibraries[property.library].properties[property.name].hasSet) {
+                        if (!SupportedLibraries[property.library].properties[property.name].setter) {
                             this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, getExpressionRange(property.syntax)));
                         }
 

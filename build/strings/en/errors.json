@@ -23,5 +23,9 @@
     "UnsupportedDotBaseExpression": "You can only use dot access with a library. Did you mean to use an existing library instead?",
     "LibraryMemberNotFound": "The library '{0}' has no member named '{1}'.",
     "ValueIsNotANumber": "The value '{0}' is not a valid number.",
-    "ValueIsNotAssignable": "You cannot assign to this expression. Did you mean to use a variable instead?"
+    "ValueIsNotAssignable": "You cannot assign to this expression. Did you mean to use a variable instead?",
+    "CannotUseAnArrayAsAnIndexToAnotherArray": "You cannot use an array as an index to access another array. Did you mean to use a string or a number instead?",
+    "CannotUseOperatorWithAnArray": "You cannot use the operator '{0}' with an array value",
+    "CannotUseOperatorWithAString": "You cannot use the operator '{0}' with a string value",
+    "CannotDivideByZero": "You cannot divide by zero. Please consider checking the divisor before dividing."
 }
