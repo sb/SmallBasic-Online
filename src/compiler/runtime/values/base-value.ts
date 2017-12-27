@@ -1,4 +1,4 @@
-import { ExecutionEngine } from "../execution-engine";
+import { ExecutionEngine } from "../../execution-engine";
 import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
 
 export module Constants {
@@ -15,11 +15,13 @@ export enum ValueKind {
 export abstract class BaseValue {
     public abstract toBoolean(): boolean;
     public abstract toDisplayString(): string;
-    public abstract kind(): ValueKind;
+    public abstract get kind(): ValueKind;
 
-    public abstract isEqualTo(other: BaseValue, engine: ExecutionEngine): void;
+    public abstract tryConvertToNumber(): BaseValue;
 
-    public abstract isLessThan(other: BaseValue, engine: ExecutionEngine): void;
+    public abstract isEqualTo(other: BaseValue): boolean;
+    public abstract isLessThan(other: BaseValue): boolean;
+    public abstract isGreaterThan(other: BaseValue): boolean;
 
     public abstract add(other: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void;
     public abstract subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void;

@@ -1,10 +1,10 @@
 import "jasmine";
-import { verifyErrors } from "../helpers";
+import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
-describe(__filename, () => {
+describe("Compiler.Syntax.Scanner", () => {
     it("reports unterminated string - single", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "name1`,
             // x = "name1
             //     ^^^^^^
@@ -13,7 +13,7 @@ x = "name1`,
     });
 
     it("reports unterminated string - multiple", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "name1
 ' Comment line
 y = "name2`,
@@ -28,7 +28,7 @@ y = "name2`,
     });
 
     it("reports unsupported characters - single", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 $`,
             // $
             // ^
@@ -37,7 +37,7 @@ $`,
     });
 
     it("reports unsupported characters - multiple", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = ____^
 ok = "value $ value"
 not_ok = "value" $

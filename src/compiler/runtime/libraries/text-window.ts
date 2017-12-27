@@ -1,5 +1,8 @@
-import { ExecutionEngine, ExecutionMode, ExecutionState } from "../execution-engine";
+import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../execution-engine";
 import { LibraryTypeDefinition } from "../supported-libraries";
+import { ValueKind } from "../values/base-value";
+import { StringValue } from "../values/string-value";
+import { NumberValue } from "../values/number-value";
 
 export const TextWindowLibrary: LibraryTypeDefinition = {
     methods: {
@@ -7,14 +10,18 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             argumentsCount: 0,
             returnsValue: true,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {
-                if (engine.context.ioBuffer) {
-                    engine.evaluationStack.push(engine.context.ioBuffer);
+                if (engine.buffer.hasValue()) {
+                    const value = engine.buffer.readValue();
+                    if (value.kind !== ValueKind.String) {
+                        throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
+                    }
+
+                    engine.evaluationStack.push(value);
                     engine.executionStack.peek().instructionCounter++;
 
-                    engine.context.state = ExecutionState.Running;
-                    engine.context.ioBuffer = undefined;
+                    engine.state = ExecutionState.Running;
                 } else {
-                    engine.context.state = ExecutionState.BlockedOnStringInput;
+                    engine.state = ExecutionState.BlockedOnStringInput;
                 }
             }
         },
@@ -22,14 +29,18 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             argumentsCount: 0,
             returnsValue: true,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {
-                if (engine.context.ioBuffer) {
-                    engine.evaluationStack.push(engine.context.ioBuffer);
+                if (engine.buffer.hasValue()) {
+                    const value = engine.buffer.readValue();
+                    if (value.kind !== ValueKind.Number) {
+                        throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
+                    }
+
+                    engine.evaluationStack.push(value);
                     engine.executionStack.peek().instructionCounter++;
 
-                    engine.context.state = ExecutionState.Running;
-                    engine.context.ioBuffer = undefined;
+                    engine.state = ExecutionState.Running;
                 } else {
-                    engine.context.state = ExecutionState.BlockedOnNumberInput;
+                    engine.state = ExecutionState.BlockedOnNumberInput;
                 }
             }
         },
@@ -37,8 +48,27 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             argumentsCount: 1,
             returnsValue: false,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {
-                engine.context.ioBuffer = engine.evaluationStack.pop();
-                engine.executionStack.peek().instructionCounter++;
+                if (engine.state === ExecutionState.BlockedOnOutput) {
+                    if (!engine.buffer.hasValue()) {
+                        engine.state = ExecutionState.Running;
+                        engine.executionStack.peek().instructionCounter++;
+                    }
+                } else {
+                    const value = engine.evaluationStack.pop();
+                    engine.state = ExecutionState.BlockedOnOutput;
+
+                    switch (value.kind) {
+                        case ValueKind.Number:
+                            engine.buffer.writeValue(new StringValue((value as NumberValue).value.toString()));
+                            break;
+                        case ValueKind.String:
+                            engine.buffer.writeValue(value);
+                            break;
+                        case ValueKind.Array:
+                            engine.buffer.writeValue(new StringValue(value.toDisplayString()));
+                            break;
+                    }
+                }
             }
         }
     },

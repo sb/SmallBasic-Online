@@ -36,7 +36,7 @@ export interface ExpressionInfo {
 export class ExpressionBinder {
     public readonly result: BaseBoundExpression;
 
-    public constructor(syntax: BaseExpressionSyntax, private definedSubModules: { [name: string]: boolean }, private diagnostics: Diagnostic[], expectedValue: boolean) {
+    public constructor(syntax: BaseExpressionSyntax, private definedSubModules: { readonly [name: string]: boolean }, private diagnostics: Diagnostic[], expectedValue: boolean) {
         this.result = this.bindExpression(syntax, expectedValue);
     }
 
@@ -54,12 +54,11 @@ export class ExpressionBinder {
             case ExpressionSyntaxKind.Identifier: expression = this.bindIdentifier(syntax as IdentifierExpressionSyntax); break;
             case ExpressionSyntaxKind.UnaryOperator: expression = this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax); break;
             case ExpressionSyntaxKind.Missing: expression = this.bindMissing(syntax as MissingExpressionSyntax); break;
-            default: throw `Invalid syntax kind: ${ExpressionSyntaxKind[syntax.kind]}`;
+            default: throw new Error(`Invalid syntax kind: ${ExpressionSyntaxKind[syntax.kind]}`);
         }
 
         if (expectedValue && !expression.info.hasValue) {
             this.reportError(expression, ErrorCode.UnexpectedVoid_ExpectingValue);
-            expression.info.hasError = true;
         }
 
         return expression;
@@ -81,7 +80,7 @@ export class ExpressionBinder {
                 break;
             }
             case BoundExpressionKind.Variable: {
-                name = (indexExpression as VariableBoundExpression).name;
+                name = (baseExpression as VariableBoundExpression).name;
                 indices = [indexExpression];
                 break;
             }
@@ -167,7 +166,7 @@ export class ExpressionBinder {
 
     private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression {
         const expression = this.bindExpression(syntax.expression, true);
-        return BoundExpressionFactory.Parenthesis(syntax, expression.info, expression);
+        return BoundExpressionFactory.Parenthesis(syntax, { hasError: expression.info.hasError, hasValue: true }, expression);
     }
 
     private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression {
@@ -197,10 +196,10 @@ export class ExpressionBinder {
 
         switch (syntax.operatorToken.kind) {
             case TokenKind.Minus: {
-                return BoundExpressionFactory.Negation(syntax, expression.info, expression);
+                return BoundExpressionFactory.Negation(syntax, { hasError: expression.info.hasError, hasValue: true }, expression);
             }
             default: {
-                throw `Unsupported token kind: ${TokenKind[syntax.operatorToken.kind]}`;
+                throw new Error(`Unsupported token kind: ${TokenKind[syntax.operatorToken.kind]}`);
             }
         }
     }
@@ -227,13 +226,14 @@ export class ExpressionBinder {
             case TokenKind.Minus: return BoundExpressionFactory.Subtraction(syntax, info, leftHandSide, rightHandSide);
             case TokenKind.Multiply: return BoundExpressionFactory.Multiplication(syntax, info, leftHandSide, rightHandSide);
             case TokenKind.Divide: return BoundExpressionFactory.Division(syntax, info, leftHandSide, rightHandSide);
-            default: throw `Unexpected token kind ${TokenKind[syntax.operatorToken.kind]}`;
+            default: throw new Error(`Unexpected token kind ${TokenKind[syntax.operatorToken.kind]}`);
         }
     }
 
     private reportError(expression: BaseBoundExpression, code: ErrorCode, ...args: string[]): void {
         if (!expression.info.hasError) {
             this.diagnostics.push(new Diagnostic(code, getExpressionRange(expression.syntax), ...args));
+            expression.info.hasError = true;
         }
     }
 }

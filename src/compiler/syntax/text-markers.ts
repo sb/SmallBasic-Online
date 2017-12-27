@@ -39,7 +39,7 @@ export interface TextRange {
 
 function union(first: TextRange, last: TextRange): TextRange {
     if (first.line !== last.line) {
-        throw `First and last lines must match. Found '${first.line}' and '${last.line}'`;
+        throw new Error(`First and last lines must match. Found '${first.line}' and '${last.line}'`);
     }
 
     return {
@@ -143,7 +143,7 @@ export function getCommandRange(current: BaseCommandSyntax): TextRange {
             return (current as MissingCommandSyntax).range;
         }
         case CommandSyntaxKind.ForStepClause: {
-            throw `Unsupported command kind: ${CommandSyntaxKind[current.kind]}`;
+            throw new Error(`Unsupported command kind: ${CommandSyntaxKind[current.kind]}`);
         }
     }
 }

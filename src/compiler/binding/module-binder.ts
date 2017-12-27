@@ -3,9 +3,21 @@ import { ParseTree } from "../syntax/statements-parser";
 import { Diagnostic, ErrorCode } from "../utils/diagnostics";
 import { BaseBoundStatement } from "../models/bound-statements";
 
+export interface BoundTree {
+    readonly mainModule: ReadonlyArray<BaseBoundStatement>;
+    readonly subModules: { readonly [name: string]: ReadonlyArray<BaseBoundStatement> };
+}
+
 export class ModuleBinder {
-    public readonly mainModule: BaseBoundStatement[];
-    public readonly subModules: { [name: string]: BaseBoundStatement[] };
+    private mainModule: ReadonlyArray<BaseBoundStatement>;
+    private subModules: { [name: string]: ReadonlyArray<BaseBoundStatement> };
+
+    public get boundTree(): BoundTree {
+        return {
+            mainModule: this.mainModule,
+            subModules: this.subModules
+        };
+    }
 
     public constructor(parseTree: ParseTree, private diagnostics: Diagnostic[]) {
         const subModuleNames: { [name: string]: boolean } = {};

@@ -1,10 +1,10 @@
 import "jasmine";
-import { verifyErrors } from "../helpers";
+import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
-describe(__filename, () => {
+describe("Compiler.Binding.ModuleBinder", () => {
     it("reports sub-modules with duplicate names", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub x
 EndSub
 

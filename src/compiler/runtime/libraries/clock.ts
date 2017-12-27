@@ -1,4 +1,4 @@
-import { ExecutionEngine, ExecutionMode } from "../execution-engine";
+import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { LibraryTypeDefinition } from "../supported-libraries";
 import { StringValue } from "../values/string-value";
 

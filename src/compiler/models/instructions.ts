@@ -6,21 +6,24 @@ export enum InstructionKind {
     StatementStart,
     TempLabel,
     TempJump,
-    TempJumpIfFalse,
+    TempConditionalJump,
     Jump,
-    JumpIfFalse,
+    ConditionalJump,
     CallSubModule,
     CallLibraryMethod,
     StoreVariable,
-    StoreArray,
+    StoreArrayElement,
     StoreProperty,
     LoadVariable,
-    LoadArray,
+    LoadArrayElement,
     LoadProperty,
     MethodCall,
     Negate,
     Equal,
     LessThan,
+    GreaterThan,
+    LessThanOrEqual,
+    GreaterThanOrEqual,
     Add,
     Subtract,
     Multiply,
@@ -46,16 +49,18 @@ export interface TempJumpInstruction extends BaseInstruction {
     readonly target: string;
 }
 
-export interface TempJumpIfFalseInstruction extends BaseInstruction {
-    readonly target: string;
+export interface TempConditionalJumpInstruction extends BaseInstruction {
+    readonly trueTarget: string | undefined;
+    readonly falseTarget: string | undefined;
 }
 
 export interface JumpInstruction extends BaseInstruction {
     readonly target: number;
 }
 
-export interface JumpIfFalseInstruction extends BaseInstruction {
-    readonly target: number;
+export interface ConditionalJumpInstruction extends BaseInstruction {
+    readonly trueTarget: number | undefined;
+    readonly falseTarget: number | undefined;
 }
 
 export interface CallSubModuleInstruction extends BaseInstruction {
@@ -71,7 +76,7 @@ export interface StoreVariableInstruction extends BaseInstruction {
     readonly name: string;
 }
 
-export interface StoreArrayInstruction extends BaseInstruction {
+export interface StoreArrayElementInstruction extends BaseInstruction {
     readonly name: string;
     readonly indices: number;
     readonly sourceRange: TextRange;
@@ -86,7 +91,7 @@ export interface LoadVariableInstruction extends BaseInstruction {
     readonly name: string;
 }
 
-export interface LoadArrayInstruction extends BaseInstruction {
+export interface LoadArrayElementInstruction extends BaseInstruction {
     readonly name: string;
     readonly indices: number;
     readonly sourceRange: TextRange;
@@ -104,12 +109,22 @@ export interface MethodCallInstruction extends BaseInstruction {
 }
 
 export interface NegateInstruction extends BaseInstruction {
+    readonly sourceRange: TextRange;
 }
 
 export interface EqualInstruction extends BaseInstruction {
 }
 
 export interface LessThanInstruction extends BaseInstruction {
+}
+
+export interface GreaterThanInstruction extends BaseInstruction {
+}
+
+export interface LessThanOrEqualInstruction extends BaseInstruction {
+}
+
+export interface GreaterThanOrEqualInstruction extends BaseInstruction {
 }
 
 export interface AddInstruction extends BaseInstruction {
@@ -170,12 +185,14 @@ export class InstructionFactory {
         };
     }
 
-    public static TempJumpIfFalse(
-        target: string)
-        : TempJumpIfFalseInstruction {
+    public static TempConditionalJump(
+        trueTarget: string | undefined,
+        falseTarget: string | undefined)
+        : TempConditionalJumpInstruction {
         return {
-            kind: InstructionKind.TempJumpIfFalse,
-            target: target
+            kind: InstructionKind.TempConditionalJump,
+            trueTarget: trueTarget,
+            falseTarget: falseTarget
         };
     }
 
@@ -188,12 +205,14 @@ export class InstructionFactory {
         };
     }
 
-    public static JumpIfFalse(
-        target: number)
-        : JumpIfFalseInstruction {
+    public static ConditionalJump(
+        trueTarget: number | undefined,
+        falseTarget: number | undefined)
+        : ConditionalJumpInstruction {
         return {
-            kind: InstructionKind.JumpIfFalse,
-            target: target
+            kind: InstructionKind.ConditionalJump,
+            trueTarget: trueTarget,
+            falseTarget: falseTarget
         };
     }
 
@@ -226,13 +245,13 @@ export class InstructionFactory {
         };
     }
 
-    public static StoreArray(
+    public static StoreArrayElement(
         name: string,
         indices: number,
         sourceRange: TextRange)
-        : StoreArrayInstruction {
+        : StoreArrayElementInstruction {
         return {
-            kind: InstructionKind.StoreArray,
+            kind: InstructionKind.StoreArrayElement,
             name: name,
             indices: indices,
             sourceRange: sourceRange
@@ -259,13 +278,13 @@ export class InstructionFactory {
         };
     }
 
-    public static LoadArray(
+    public static LoadArrayElement(
         name: string,
         indices: number,
         sourceRange: TextRange)
-        : LoadArrayInstruction {
+        : LoadArrayElementInstruction {
         return {
-            kind: InstructionKind.LoadArray,
+            kind: InstructionKind.LoadArrayElement,
             name: name,
             indices: indices,
             sourceRange: sourceRange
@@ -296,10 +315,12 @@ export class InstructionFactory {
         };
     }
 
-    public static Negate()
+    public static Negate(
+        sourceRange: TextRange)
         : NegateInstruction {
         return {
-            kind: InstructionKind.Negate
+            kind: InstructionKind.Negate,
+            sourceRange: sourceRange
         };
     }
 
@@ -314,6 +335,27 @@ export class InstructionFactory {
         : LessThanInstruction {
         return {
             kind: InstructionKind.LessThan
+        };
+    }
+
+    public static GreaterThan()
+        : GreaterThanInstruction {
+        return {
+            kind: InstructionKind.GreaterThan
+        };
+    }
+
+    public static LessThanOrEqual()
+        : LessThanOrEqualInstruction {
+        return {
+            kind: InstructionKind.LessThanOrEqual
+        };
+    }
+
+    public static GreaterThanOrEqual()
+        : GreaterThanOrEqualInstruction {
+        return {
+            kind: InstructionKind.GreaterThanOrEqual
         };
     }
 

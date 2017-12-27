@@ -17,14 +17,18 @@ export class FastStack<T> {
     }
 
     public pop(): T {
-        return this.values[this.validLength--];
+        if (this.validLength > 0) {
+            return this.values[--this.validLength];
+        } else {
+            throw new Error(`Stack is empty`);
+        }
     }
 
     public peek(): T {
         if (this.validLength > 0) {
-            return this.values[this.validLength];
+            return this.values[this.validLength - 1];
         } else {
-            throw `Stack is empty`;
+            throw new Error(`Stack is empty`);
         }
     }
 

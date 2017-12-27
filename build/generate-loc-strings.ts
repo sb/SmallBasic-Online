@@ -14,7 +14,7 @@ ${Object.keys(entries).map(entryName => `        ${entryName}`).join(",\n")}
             case Keys.${entryName}:
                 return "${entries[entryName]}";`).join("")}
             default:
-                throw "Key not found: " + key;
+                throw new Error("Key not found: " + key);
         }
     }
 }

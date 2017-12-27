@@ -1,10 +1,10 @@
 import "jasmine";
-import { verifyErrors } from "../helpers";
+import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
-describe(__filename, () => {
+describe("Compiler.Binding.StatementBinder", () => {
     it("reports errors on goto statements to non-existent labels", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 label1:
 GoTo label1
 GoTo label2`,
@@ -15,7 +15,7 @@ GoTo label2`,
     });
 
     it("reports errors on main module goto statements to sub-module labels", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub x
     label:
     GoTo label
@@ -28,7 +28,7 @@ GoTo label`,
     });
 
     it("reports errors on sub-module goto statements to main module labels", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 label:
 Sub x
     GoTo label
@@ -41,7 +41,7 @@ GoTo label`,
     });
 
     it("reports error on non-value in for loop from expression", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 For x = TextWindow.WriteLine("") To 5
 EndFor`,
             // For x = TextWindow.WriteLine("") To 5
@@ -51,7 +51,7 @@ EndFor`,
     });
 
     it("reports error on non-value in for loop to expression", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 For x = 1 To TextWindow.WriteLine("")
 EndFor`,
             // For x = 1 To TextWindow.WriteLine("")
@@ -61,7 +61,7 @@ EndFor`,
     });
 
     it("reports error on non-value in for loop step expression", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 For x = 1 To 10 Step TextWindow.WriteLine("")
 EndFor`,
             // For x = 1 To 10 Step TextWindow.WriteLine("")
@@ -71,7 +71,7 @@ EndFor`,
     });
 
     it("reports error on non-value in if statement expression", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 If TextWindow.WriteLine("") Then
 EndIf`,
             // If TextWindow.WriteLine("") Then
@@ -81,7 +81,7 @@ EndIf`,
     });
 
     it("reports error on non-value in else-if statement expression", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 If True Then
 ElseIf TextWindow.WriteLine("") Then
 EndIf`,
@@ -92,7 +92,7 @@ EndIf`,
     });
 
     it("reports error on non-value in while statement expression", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 While TextWindow.WriteLine("")
 EndWhile`,
             // While TextWindow.WriteLine("")
@@ -103,7 +103,7 @@ EndWhile`,
 
     it("reports only one error on expressions that have errors", () => {
         // It should report another error as the function is missing an argument
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine() = 5`,
             // TextWindow.WriteLine() = 5
             // ^^^^^^^^^^^^^^^^^^^^
@@ -112,7 +112,7 @@ TextWindow.WriteLine() = 5`,
     });
 
     it("reports error on LHS of assignment not assignable", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(0) = 5`,
             // TextWindow.WriteLine(0) = 5
             // ^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,7 +121,7 @@ TextWindow.WriteLine(0) = 5`,
     });
 
     it("reports error on assigning to property without a setter", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Clock.Time = 5`,
             // Clock.Time = 5
             // ^^^^^^^^^^
@@ -130,7 +130,7 @@ Clock.Time = 5`,
     });
 
     it("reports error on invalid LHS expressions - parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 ( x + y ) = 5`,
             // ( x + y ) = 5
             // ^^^^^^^^^
@@ -139,7 +139,7 @@ Clock.Time = 5`,
     });
 
     it("reports error on invalid LHS expressions - and", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x and y = 5`,
             // x and y = 5
             // ^^^^^^^
@@ -148,7 +148,7 @@ x and y = 5`,
     });
 
     it("reports error on invalid LHS expressions - or", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x or y = 5`,
             // x or y = 5
             // ^^^^^^
@@ -157,7 +157,7 @@ x or y = 5`,
     });
 
     it("reports error on invalid LHS expressions - negation", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 -x = 5`,
             // -x = 5
             // ^^^^^^
@@ -166,7 +166,7 @@ x or y = 5`,
     });
 
     it("reports error on invalid LHS expressions - equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = y = 5`,
             // x = y = 5
             // ^^^^^
@@ -175,7 +175,7 @@ x = y = 5`,
     });
 
     it("reports error on invalid LHS expressions - not equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x <> y = 5`,
             // x <> y = 5
             // ^^^^^^
@@ -184,7 +184,7 @@ x <> y = 5`,
     });
 
     it("reports error on invalid LHS expressions - addition", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x + y = 5`,
             // x + y = 5
             // ^^^^^
@@ -193,7 +193,7 @@ x + y = 5`,
     });
 
     it("reports error on invalid LHS expressions - subtraction", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x - y = 5`,
             // x - y = 5
             // ^^^^^
@@ -202,7 +202,7 @@ x - y = 5`,
     });
 
     it("reports error on invalid LHS expressions - multiplication", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x * y = 5`,
             // x * y = 5
             // ^^^^^
@@ -211,7 +211,7 @@ x * y = 5`,
     });
 
     it("reports error on invalid LHS expressions - division", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x / y = 5`,
             // x / y = 5
             // ^^^^^
@@ -220,7 +220,7 @@ x / y = 5`,
     });
 
     it("reports error on invalid LHS expressions - greater than", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x > y = 5`,
             // x > y = 5
             // ^^^^^
@@ -229,7 +229,7 @@ x > y = 5`,
     });
 
     it("reports error on invalid LHS expressions - greater than or equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x >= y = 5`,
             // x >= y = 5
             // ^^^^^^
@@ -238,7 +238,7 @@ x >= y = 5`,
     });
 
     it("reports error on invalid LHS expressions - less than", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x < y = 5`,
             // x < y = 5
             // ^^^^^
@@ -247,7 +247,7 @@ x < y = 5`,
     });
 
     it("reports error on invalid LHS expressions - less than or equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x <= y = 5`,
             // x <= y = 5
             // ^^^^^^
@@ -256,7 +256,7 @@ x <= y = 5`,
     });
 
     it("reports error on invalid LHS expressions -library method", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine = 5`,
             // TextWindow.WriteLine = 5
             // ^^^^^^^^^^^^^^^^^^^^
@@ -265,7 +265,7 @@ TextWindow.WriteLine = 5`,
     });
 
     it("reports error on invalid LHS expressions - library method call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine("") = 5`,
             // TextWindow.WriteLine("") = 5
             // ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -274,7 +274,7 @@ TextWindow.WriteLine("") = 5`,
     });
 
     it("reports error on invalid LHS expressions - library type", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow = 5`,
             // TextWindow = 5
             // ^^^^^^^^^^
@@ -283,7 +283,7 @@ TextWindow = 5`,
     });
 
     it("reports error on invalid LHS expressions - number literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 6 = 5`,
             // 6 = 5
             // ^
@@ -292,7 +292,7 @@ TextWindow = 5`,
     });
 
     it("reports error on invalid LHS expressions - string literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 "literal" = 5`,
             // "literal" = 5
             // ^^^^^^^^^
@@ -301,7 +301,7 @@ TextWindow = 5`,
     });
 
     it("reports error on invalid LHS expressions - submodule", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub M
 EndSub
 
@@ -313,7 +313,7 @@ M = 5`,
     });
 
     it("reports error on invalid LHS expressions - submodule call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub M
 EndSub
 
@@ -325,7 +325,7 @@ M() = 5`,
     });
     
     it("reports error on invalid expression statements - variable", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x`,
             // x
             // ^
@@ -334,7 +334,7 @@ x`,
     });
     
     it("reports error on invalid expression statements - array access", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 ar[0]`,
             // ar[0]
             // ^^^^^
@@ -343,7 +343,7 @@ ar[0]`,
     });
     
     it("reports error on invalid expression statements - library property", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Clock.Time`,
             // Clock.Time
             // ^^^^^^^^^^
@@ -352,7 +352,7 @@ Clock.Time`,
     });
     
     it("reports error on invalid expression statements - parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 (x)`,
             // (x)
             // ^^^
@@ -361,7 +361,7 @@ Clock.Time`,
     });
     
     it("reports error on invalid expression statements - and", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x and y`,
             // x and y
             // ^^^^^^^
@@ -370,7 +370,7 @@ x and y`,
     });
     
     it("reports error on invalid expression statements - or", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x or y`,
             // x or y
             // ^^^^^^
@@ -379,7 +379,7 @@ x or y`,
     });
     
     it("reports error on invalid expression statements - negation", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 -5`,
             // -5
             // ^^
@@ -388,7 +388,7 @@ x or y`,
     });
     
     it("reports error on invalid expression statements - not equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x <> y`,
             // x <> y
             // ^^^^^^
@@ -397,7 +397,7 @@ x <> y`,
     });
     
     it("reports error on invalid expression statements - addition", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x + y`,
             // x + y
             // ^^^^^
@@ -406,7 +406,7 @@ x + y`,
     });
     
     it("reports error on invalid expression statements - subtraction", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x - y`,
             // x - y
             // ^^^^^
@@ -415,7 +415,7 @@ x - y`,
     });
     
     it("reports error on invalid expression statements - multiplication", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x * y`,
             // x * y
             // ^^^^^
@@ -424,7 +424,7 @@ x * y`,
     });
     
     it("reports error on invalid expression statements - division", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x / y`,
             // x / y
             // ^^^^^
@@ -433,7 +433,7 @@ x / y`,
     });
     
     it("reports error on invalid expression statements - greater than", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x < y`,
             // x < y
             // ^^^^^
@@ -442,7 +442,7 @@ x < y`,
     });
     
     it("reports error on invalid expression statements - less than", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x > y`,
             // x > y
             // ^^^^^
@@ -451,7 +451,7 @@ x > y`,
     });
     
     it("reports error on invalid expression statements - greater than or equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x <= y`,
             // x <= y
             // ^^^^^^
@@ -460,7 +460,7 @@ x <= y`,
     });
     
     it("reports error on invalid expression statements - less than or equal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x >= y`,
             // x >= y
             // ^^^^^^
@@ -469,7 +469,7 @@ x >= y`,
     });
     
     it("reports error on invalid expression statements - library method", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine`,
             // TextWindow.WriteLine
             // ^^^^^^^^^^^^^^^^^^^^
@@ -478,7 +478,7 @@ TextWindow.WriteLine`,
     });
     
     it("reports error on invalid expression statements - library type", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Clock`,
             // Clock
             // ^^^^^
@@ -487,7 +487,7 @@ Clock`,
     });
     
     it("reports error on invalid expression statements - string literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 "test"`,
             // "test"
             // ^^^^^^
@@ -496,7 +496,7 @@ Clock`,
     });
     
     it("reports error on invalid expression statements - number literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 5`,
             // 5
             // ^
@@ -505,7 +505,7 @@ Clock`,
     });
     
     it("reports error on invalid expression statements - submodule", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub x
 EndSub
 x`,

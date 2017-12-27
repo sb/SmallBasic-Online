@@ -7,26 +7,30 @@ import { ModuleBinder } from "./binding/module-binder";
 import { Scanner } from "./syntax/scanner";
 
 export class Compilation {
-    public readonly diagnostics: Diagnostic[];
-    public readonly mainModule: BaseInstruction[];
-    public readonly subModules: { [name: string]: BaseInstruction[] };
+    public readonly diagnostics: ReadonlyArray<Diagnostic>;
+    public readonly mainModule: ReadonlyArray<BaseInstruction>;
+    public readonly subModules: { readonly [name: string]: ReadonlyArray<BaseInstruction> };
 
-    public constructor(text: string) {
-        this.diagnostics = [];
+    public constructor(public readonly text: string) {
+        const diagnostics: Diagnostic[] = [];
 
-        const tokens = new Scanner(text, this.diagnostics).tokens;
-        const commands = new CommandsParser(tokens, this.diagnostics).commands;
-        const parseTree = new StatementsParser(commands, this.diagnostics).parseTree;
-        const binder = new ModuleBinder(parseTree, this.diagnostics);
+        const tokens = new Scanner(text, diagnostics).tokens;
+        const commands = new CommandsParser(tokens, diagnostics).commands;
+        const parseTree = new StatementsParser(commands, diagnostics).parseTree;
+        const boundTree = new ModuleBinder(parseTree, diagnostics).boundTree;
+
+        this.diagnostics = diagnostics;
 
         if (!this.diagnostics.length) {
-            this.mainModule = new ModuleEmitter(binder.mainModule).instructions;
-            this.subModules = {};
+            this.mainModule = new ModuleEmitter(boundTree.mainModule).instructions;
+            const subModules: { [name: string]: ReadonlyArray<BaseInstruction> } = {};
 
-            for (const name in binder.subModules) {
-                const subModule = binder.subModules[name];
-                this.subModules[name] = new ModuleEmitter(subModule).instructions;
+            for (const name in boundTree.subModules) {
+                const subModule = boundTree.subModules[name];
+                subModules[name] = new ModuleEmitter(subModule).instructions;
             }
+
+            this.subModules = subModules;
         }
     }
 }

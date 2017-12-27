@@ -27,9 +27,13 @@ export class CommandsParser {
     private line: number = 0;
     private currentLineHasErrors: boolean = false;
 
-    public readonly commands: BaseCommandSyntax[] = [];
+    private _commands: BaseCommandSyntax[] = [];
 
-    public constructor(private tokens: Token[], private diagnostics: Diagnostic[]) {
+    public get commands(): ReadonlyArray<BaseCommandSyntax> {
+        return this._commands;
+    }
+
+    public constructor(private tokens: ReadonlyArray<Token>, private diagnostics: Diagnostic[]) {
         this.tokens = this.tokens.filter(token => {
             switch (token.kind) {
                 // Ignore tokens that shouldn't be parsed.
@@ -58,34 +62,34 @@ export class CommandsParser {
 
         if (current) {
             switch (current.kind) {
-                case TokenKind.IfKeyword: this.commands.push(this.parseIfCommand()); break;
-                case TokenKind.ElseKeyword: this.commands.push(this.parseElseCommand()); break;
-                case TokenKind.ElseIfKeyword: this.commands.push(this.parseElseIfCommand()); break;
-                case TokenKind.EndIfKeyword: this.commands.push(this.parseEndIfCommand()); break;
+                case TokenKind.IfKeyword: this._commands.push(this.parseIfCommand()); break;
+                case TokenKind.ElseKeyword: this._commands.push(this.parseElseCommand()); break;
+                case TokenKind.ElseIfKeyword: this._commands.push(this.parseElseIfCommand()); break;
+                case TokenKind.EndIfKeyword: this._commands.push(this.parseEndIfCommand()); break;
 
-                case TokenKind.ForKeyword: this.commands.push(this.parseForCommand()); break;
-                case TokenKind.EndForKeyword: this.commands.push(this.parseEndForCommand()); break;
+                case TokenKind.ForKeyword: this._commands.push(this.parseForCommand()); break;
+                case TokenKind.EndForKeyword: this._commands.push(this.parseEndForCommand()); break;
 
-                case TokenKind.WhileKeyword: this.commands.push(this.parseWhileCommand()); break;
-                case TokenKind.EndWhileKeyword: this.commands.push(this.parseEndWhileCommand()); break;
+                case TokenKind.WhileKeyword: this._commands.push(this.parseWhileCommand()); break;
+                case TokenKind.EndWhileKeyword: this._commands.push(this.parseEndWhileCommand()); break;
 
-                case TokenKind.GoToKeyword: this.commands.push(this.parseGoToCommand()); break;
+                case TokenKind.GoToKeyword: this._commands.push(this.parseGoToCommand()); break;
                 case TokenKind.Identifier:
                     if (this.isNext(TokenKind.Colon, 1)) {
-                        this.commands.push(this.parseLabelCommand());
+                        this._commands.push(this.parseLabelCommand());
                     } else {
-                        this.commands.push(this.parseExpressionCommand());
+                        this._commands.push(this.parseExpressionCommand());
                     }
                     break;
 
-                case TokenKind.SubKeyword: this.commands.push(this.parseSubCommand()); break;
-                case TokenKind.EndSubKeyword: this.commands.push(this.parseEndSubCommand()); break;
+                case TokenKind.SubKeyword: this._commands.push(this.parseSubCommand()); break;
+                case TokenKind.EndSubKeyword: this._commands.push(this.parseEndSubCommand()); break;
 
                 case TokenKind.Minus:
                 case TokenKind.NumberLiteral:
                 case TokenKind.StringLiteral:
                 case TokenKind.LeftParen:
-                    this.commands.push(this.parseExpressionCommand());
+                    this._commands.push(this.parseExpressionCommand());
                     break;
 
                 default:
@@ -341,7 +345,7 @@ export class CommandsParser {
                 let value = stringToken.text;
 
                 if (value.length < 1 || value[0] !== "\"") {
-                    throw `String literal '${value}' should have never been parsed without a starting double quotes`;
+                    throw new Error(`String literal '${value}' should have never been parsed without a starting double quotes`);
                 }
 
                 value = value.substr(1);

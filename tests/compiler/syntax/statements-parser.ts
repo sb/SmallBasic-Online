@@ -1,10 +1,10 @@
 import "jasmine";
-import { verifyErrors } from "../helpers";
+import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
-describe(__filename, () => {
+describe("Compiler.Syntax.StatementsParser", () => {
     it("reports errors on unfinished modules", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub A`,
             // Sub A
             // ^^^^^
@@ -13,7 +13,7 @@ Sub A`,
     });
 
     it("reports errors on defining sub inside another one", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub A
 Sub B
 EndSub`,
@@ -24,7 +24,7 @@ EndSub`,
     });
 
     it("reports errors on ending sub without starting one", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 1
 EndSub`,
             // EndSub
@@ -34,7 +34,7 @@ EndSub`,
     });
 
     it("reports errors on ElseIf without If", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 1
 ElseIf y Then`,
             // ElseIf y Then
@@ -44,7 +44,7 @@ ElseIf y Then`,
     });
 
     it("reports errors on Else without If", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 1
 Else`,
             // Else
@@ -54,7 +54,7 @@ Else`,
     });
 
     it("reports errors on EndIf without If", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 1
 EndIf`,
             // EndIf
@@ -64,7 +64,7 @@ EndIf`,
     });
 
     it("reports errors on EndFor without For", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 1
 EndFor`,
             // EndFor
@@ -74,7 +74,7 @@ EndFor`,
     });
 
     it("reports errors on EndWhile without While", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 1
 EndWhile`,
             // EndWhile
@@ -84,7 +84,7 @@ EndWhile`,
     });
 
     it("reports errors on ElseIf After Else", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 If x Then
     a = 0
 Else

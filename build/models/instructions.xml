@@ -11,17 +11,19 @@
         <target type="string" />
     </TempJumpInstruction>
 
-    <TempJumpIfFalseInstruction>
-        <target type="string" />
-    </TempJumpIfFalseInstruction>
+    <TempConditionalJumpInstruction>
+        <trueTarget type="string" optional="true" />
+        <falseTarget type="string" optional="true" />
+    </TempConditionalJumpInstruction>
 
     <JumpInstruction>
         <target type="number" />
     </JumpInstruction>
 
-    <JumpIfFalseInstruction>
-        <target type="number" />
-    </JumpIfFalseInstruction>
+    <ConditionalJumpInstruction>
+        <trueTarget type="number" optional="true" />
+        <falseTarget type="number" optional="true" />
+    </ConditionalJumpInstruction>
 
     <CallSubModuleInstruction>
         <name type="string" />
@@ -36,11 +38,11 @@
         <name type="string" />
     </StoreVariableInstruction>
     
-    <StoreArrayInstruction>
+    <StoreArrayElementInstruction>
         <name type="string" />
         <indices type="number" />
         <sourceRange type="TextRange" />
-    </StoreArrayInstruction>
+    </StoreArrayElementInstruction>
 
     <StorePropertyInstruction>
         <library type="string" />
@@ -51,11 +53,11 @@
         <name type="string" />
     </LoadVariableInstruction>
 
-    <LoadArrayInstruction>
+    <LoadArrayElementInstruction>
         <name type="string" />
         <indices type="number" />
         <sourceRange type="TextRange" />
-    </LoadArrayInstruction>
+    </LoadArrayElementInstruction>
 
     <LoadPropertyInstruction>
         <library type="string" />
@@ -69,6 +71,7 @@
     </MethodCallInstruction>
 
     <NegateInstruction>
+        <sourceRange type="TextRange" />
     </NegateInstruction>
     
     <EqualInstruction>
@@ -76,6 +79,15 @@
 
     <LessThanInstruction>
     </LessThanInstruction>
+
+    <GreaterThanInstruction>
+    </GreaterThanInstruction>
+
+    <LessThanOrEqualInstruction>
+    </LessThanOrEqualInstruction>
+
+    <GreaterThanOrEqualInstruction>
+    </GreaterThanOrEqualInstruction>
 
     <AddInstruction>
         <sourceRange type="TextRange" />

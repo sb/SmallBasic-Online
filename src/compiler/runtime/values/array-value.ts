@@ -1,10 +1,9 @@
-import { ExecutionEngine, ExecutionState } from "../execution-engine";
-import { StringValue } from "./string-value";
+import { ExecutionEngine } from "../../execution-engine";
 import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
 import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
 import { TokenKindToString } from "../../utils/string-factories";
 import { TokenKind } from "../../syntax/tokens";
-import { BaseValue, ValueKind, Constants } from "./base-value";
+import { BaseValue, ValueKind } from "./base-value";
 
 export class ArrayValue extends BaseValue {
     public readonly value: { [key: string]: BaseValue } = {};
@@ -14,60 +13,54 @@ export class ArrayValue extends BaseValue {
     }
 
     public toBoolean(): boolean {
-        return Object.keys(this.value).length !== 0;
+        return false;
     }
 
     public toDisplayString(): string {
-        return `[${Object.keys(this.value).map(key => `${key}=${this.value[key].toDisplayString()}`).join(" ")}]`;
+        return `[${Object.keys(this.value).map(key => `${key}=${this.value[key].toDisplayString()}`).join(", ")}]`;
     }
 
-    public kind(): ValueKind {
+    public get kind(): ValueKind {
         return ValueKind.Array;
     }
-
-    public isEqualTo(other: BaseValue, engine: ExecutionEngine): void {
-        let isEqual: boolean | undefined;
-
-        switch (other.kind()) {
-            case ValueKind.String:
-                isEqual = false;
-                break;
-            case ValueKind.Number:
-                isEqual = false;
-                break;
-            case ValueKind.Array:
-                isEqual = this.toDisplayString() === other.toDisplayString();
-                break;
-            default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
-        }
-
-        engine.evaluationStack.push(new StringValue(isEqual ? Constants.True : Constants.False));
-        engine.executionStack.peek().instructionCounter++;
+    
+    public tryConvertToNumber(): BaseValue {
+        return this;
     }
 
-    public isLessThan(_: BaseValue, engine: ExecutionEngine): void {
-        engine.evaluationStack.push(new StringValue(Constants.False));
-        engine.executionStack.peek().instructionCounter++;
+    public isEqualTo(other: BaseValue): boolean {
+        switch (other.kind) {
+            case ValueKind.String:
+            case ValueKind.Number:
+                return false;
+            case ValueKind.Array:
+                return this.toDisplayString() === other.toDisplayString();
+            default:
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
+        }
+    }
+
+    public isLessThan(_: BaseValue): boolean {
+        return false;
+    }
+
+    public isGreaterThan(_: BaseValue): boolean {
+        return false;
     }
 
     public add(_: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void {
-        engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus));
-        engine.context.state = ExecutionState.Terminated;
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus)));
     }
 
     public subtract(_: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
-        engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus));
-        engine.context.state = ExecutionState.Terminated;
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
     }
 
     public multiply(_: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): void {
-        engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply));
-        engine.context.state = ExecutionState.Terminated;
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
     }
 
     public divide(_: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): void {
-        engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide));
-        engine.context.state = ExecutionState.Terminated;
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
     }
 }

@@ -38,11 +38,14 @@ import {
 export class StatementBinder {
     private DefinedLabels: { [name: string]: boolean } = {};
     private goToStatements: GoToStatementSyntax[] = [];
+    private _module: BaseBoundStatement[];
 
-    public readonly module: BaseBoundStatement[];
+    public get module(): ReadonlyArray<BaseBoundStatement> {
+        return this._module;
+    }
 
-    public constructor(statements: BaseStatementSyntax[], private definedSubModules: { [name: string]: boolean }, private diagnostics: Diagnostic[]) {
-        this.module = statements.map(statement => this.bindStatement(statement));
+    public constructor(statements: ReadonlyArray<BaseStatementSyntax>, private definedSubModules: { readonly [name: string]: boolean }, private diagnostics: Diagnostic[]) {
+        this._module = statements.map(statement => this.bindStatement(statement));
 
         this.goToStatements.forEach(statement => {
             const identifier = statement.command.labelToken;
@@ -65,7 +68,7 @@ export class StatementBinder {
             case StatementSyntaxKind.ElseIfConditionPart:
             case StatementSyntaxKind.ElseConditionPart:
             case StatementSyntaxKind.SubModule:
-                throw `Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`;
+                throw new Error(`Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`);
         }
     }
 
@@ -122,7 +125,7 @@ export class StatementBinder {
     private bindGoToStatement(syntax: GoToStatementSyntax): GoToBoundStatement {
         this.goToStatements.push(syntax);
 
-        return BoundStatementFactory.GoTo(syntax, syntax.command.goToToken.text);
+        return BoundStatementFactory.GoTo(syntax, syntax.command.labelToken.text);
     }
 
     private bindExpressionStatement(syntax: ExpressionStatementSyntax): BaseBoundStatement {

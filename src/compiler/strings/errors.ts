@@ -94,7 +94,7 @@ export module ErrorResources {
             case Keys.CannotDivideByZero:
                 return "You cannot divide by zero. Please consider checking the divisor before dividing.";
             default:
-                throw "Key not found: " + key;
+                throw new Error("Key not found: " + key);
         }
     }
 }

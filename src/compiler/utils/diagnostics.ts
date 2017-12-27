@@ -43,7 +43,7 @@ export enum ErrorCode {
 }
 
 export class Diagnostic {
-    public readonly args: string[];
+    public readonly args: ReadonlyArray<string>;
     public constructor(
         public readonly code: ErrorCode,
         public readonly range: TextRange,

@@ -1,10 +1,10 @@
-import { ExecutionEngine, ExecutionState } from "../execution-engine";
+import { ExecutionEngine } from "../../execution-engine";
 import { StringValue } from "./string-value";
 import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
 import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
 import { TokenKindToString } from "../../utils/string-factories";
 import { TokenKind } from "../../syntax/tokens";
-import { BaseValue, ValueKind, Constants } from "./base-value";
+import { BaseValue, ValueKind } from "./base-value";
 
 export class NumberValue extends BaseValue {
     public constructor(public readonly value: number) {
@@ -12,63 +12,69 @@ export class NumberValue extends BaseValue {
     }
 
     public toBoolean(): boolean {
-        return this.value !== 0;
+        return false;
     }
 
     public toDisplayString(): string {
-        return `"${this.value.toString()}"`;
+        return this.value.toString();
     }
 
-    public kind(): ValueKind {
+    public get kind(): ValueKind {
         return ValueKind.Number;
     }
-
-    public isEqualTo(other: BaseValue, engine: ExecutionEngine): void {
-        let isEqual: boolean | undefined;
-
-        switch (other.kind()) {
-            case ValueKind.String:
-                isEqual = this.value.toString() === (other as StringValue).value;
-                break;
-            case ValueKind.Number:
-                isEqual = this.value === (other as NumberValue).value;
-                break;
-            case ValueKind.Array:
-                isEqual = false;
-                break;
-            default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
-        }
-
-        engine.evaluationStack.push(new StringValue(isEqual ? Constants.True : Constants.False));
-        engine.executionStack.peek().instructionCounter++;
+    
+    public tryConvertToNumber(): BaseValue {
+        return this;
     }
 
-    public isLessThan(other: BaseValue, engine: ExecutionEngine): void {
-        let isLessThan: boolean | undefined;
+    public isEqualTo(other: BaseValue): boolean {
+        other = other.tryConvertToNumber();
 
-        switch (other.kind()) {
+        switch (other.kind) {
             case ValueKind.String:
-                isLessThan = false;
-                break;
+                return this.value.toString() === (other as StringValue).value;
             case ValueKind.Number:
-                isLessThan = this.value < (other as NumberValue).value;
-                break;
+                return this.value === (other as NumberValue).value;
             case ValueKind.Array:
-                isLessThan = false;
-                break;
+                return false;
             default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
+    }
 
-        engine.evaluationStack.push(new StringValue(isLessThan ? Constants.True : Constants.False));
-        engine.executionStack.peek().instructionCounter++;
+    public isLessThan(other: BaseValue): boolean {
+        other = other.tryConvertToNumber();
+
+        switch (other.kind) {
+            case ValueKind.String:
+            case ValueKind.Array:
+                return false;
+            case ValueKind.Number:
+                return this.value < (other as NumberValue).value;
+            default:
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
+        }
+    }
+
+    public isGreaterThan(other: BaseValue): boolean {
+        other = other.tryConvertToNumber();
+
+        switch (other.kind) {
+            case ValueKind.String:
+            case ValueKind.Array:
+                return false;
+            case ValueKind.Number:
+                return this.value > (other as NumberValue).value;
+            default:
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
+        }
     }
 
     public add(other: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void {
         let result: BaseValue | undefined;
+        other = other.tryConvertToNumber();
 
-        switch (other.kind()) {
+        switch (other.kind) {
             case ValueKind.String:
                 result = new StringValue(this.value.toString() + (other as StringValue).value);
                 break;
@@ -76,11 +82,10 @@ export class NumberValue extends BaseValue {
                 result = new NumberValue(this.value + (other as NumberValue).value);
                 break;
             case ValueKind.Array:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus)));
                 return;
             default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
 
         engine.evaluationStack.push(result);
@@ -88,65 +93,64 @@ export class NumberValue extends BaseValue {
     }
 
     public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
-        switch (other.kind()) {
+        other = other.tryConvertToNumber();
+
+        switch (other.kind) {
             case ValueKind.String:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Minus));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
                 return;
             case ValueKind.Number:
                 engine.evaluationStack.push(new NumberValue(this.value - (other as NumberValue).value));
                 engine.executionStack.peek().instructionCounter++;
                 return;
             case ValueKind.Array:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
                 return;
             default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
     }
 
     public multiply(other: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): void {
-        switch (other.kind()) {
+        other = other.tryConvertToNumber();
+
+        switch (other.kind) {
             case ValueKind.String:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Multiply));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
                 return;
             case ValueKind.Number:
                 engine.evaluationStack.push(new NumberValue(this.value * (other as NumberValue).value));
                 engine.executionStack.peek().instructionCounter++;
                 return;
             case ValueKind.Array:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
                 return;
             default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
     }
 
     public divide(other: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): void {
-        switch (other.kind()) {
+        other = other.tryConvertToNumber();
+        
+        switch (other.kind) {
             case ValueKind.String:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Divide));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
                 return;
             case ValueKind.Number:
                 const otherValue = (other as NumberValue).value;
                 if (otherValue === 0) {
-                    engine.context.exception = new Diagnostic(ErrorCode.CannotDivideByZero, instruction.sourceRange);
-                    engine.context.state = ExecutionState.Terminated;
+                    engine.terminate(new Diagnostic(ErrorCode.CannotDivideByZero, instruction.sourceRange));
                 } else {
                     engine.evaluationStack.push(new NumberValue(this.value / otherValue));
                     engine.executionStack.peek().instructionCounter++;
                 }
                 return;
             case ValueKind.Array:
-                engine.context.exception = new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide));
-                engine.context.state = ExecutionState.Terminated;
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
                 return;
             default:
-                throw `Unexpected value kind ${ValueKind[other.kind()]}`;
+                throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
     }
 }
