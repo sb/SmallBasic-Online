@@ -67,7 +67,7 @@
 
     <ArrayAssignmentBoundStatement>
         <identifier type="string" />
-        <indexes type="BaseBoundExpression" array="true" />
+        <indices type="BaseBoundExpression" array="true" />
         <value type="BaseBoundExpression" />
     </ArrayAssignmentBoundStatement>
 

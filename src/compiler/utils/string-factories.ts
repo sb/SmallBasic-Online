@@ -20,7 +20,7 @@ export function CommandSyntaxKindToString(kind: CommandSyntaxKind): string {
         case CommandSyntaxKind.Expression: return SyntaxKindResources.toString(SyntaxKindResources.Keys.ExpressionCommandSyntax);
 
         default:
-            throw `Unrecognized syntax kind: ${CommandSyntaxKind[kind]}`;
+            throw new Error(`Unrecognized syntax kind: ${CommandSyntaxKind[kind]}`);
     }
 }
 
@@ -67,6 +67,6 @@ export function TokenKindToString(kind: TokenKind): string {
         case TokenKind.Comment: return TokenKindResources.toString(TokenKindResources.Keys.Comment);
 
         default:
-            throw `Unrecognized token kind: ${TokenKind[kind]}`;
+            throw new Error(`Unrecognized token kind: ${TokenKind[kind]}`);
     }
 }

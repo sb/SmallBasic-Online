@@ -3,22 +3,24 @@ import { ParseTree } from "../syntax/statements-parser";
 import { Diagnostic, ErrorCode } from "../utils/diagnostics";
 import { BaseBoundStatement } from "../models/bound-statements";
 
-export interface ModuleDefinition {
-    statements: BaseBoundStatement[];
-}
-
 export interface BoundTree {
-    mainModule: ModuleDefinition;
-    subModules: { [name: string]: ModuleDefinition };
+    readonly mainModule: ReadonlyArray<BaseBoundStatement>;
+    readonly subModules: { readonly [name: string]: ReadonlyArray<BaseBoundStatement> };
 }
-
-export type DefinedModulesMap = { [name: string]: boolean };
 
 export class ModuleBinder {
-    public readonly boundTree: BoundTree;
+    private mainModule: ReadonlyArray<BaseBoundStatement>;
+    private subModules: { [name: string]: ReadonlyArray<BaseBoundStatement> };
+
+    public get boundTree(): BoundTree {
+        return {
+            mainModule: this.mainModule,
+            subModules: this.subModules
+        };
+    }
 
     public constructor(parseTree: ParseTree, private diagnostics: Diagnostic[]) {
-        const subModuleNames: DefinedModulesMap = {};
+        const subModuleNames: { [name: string]: boolean } = {};
 
         parseTree.subModules.forEach(subModule => {
             const nameToken = subModule.subCommand.nameToken;
@@ -32,13 +34,11 @@ export class ModuleBinder {
             }
         });
 
-        this.boundTree = {
-            mainModule: new StatementBinder(parseTree.mainModule, subModuleNames, this.diagnostics).module,
-            subModules: {}
-        };
+        this.mainModule = new StatementBinder(parseTree.mainModule, subModuleNames, this.diagnostics).module;
+        this.subModules = {};
 
         parseTree.subModules.forEach(subModule => {
-            this.boundTree.subModules[subModule.subCommand.nameToken.text] =
+            this.subModules[subModule.subCommand.nameToken.text] =
                 new StatementBinder(subModule.statementsList, subModuleNames, this.diagnostics).module;
         });
     }

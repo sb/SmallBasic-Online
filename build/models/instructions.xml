@@ -1,0 +1,118 @@
+<root kind="Instruction">    
+    <StatementStartInstruction>
+        <line type="number" />
+    </StatementStartInstruction>
+
+    <TempLabelInstruction>
+        <name type="string" />
+    </TempLabelInstruction>
+
+    <TempJumpInstruction>
+        <target type="string" />
+    </TempJumpInstruction>
+
+    <TempConditionalJumpInstruction>
+        <trueTarget type="string" optional="true" />
+        <falseTarget type="string" optional="true" />
+    </TempConditionalJumpInstruction>
+
+    <JumpInstruction>
+        <target type="number" />
+    </JumpInstruction>
+
+    <ConditionalJumpInstruction>
+        <trueTarget type="number" optional="true" />
+        <falseTarget type="number" optional="true" />
+    </ConditionalJumpInstruction>
+
+    <CallSubModuleInstruction>
+        <name type="string" />
+    </CallSubModuleInstruction>
+
+    <CallLibraryMethodInstruction>
+        <library type="string" />
+        <method type="string" />
+    </CallLibraryMethodInstruction>
+
+    <StoreVariableInstruction>
+        <name type="string" />
+    </StoreVariableInstruction>
+    
+    <StoreArrayElementInstruction>
+        <name type="string" />
+        <indices type="number" />
+        <sourceRange type="TextRange" />
+    </StoreArrayElementInstruction>
+
+    <StorePropertyInstruction>
+        <library type="string" />
+        <property type="string" />
+    </StorePropertyInstruction>
+
+    <LoadVariableInstruction>
+        <name type="string" />
+    </LoadVariableInstruction>
+
+    <LoadArrayElementInstruction>
+        <name type="string" />
+        <indices type="number" />
+        <sourceRange type="TextRange" />
+    </LoadArrayElementInstruction>
+
+    <LoadPropertyInstruction>
+        <library type="string" />
+        <property type="string" />
+    </LoadPropertyInstruction>
+
+    <MethodCallInstruction>
+        <library type="string" />
+        <method type="string" />
+        <argumentsCount type="number" />
+    </MethodCallInstruction>
+
+    <NegateInstruction>
+        <sourceRange type="TextRange" />
+    </NegateInstruction>
+    
+    <EqualInstruction>
+    </EqualInstruction>
+
+    <LessThanInstruction>
+    </LessThanInstruction>
+
+    <GreaterThanInstruction>
+    </GreaterThanInstruction>
+
+    <LessThanOrEqualInstruction>
+    </LessThanOrEqualInstruction>
+
+    <GreaterThanOrEqualInstruction>
+    </GreaterThanOrEqualInstruction>
+
+    <AddInstruction>
+        <sourceRange type="TextRange" />
+    </AddInstruction>
+
+    <SubtractInstruction>
+        <sourceRange type="TextRange" />
+    </SubtractInstruction>
+
+    <MultiplyInstruction>
+        <sourceRange type="TextRange" />
+    </MultiplyInstruction>
+
+    <DivideInstruction>
+        <sourceRange type="TextRange" />
+    </DivideInstruction>
+
+    <PushNumberInstruction>
+        <value type="number" />
+    </PushNumberInstruction>
+    
+    <PushStringInstruction>
+        <value type="string" />
+    </PushStringInstruction>
+
+    <ReturnInstruction>
+    </ReturnInstruction>
+</root>

@@ -1,10 +1,10 @@
 import "jasmine";
-import { verifyErrors } from "../helpers";
+import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
-describe(__filename, () => {
+describe("Compiler.Binding.ExpressionBinder", () => {
     it("reports errors on expression without value - indexer base", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow[5]`,
             // x = TextWindow[5]
             //     ^^^^^^^^^^
@@ -13,7 +13,7 @@ x = TextWindow[5]`,
     });
     
     it("reports errors on expression without value - indexer index - first", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = y[TextWindow]`,
             // x = y[TextWindow]
             //       ^^^^^^^^^^
@@ -22,7 +22,7 @@ x = y[TextWindow]`,
     });
     
     it("reports errors on expression without value - indexer base - second", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = y[5][TextWindow]`,
             // x = y[5][TextWindow]
             //          ^^^^^^^^^^
@@ -31,7 +31,7 @@ x = y[5][TextWindow]`,
     });
     
     it("reports errors on expression without value - method arguments - first", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(TextWindow)`,
             // TextWindow.WriteLine(TextWindow)
             //                      ^^^^^^^^^^
@@ -40,7 +40,7 @@ TextWindow.WriteLine(TextWindow)`,
     });
     
     it("reports errors on expression without value - method arguments - second", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(5, TextWindow)`,
             // TextWindow.WriteLine(5, TextWindow)
             //                         ^^^^^^^^^^
@@ -53,7 +53,7 @@ TextWindow.WriteLine(5, TextWindow)`,
     });
     
     it("reports errors on expression without value - method arguments - multiple", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(TextWindow, TextWindow)`,
             // TextWindow.WriteLine(TextWindow, TextWindow)
             //                      ^^^^^^^^^^
@@ -70,7 +70,7 @@ TextWindow.WriteLine(TextWindow, TextWindow)`,
     });
     
     it("reports errors on expression without value - method arguments - parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = (TextWindow)`,
             // x = (TextWindow)
             //      ^^^^^^^^^^
@@ -79,7 +79,7 @@ x = (TextWindow)`,
     });
     
     it("reports errors on expression without value - method arguments - negation", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = -TextWindow`,
             // x = -TextWindow
             //      ^^^^^^^^^^
@@ -88,7 +88,7 @@ x = -TextWindow`,
     });
 
     it("reports errors on expression without value - method arguments - library type", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow`,
             // x = TextWindow
             //     ^^^^^^^^^^
@@ -97,7 +97,7 @@ x = TextWindow`,
     });
 
     it("reports errors on expression without value - method arguments - library method", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow.WriteLine`,
             // x = TextWindow.WriteLine
             //     ^^^^^^^^^^^^^^^^^^^^
@@ -106,7 +106,7 @@ x = TextWindow.WriteLine`,
     });
     
     it("reports errors on expression without value - method arguments - submodule", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub x
 EndSub
 y = x`,
@@ -117,7 +117,7 @@ y = x`,
     });
 
     it("reports errors on expression without value - or - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow or "False"`,
             // x = TextWindow or "False"
             //     ^^^^^^^^^^
@@ -126,7 +126,7 @@ x = TextWindow or "False"`,
     });
 
     it("reports errors on expression without value - or - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "False" or TextWindow`,
             // x = "False" or TextWindow
             //                ^^^^^^^^^^
@@ -135,7 +135,7 @@ x = "False" or TextWindow`,
     });
 
     it("reports errors on expression without value - and - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow and "False"`,
             // x = TextWindow and "False"
             //     ^^^^^^^^^^
@@ -144,7 +144,7 @@ x = TextWindow and "False"`,
     });
 
     it("reports errors on expression without value - and - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "False" and TextWindow`,
             // x = "False" and TextWindow
             //                 ^^^^^^^^^^
@@ -153,7 +153,7 @@ x = "False" and TextWindow`,
     });
 
     it("reports errors on expression without value - not equal - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow <> "False"`,
             // x = TextWindow <> "False"
             //     ^^^^^^^^^^
@@ -162,7 +162,7 @@ x = TextWindow <> "False"`,
     });
 
     it("reports errors on expression without value - not equal - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "False" <> TextWindow`,
             // x = "False" <> TextWindow
             //                ^^^^^^^^^^
@@ -171,7 +171,7 @@ x = "False" <> TextWindow`,
     });
     
     it("reports errors on expression without value - equal - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow = "False"`,
             // x = TextWindow = "False"
             //     ^^^^^^^^^^
@@ -180,7 +180,7 @@ x = TextWindow = "False"`,
     });
 
     it("reports errors on expression without value - equal - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "False" = TextWindow`,
             // x = "False" = TextWindow
             //               ^^^^^^^^^^
@@ -189,7 +189,7 @@ x = "False" = TextWindow`,
     });
     
     it("reports errors on expression without value - less than - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow < 5`,
             // x = TextWindow < 5
             //     ^^^^^^^^^^
@@ -198,7 +198,7 @@ x = TextWindow < 5`,
     });
 
     it("reports errors on expression without value - less than - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 < TextWindow`,
             // x = 5 < TextWindow
             //         ^^^^^^^^^^
@@ -207,7 +207,7 @@ x = 5 < TextWindow`,
     });
     
     it("reports errors on expression without value - greater than - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow > 5`,
             // x = TextWindow > 5
             //     ^^^^^^^^^^
@@ -216,7 +216,7 @@ x = TextWindow > 5`,
     });
 
     it("reports errors on expression without value - greater than - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 > TextWindow`,
             // x = 5 > TextWindow
             //         ^^^^^^^^^^
@@ -225,7 +225,7 @@ x = 5 > TextWindow`,
     });
     
     it("reports errors on expression without value - less than or equal- left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow <= 5`,
             // x = TextWindow <= 5
             //     ^^^^^^^^^^
@@ -234,7 +234,7 @@ x = TextWindow <= 5`,
     });
 
     it("reports errors on expression without value - less than or equal - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 <= TextWindow`,
             // x = 5 <= TextWindow
             //          ^^^^^^^^^^
@@ -243,7 +243,7 @@ x = 5 <= TextWindow`,
     });
     
     it("reports errors on expression without value - greater than or equal - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow >= 5`,
             // x = TextWindow >= 5
             //     ^^^^^^^^^^
@@ -252,7 +252,7 @@ x = TextWindow >= 5`,
     });
 
     it("reports errors on expression without value - greater than or equal - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 >= TextWindow`,
             // x = 5 >= TextWindow
             //          ^^^^^^^^^^
@@ -261,7 +261,7 @@ x = 5 >= TextWindow`,
     });
 
     it("reports errors on expression without value - plus - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow + 5`,
             // x = TextWindow + 5
             //     ^^^^^^^^^^
@@ -270,7 +270,7 @@ x = TextWindow + 5`,
     });
 
     it("reports errors on expression without value - plus - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 + TextWindow`,
             // x = 5 + TextWindow
             //         ^^^^^^^^^^
@@ -279,7 +279,7 @@ x = 5 + TextWindow`,
     });
     
     it("reports errors on expression without value - minus - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow - 5`,
             // x = TextWindow - 5
             //     ^^^^^^^^^^
@@ -288,7 +288,7 @@ x = TextWindow - 5`,
     });
 
     it("reports errors on expression without value - minus - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 - TextWindow`,
             // x = 5 - TextWindow
             //         ^^^^^^^^^^
@@ -297,7 +297,7 @@ x = 5 - TextWindow`,
     });
     
     it("reports errors on expression without value - multiply - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow * 5`,
             // x = TextWindow * 5
             //     ^^^^^^^^^^
@@ -306,7 +306,7 @@ x = TextWindow * 5`,
     });
 
     it("reports errors on expression without value - multiply - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 * TextWindow`,
             // x = 5 * TextWindow
             //         ^^^^^^^^^^
@@ -315,7 +315,7 @@ x = 5 * TextWindow`,
     });
     
     it("reports errors on expression without value - divide - left hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow / 5`,
             // x = TextWindow / 5
             //     ^^^^^^^^^^
@@ -324,7 +324,7 @@ x = TextWindow / 5`,
     });
 
     it("reports errors on expression without value - divide - right hand side", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5 / TextWindow`,
             // x = 5 / TextWindow
             //         ^^^^^^^^^^
@@ -333,7 +333,7 @@ x = 5 / TextWindow`,
     });
     
     it("reports errors on invalid array access base - library property", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = Clock.Time[0]`,
             // x = Clock.Time[0]
             //     ^^^^^^^^^^
@@ -342,7 +342,7 @@ x = Clock.Time[0]`,
     });
     
     it("reports errors on invalid array access base - library method call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow.Read()[1]`,
             // x = TextWindow.Read()[1]
             //     ^^^^^^^^^^^^^^^^^
@@ -351,7 +351,7 @@ x = TextWindow.Read()[1]`,
     });
     
     it("reports errors on invalid array access base - string literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "test"[1]`,
             // x = "test"[1]
             //     ^^^^^^
@@ -360,7 +360,7 @@ x = "test"[1]`,
     });
     
     it("reports errors on invalid array access base - number literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = 5[1]`,
             // x = 5[1]
             //     ^
@@ -369,7 +369,7 @@ x = 5[1]`,
     });
     
     it("reports errors on invalid array access base - parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 y = (x)[1]`,
             // y = (x)[1]
             //     ^^^
@@ -378,7 +378,7 @@ y = (x)[1]`,
     });
     
     it("reports errors on invalid argument count for library method calls", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 y = TextWindow.Read(5)`,
             // y = TextWindow.Read(5)
             //     ^^^^^^^^^^^^^^^
@@ -387,7 +387,7 @@ y = TextWindow.Read(5)`,
     });
     
     it("reports errors on arguments for submodule calls", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub x
 EndSub
 x(0)`,
@@ -398,7 +398,7 @@ x(0)`,
     });
     
     it("reports errors on invalid base for call expressions - array access", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x[0](1)`,
             // x[0](1)
             // ^^^^
@@ -407,7 +407,7 @@ x[0](1)`,
     });
     
     it("reports errors on invalid base for call expressions - library type", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow(1)`,
             // TextWindow(1)
             // ^^^^^^^^^^
@@ -416,7 +416,7 @@ TextWindow(1)`,
     });
     
     it("reports errors on invalid base for call expressions - library method call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.Read()(1)`,
             // TextWindow.Read()(1)
             // ^^^^^^^^^^^^^^^^^
@@ -425,7 +425,7 @@ TextWindow.Read()(1)`,
     });
     
     it("reports errors on invalid base for call expressions - library property", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Clock.Time(1)`,
             // Clock.Time(1)
             // ^^^^^^^^^^
@@ -434,7 +434,7 @@ Clock.Time(1)`,
     });
     
     it("reports errors on invalid base for call expressions - submodule call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub x
 EndSub
 x()(0)`,
@@ -445,7 +445,7 @@ x()(0)`,
     });
     
     it("reports errors on invalid base for call expressions - string literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 "test"(0)`,
             // "test"(0)
             // ^^^^^^
@@ -454,7 +454,7 @@ x()(0)`,
     });
     
     it("reports errors on invalid base for call expressions - number literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 5(0)`,
             // 5(0)
             // ^
@@ -463,7 +463,7 @@ x()(0)`,
     });
     
     it("reports errors on invalid base for call expressions - parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 (0)(1)`,
             // (0)(1)
             // ^^^
@@ -472,7 +472,7 @@ x()(0)`,
     });
     
     it("reports errors on invalid base for call expressions - variable", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x(1)`,
             // x(1)
             // ^
@@ -481,7 +481,7 @@ x(1)`,
     });
     
     it("reports errors on non-existent library member", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow.Nonexistent`,
             // x = TextWindow.Nonexistent
             //     ^^^^^^^^^^
@@ -490,7 +490,7 @@ x = TextWindow.Nonexistent`,
     });
     
     it("reports errors on invalid base for dot expression - array access", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = y[0].Value`,
             // x = y[0].Value
             //     ^^^^
@@ -499,7 +499,7 @@ x = y[0].Value`,
     });
     
     it("reports errors on invalid base for dot expression - library property", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = Clock.Time.Value`,
             // x = Clock.Time.Value
             //     ^^^^^^^^^^
@@ -508,7 +508,7 @@ x = Clock.Time.Value`,
     });
     
     it("reports errors on invalid base for dot expression - library method", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow.Read.Value`,
             // x = TextWindow.Read.Value
             //     ^^^^^^^^^^^^^^^
@@ -517,7 +517,7 @@ x = TextWindow.Read.Value`,
     });
     
     it("reports errors on invalid base for dot expression - library method call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = TextWindow.Read().Value`,
             // x = TextWindow.Read().Value
             //     ^^^^^^^^^^^^^^^^^
@@ -526,7 +526,7 @@ x = TextWindow.Read().Value`,
     });
     
     it("reports errors on invalid base for dot expression - submodule", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub y
 EndSub
 x = y.Value`,
@@ -537,7 +537,7 @@ x = y.Value`,
     });
     
     it("reports errors on invalid base for dot expression - submodule call", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Sub y
 EndSub
 x = y().Value`,
@@ -548,7 +548,7 @@ x = y().Value`,
     });
     
     it("reports errors on invalid base for dot expression - variable", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = y.Value`,
             // x = y.Value
             //     ^
@@ -557,7 +557,7 @@ x = y.Value`,
     });
     
     it("reports errors on invalid base for dot expression - string literal", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = "test".Value`,
             // x = "test".Value
             //     ^^^^^^
@@ -566,7 +566,7 @@ x = "test".Value`,
     });
     
     it("reports errors on invalid base for dot expression - parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = (5).Value`,
             // x = (5).Value
             //     ^^^

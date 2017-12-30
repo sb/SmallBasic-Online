@@ -1,6 +1,5 @@
-import { SupportedLibraries } from "./supported-libraries";
+import { SupportedLibraries } from "../runtime/supported-libraries";
 import { ExpressionBinder } from "./expression-binder";
-import { DefinedModulesMap, ModuleDefinition } from "./module-binder";
 import { getExpressionRange } from "../syntax/text-markers";
 import { Diagnostic } from "../utils/diagnostics";
 import { ErrorCode } from "../utils/diagnostics";
@@ -39,13 +38,14 @@ import {
 export class StatementBinder {
     private DefinedLabels: { [name: string]: boolean } = {};
     private goToStatements: GoToStatementSyntax[] = [];
+    private _module: BaseBoundStatement[];
 
-    public readonly module: ModuleDefinition;
+    public get module(): ReadonlyArray<BaseBoundStatement> {
+        return this._module;
+    }
 
-    public constructor(statements: BaseStatementSyntax[], private definedSubModules: DefinedModulesMap, private diagnostics: Diagnostic[]) {
-        this.module = {
-            statements: statements.map(statement => this.bindStatement(statement))
-        };
+    public constructor(statements: ReadonlyArray<BaseStatementSyntax>, private definedSubModules: { readonly [name: string]: boolean }, private diagnostics: Diagnostic[]) {
+        this._module = statements.map(statement => this.bindStatement(statement));
 
         this.goToStatements.forEach(statement => {
             const identifier = statement.command.labelToken;
@@ -68,7 +68,7 @@ export class StatementBinder {
             case StatementSyntaxKind.ElseIfConditionPart:
             case StatementSyntaxKind.ElseConditionPart:
             case StatementSyntaxKind.SubModule:
-                throw `Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`;
+                throw new Error(`Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`);
         }
     }
 
@@ -125,7 +125,7 @@ export class StatementBinder {
     private bindGoToStatement(syntax: GoToStatementSyntax): GoToBoundStatement {
         this.goToStatements.push(syntax);
 
-        return BoundStatementFactory.GoTo(syntax, syntax.command.goToToken.text);
+        return BoundStatementFactory.GoTo(syntax, syntax.command.labelToken.text);
     }
 
     private bindExpressionStatement(syntax: ExpressionStatementSyntax): BaseBoundStatement {
@@ -153,7 +153,7 @@ export class StatementBinder {
                     case BoundExpressionKind.LibraryProperty: {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
-                        if (!SupportedLibraries[property.library].properties[property.name].hasSet) {
+                        if (!SupportedLibraries[property.library].properties[property.name].setter) {
                             this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, getExpressionRange(property.syntax)));
                         }
 

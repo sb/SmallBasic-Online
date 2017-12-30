@@ -6,7 +6,11 @@ export class Scanner {
     private line: number = 0;
     private column: number = 0;
 
-    public readonly tokens: Token[] = [];
+    private _tokens: Token[] = [];
+
+    public get tokens(): ReadonlyArray<Token> {
+        return this._tokens;
+    }
 
     public constructor(private text: string, private diagnostics: Diagnostic[]) {
         while (this.scanNextToken());
@@ -179,7 +183,7 @@ export class Scanner {
         this.index += current.length;
         this.column += current.length;
 
-        this.tokens.push(token);
+        this._tokens.push(token);
         return token;
     }
 }

@@ -20,13 +20,15 @@ gulp.task("generate-syntax-commands", () => generateModels("syntax-commands"));
 gulp.task("generate-syntax-statements", () => generateModels("syntax-statements"));
 gulp.task("generate-bound-statements", () => generateModels("bound-statements"));
 gulp.task("generate-bound-expressions", () => generateModels("bound-expressions"));
+gulp.task("generate-instructions", () => generateModels("instructions"));
 
 gulp.task("generate-models", [
     "generate-syntax-expressions",
     "generate-syntax-commands",
     "generate-syntax-statements",
     "generate-bound-expressions",
-    "generate-bound-statements"
+    "generate-bound-statements",
+    "generate-instructions"
 ]);
 
 gulp.task("watch-source", ["generate-models", "generate-loc-strings"], () => {

@@ -1,10 +1,10 @@
 import "jasmine";
-import { verifyErrors } from "../helpers";
+import { verifyCompilationErrors, verifyRuntimeResult } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
 
-describe(__filename, () => {
+describe("Compiler.Syntax.CommandParser", () => {
     it("reports uneven parens", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 X = ( 1 + (`,
             // X = ( 1 + (
             //           ^
@@ -13,7 +13,7 @@ X = ( 1 + (`,
     });
 
     it("reports commands starting with a different token", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 Then
 x = 1
 EndIf`,
@@ -28,7 +28,7 @@ EndIf`,
     });
 
     it("reports extra commands after a complete one", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 If x Then y
 EndIf`,
             // If x Then y
@@ -38,7 +38,7 @@ EndIf`,
     });
 
     it("reports non-expressions - assignment", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = .`,
             // x = .
             //     ^
@@ -47,7 +47,7 @@ x = .`,
     });
 
     it("reports non-expressions - assignment - nothing", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = `,
             // x =
             //   ^
@@ -56,7 +56,7 @@ x = `,
     });
 
     it("reports non-expressions - while loop", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 While *
 EndWhile`,
             // While *
@@ -66,7 +66,7 @@ EndWhile`,
     });
 
     it("reports error on missing tokens", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 If x < 4
 EndIF`,
             // If x < 4
@@ -76,7 +76,7 @@ EndIF`,
     });
 
     it("reports error on invalid tokens", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 If x < 4 Step
 EndIF`,
             // If x < 4 Step
@@ -86,7 +86,7 @@ EndIF`,
     });
 
     it("gives error on incomplete parenthesis", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(1 `,
             // TextWindow.WriteLine(1
             //                      ^
@@ -95,7 +95,7 @@ TextWindow.WriteLine(1 `,
     });
 
     it("gives error on incomplete parenthesis - with comma", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(1, `,
             // TextWindow.WriteLine(1,
             //                       ^
@@ -104,7 +104,7 @@ TextWindow.WriteLine(1, `,
     });
 
     it("reports errors on arguments without commas", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(1 2 3)`,
             // TextWindow.WriteLine(1 2 3)
             //                        ^
@@ -117,7 +117,7 @@ TextWindow.WriteLine(1 2 3)`,
     });
 
     it("reports errors on commas without arguments", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 TextWindow.WriteLine(, , ,)`,
             // TextWindow.WriteLine(, , ,)
             //                      ^
@@ -130,7 +130,7 @@ TextWindow.WriteLine(, , ,)`,
     });
 
     it("recovers on incomplete square brackets", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 x = ar[1`,
             // x = ar[1
             //        ^
@@ -139,7 +139,7 @@ x = ar[1`,
     });
 
     it("recovers on additional tokens with errors", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 For x + = 1 To 5 Step : 1`,
             // For x + = 1 To 5 Step : 1
             //       ^
@@ -152,9 +152,18 @@ For x + = 1 To 5 Step : 1`,
     });
 
     it("ignores an empty line with comments", () => {
-        verifyErrors(`
+        verifyCompilationErrors(`
 ' This is a comment
 
 ' Above is also empty`);
+    });
+
+    it("does not execute commented out code", () => {
+        verifyRuntimeResult(`
+TextWindow.WriteLine(1)
+'TextWindow.WriteLine(2)
+TextWindow.WriteLine(3)`,
+            [],
+            ["1", "3"]);
     });
 });

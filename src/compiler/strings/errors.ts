@@ -26,7 +26,11 @@ export module ErrorResources {
         UnsupportedDotBaseExpression,
         LibraryMemberNotFound,
         ValueIsNotANumber,
-        ValueIsNotAssignable
+        ValueIsNotAssignable,
+        CannotUseAnArrayAsAnIndexToAnotherArray,
+        CannotUseOperatorWithAnArray,
+        CannotUseOperatorWithAString,
+        CannotDivideByZero
     }
 
     export function toString(key: Keys): string {
@@ -81,8 +85,16 @@ export module ErrorResources {
                 return "The value '{0}' is not a valid number.";
             case Keys.ValueIsNotAssignable:
                 return "You cannot assign to this expression. Did you mean to use a variable instead?";
+            case Keys.CannotUseAnArrayAsAnIndexToAnotherArray:
+                return "You cannot use an array as an index to access another array. Did you mean to use a string or a number instead?";
+            case Keys.CannotUseOperatorWithAnArray:
+                return "You cannot use the operator '{0}' with an array value";
+            case Keys.CannotUseOperatorWithAString:
+                return "You cannot use the operator '{0}' with a string value";
+            case Keys.CannotDivideByZero:
+                return "You cannot divide by zero. Please consider checking the divisor before dividing.";
             default:
-                throw "Key not found: " + key;
+                throw new Error("Key not found: " + key);
         }
     }
 }

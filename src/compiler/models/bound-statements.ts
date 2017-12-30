@@ -89,7 +89,7 @@ export interface PropertyAssignmentBoundStatement extends BaseBoundStatement {
 
 export interface ArrayAssignmentBoundStatement extends BaseBoundStatement {
     readonly identifier: string;
-    readonly indexes: BaseBoundExpression[];
+    readonly indices: BaseBoundExpression[];
     readonly value: BaseBoundExpression;
 }
 
@@ -264,14 +264,14 @@ export class BoundStatementFactory {
     public static ArrayAssignment(
         syntax: BaseStatementSyntax,
         identifier: string,
-        indexes: BaseBoundExpression[],
+        indices: BaseBoundExpression[],
         value: BaseBoundExpression)
         : ArrayAssignmentBoundStatement {
         return {
             kind: BoundStatementKind.ArrayAssignment,
             syntax: syntax,
             identifier: identifier,
-            indexes: indexes,
+            indices: indices,
             value: value
         };
     }

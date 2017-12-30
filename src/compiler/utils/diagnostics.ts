@@ -33,11 +33,17 @@ export enum ErrorCode {
     PropertyHasNoSetter,
     UnsupportedDotBaseExpression,
     LibraryMemberNotFound,
-    ValueIsNotAssignable
+    ValueIsNotAssignable,
+
+    // Runtime Errors
+    CannotUseAnArrayAsAnIndexToAnotherArray,
+    CannotUseOperatorWithAnArray,
+    CannotUseOperatorWithAString,
+    CannotDivideByZero
 }
 
 export class Diagnostic {
-    public readonly args: string[];
+    public readonly args: ReadonlyArray<string>;
     public constructor(
         public readonly code: ErrorCode,
         public readonly range: TextRange,
@@ -85,5 +91,11 @@ function errorCodeToString(code: ErrorCode): string {
         case ErrorCode.UnsupportedDotBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedDotBaseExpression);
         case ErrorCode.LibraryMemberNotFound: return ErrorResources.toString(ErrorResources.Keys.LibraryMemberNotFound);
         case ErrorCode.ValueIsNotAssignable: return ErrorResources.toString(ErrorResources.Keys.ValueIsNotAssignable);
+
+        // Runtime Errors
+        case ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray: return ErrorResources.toString(ErrorResources.Keys.CannotUseAnArrayAsAnIndexToAnotherArray);
+        case ErrorCode.CannotUseOperatorWithAnArray: return ErrorResources.toString(ErrorResources.Keys.CannotUseOperatorWithAnArray);
+        case ErrorCode.CannotUseOperatorWithAString: return ErrorResources.toString(ErrorResources.Keys.CannotUseOperatorWithAString);
+        case ErrorCode.CannotDivideByZero: return ErrorResources.toString(ErrorResources.Keys.CannotDivideByZero);
     }
 }

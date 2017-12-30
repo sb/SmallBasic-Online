@@ -60,7 +60,7 @@ function generateContents(model: IModelDefinition): string {
         let memberType = member.attributes.type;
 
         if (member.attributes.array && member.attributes.optional) {
-            throw `Member ${memberName} cannot be an array and optional at the same time`;
+            throw new Error(`Member ${memberName} cannot be an array and optional at the same time`);
         }
 
         if (!includes(memberType, model.attributes.kind)) {
@@ -102,7 +102,7 @@ function generateContents(model: IModelDefinition): string {
         type.children = type.children || [];
 
         if (!endsWith(typeName, model.attributes.kind)) {
-            throw `Type ${typeName} doesn't end with ${model.attributes.kind}`;
+            throw new Error(`Type ${typeName} doesn't end with ${model.attributes.kind}`);
         }
 
         types.push({

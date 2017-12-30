@@ -31,19 +31,24 @@ import {
 } from "../models/syntax-commands";
 
 export interface ParseTree {
-    mainModule: BaseStatementSyntax[];
-    subModules: SubModuleStatementSyntax[];
+    readonly mainModule: ReadonlyArray<BaseStatementSyntax>;
+    readonly subModules: ReadonlyArray<SubModuleStatementSyntax>;
 }
 
 export class StatementsParser {
     private index: number = 0;
 
-    public readonly parseTree: ParseTree = {
-        mainModule: [],
-        subModules: []
-    };
+    private mainModule: BaseStatementSyntax[] = [];
+    private subModules: SubModuleStatementSyntax[] = [];
 
-    public constructor(private commands: BaseCommandSyntax[], private diagnostics: Diagnostic[]) {
+    public get parseTree(): ParseTree {
+        return {
+            mainModule: this.mainModule,
+            subModules: this.subModules
+        };
+    }
+
+    public constructor(private commands: ReadonlyArray<BaseCommandSyntax>, private diagnostics: Diagnostic[]) {
         let startModuleCommand: SubCommandSyntax | undefined;
         let currentModuleStatements: BaseStatementSyntax[] = [];
 
@@ -57,7 +62,7 @@ export class StatementsParser {
                             ErrorCode.CannotDefineASubInsideAnotherSub,
                             getCommandRange(current)));
                     } else {
-                        this.parseTree.mainModule.push(...currentModuleStatements);
+                        this.mainModule.push(...currentModuleStatements);
                         currentModuleStatements = [];
                         startModuleCommand = this.eat(current.kind) as SubCommandSyntax;
                     }
@@ -67,7 +72,7 @@ export class StatementsParser {
                     if (startModuleCommand) {
                         const endModuleCommand = this.eat(current.kind);
 
-                        this.parseTree.subModules.push(StatementSyntaxFactory.SubModule(
+                        this.subModules.push(StatementSyntaxFactory.SubModule(
                             startModuleCommand,
                             currentModuleStatements,
                             endModuleCommand as EndSubCommandSyntax));
@@ -97,12 +102,12 @@ export class StatementsParser {
         if (startModuleCommand) {
             const endModuleCommand = this.eat(CommandSyntaxKind.EndSub);
 
-            this.parseTree.subModules.push(StatementSyntaxFactory.SubModule(
+            this.subModules.push(StatementSyntaxFactory.SubModule(
                 startModuleCommand,
                 currentModuleStatements,
                 endModuleCommand as EndSubCommandSyntax));
         } else {
-            this.parseTree.mainModule.push(...currentModuleStatements);
+            this.mainModule.push(...currentModuleStatements);
         }
     }
 
@@ -159,7 +164,7 @@ export class StatementsParser {
                 return StatementSyntaxFactory.Expression(statement as ExpressionCommandSyntax);
             }
             default: {
-                throw `Unexpected command ${CommandSyntaxKind[current.kind]} here`;
+                throw new Error(`Unexpected command ${CommandSyntaxKind[current.kind]} here`);
             }
         }
     }

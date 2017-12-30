@@ -19,7 +19,7 @@ export module TokenKindResources {
             case Keys.Comment:
                 return "comment";
             default:
-                throw "Key not found: " + key;
+                throw new Error("Key not found: " + key);
         }
     }
 }
