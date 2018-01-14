@@ -5,6 +5,8 @@ import { ClockLibrary } from "./libraries/clock";
 
 type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode) => void;
 
+// TODO: add the rest of the libraries
+
 export interface LibraryMethodDefinition {
     readonly argumentsCount: number;
     readonly returnsValue: boolean;

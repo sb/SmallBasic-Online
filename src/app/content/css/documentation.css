@@ -1,0 +1,53 @@
+.documentation {
+    flex: 1;
+    padding: 10px;
+    overflow-y: scroll;
+    overflow-x: hidden;
+}
+
+.documentation ul {
+    list-style-type: none;
+}
+
+.documentation .documentation-icon {
+    height: 50px;
+    width: 50px;
+    margin-left: 5px;
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: 50px;
+    position: relative;
+    background-image: url('../images/appicon.png');
+    float: left;
+}
+
+.documentation .documentation-icon-label {
+    font-size: xx-large;
+    font-weight: bold;
+    line-height: 50px;
+    margin-left: 10px;
+}
+
+.documentation .library-class {
+    font-weight: bold;
+    font-size: medium;
+    cursor: pointer;
+}
+
+.documentation .library-class-name:hover {
+    color: #74c1df;
+}
+
+.documentation .library-members {
+    font-weight: bold;
+    font-size: small;
+    cursor: pointer;
+}
+
+.documentation .library-member-name:hover {
+    color: #74c1df;
+}
+
+.documentation .description {
+    font-weight: normal;
+}
