@@ -52,50 +52,12 @@ export class Diagnostic {
     }
 
     public toString(): string {
-        const template = errorCodeToString(this.code);
+        const template = (ErrorResources as any)[ErrorCode[this.code]] as string;
+
+        if (!template) {
+            throw new Error(`Error code ${ErrorCode[this.code]} has no string resource`);
+        }
+
         return template.replace(/{[0-9]+}/g, match => this.args[parseInt(match.replace(/^{/, "").replace(/}$/, ""))]);
-    }
-}
-
-function errorCodeToString(code: ErrorCode): string {
-    switch (code) {
-        // Scanner Errors
-        case ErrorCode.UnrecognizedCharacter: return ErrorResources.toString(ErrorResources.Keys.UnrecognizedCharacter);
-        case ErrorCode.UnterminatedStringLiteral: return ErrorResources.toString(ErrorResources.Keys.UnterminatedStringLiteral);
-
-        // Line Parser Errors
-        case ErrorCode.UnrecognizedCommand: return ErrorResources.toString(ErrorResources.Keys.UnrecognizedCommand);
-        case ErrorCode.UnexpectedToken_ExpectingExpression: return ErrorResources.toString(ErrorResources.Keys.UnexpectedToken_ExpectingExpression);
-        case ErrorCode.UnexpectedToken_ExpectingToken: return ErrorResources.toString(ErrorResources.Keys.UnexpectedToken_ExpectingToken);
-        case ErrorCode.UnexpectedToken_ExpectingEOL: return ErrorResources.toString(ErrorResources.Keys.UnexpectedToken_ExpectingEOL);
-        case ErrorCode.UnexpectedEOL_ExpectingExpression: return ErrorResources.toString(ErrorResources.Keys.UnexpectedEOL_ExpectingExpression);
-        case ErrorCode.UnexpectedEOL_ExpectingToken: return ErrorResources.toString(ErrorResources.Keys.UnexpectedEOL_ExpectingToken);
-
-        // Tree Parser Errors
-        case ErrorCode.UnexpectedCommand_ExpectingCommand: return ErrorResources.toString(ErrorResources.Keys.UnexpectedCommand_ExpectingCommand);
-        case ErrorCode.UnexpectedEOF_ExpectingCommand: return ErrorResources.toString(ErrorResources.Keys.UnexpectedEOF_ExpectingCommand);
-        case ErrorCode.CannotDefineASubInsideAnotherSub: return ErrorResources.toString(ErrorResources.Keys.CannotDefineASubInsideAnotherSub);
-        case ErrorCode.CannotHaveCommandWithoutPreviousCommand: return ErrorResources.toString(ErrorResources.Keys.CannotHaveCommandWithoutPreviousCommand);
-        case ErrorCode.ValueIsNotANumber: return ErrorResources.toString(ErrorResources.Keys.ValueIsNotANumber);
-
-        // Binder Errors
-        case ErrorCode.TwoSubModulesWithTheSameName: return ErrorResources.toString(ErrorResources.Keys.TwoSubModulesWithTheSameName);
-        case ErrorCode.LabelDoesNotExist: return ErrorResources.toString(ErrorResources.Keys.LabelDoesNotExist);
-        case ErrorCode.UnassignedExpressionStatement: return ErrorResources.toString(ErrorResources.Keys.UnassignedExpressionStatement);
-        case ErrorCode.InvalidExpressionStatement: return ErrorResources.toString(ErrorResources.Keys.InvalidExpressionStatement);
-        case ErrorCode.UnexpectedVoid_ExpectingValue: return ErrorResources.toString(ErrorResources.Keys.UnexpectedVoid_ExpectingValue);
-        case ErrorCode.UnsupportedArrayBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedArrayBaseExpression);
-        case ErrorCode.UnsupportedCallBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedCallBaseExpression);
-        case ErrorCode.UnexpectedArgumentsCount: return ErrorResources.toString(ErrorResources.Keys.UnexpectedArgumentsCount);
-        case ErrorCode.PropertyHasNoSetter: return ErrorResources.toString(ErrorResources.Keys.PropertyHasNoSetter);
-        case ErrorCode.UnsupportedDotBaseExpression: return ErrorResources.toString(ErrorResources.Keys.UnsupportedDotBaseExpression);
-        case ErrorCode.LibraryMemberNotFound: return ErrorResources.toString(ErrorResources.Keys.LibraryMemberNotFound);
-        case ErrorCode.ValueIsNotAssignable: return ErrorResources.toString(ErrorResources.Keys.ValueIsNotAssignable);
-
-        // Runtime Errors
-        case ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray: return ErrorResources.toString(ErrorResources.Keys.CannotUseAnArrayAsAnIndexToAnotherArray);
-        case ErrorCode.CannotUseOperatorWithAnArray: return ErrorResources.toString(ErrorResources.Keys.CannotUseOperatorWithAnArray);
-        case ErrorCode.CannotUseOperatorWithAString: return ErrorResources.toString(ErrorResources.Keys.CannotUseOperatorWithAString);
-        case ErrorCode.CannotDivideByZero: return ErrorResources.toString(ErrorResources.Keys.CannotDivideByZero);
     }
 }

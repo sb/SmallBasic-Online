@@ -1,9 +1,13 @@
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../execution-engine";
 import { LibraryTypeDefinition } from "../supported-libraries";
+import { DocumentationResources } from "../../strings/documentation";
 
 export const ProgramLibrary: LibraryTypeDefinition = {
+    description: DocumentationResources.Program_Description,
     methods: {
         "Pause": {
+            description: DocumentationResources.Program_Pause_Description,
+            parametersDescription: [],
             argumentsCount: 0,
             returnsValue: false,
             execute: (engine: ExecutionEngine, mode: ExecutionMode) => {
@@ -20,6 +24,8 @@ export const ProgramLibrary: LibraryTypeDefinition = {
             }
         },
         "End": {
+            description: DocumentationResources.Program_End_Description,
+            parametersDescription: [],
             argumentsCount: 0,
             returnsValue: false,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {

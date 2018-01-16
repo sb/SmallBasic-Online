@@ -1,28 +1,27 @@
-import { MainFrame } from "./content/components/main-frame";
+import { EditorComponent } from "./components/editor";
+import { RunComponent } from "./components/run";
 import { reduce } from "./store";
 import * as React from "react";
 import { createStore } from "redux";
 import * as ReactDOM from "react-dom";
-import { HashRouter, Route, Switch } from "react-router-dom";
+import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from "react-redux";
 
-import "./content/css/documentation.css";
-import "./content/css/layout.css";
-import "./content/css/toolbar.css";
-
+import "./style.css";
 import "../../node_modules/jquery/dist/jquery.js";
 
 // TODO: get from settings along with version
 window.document.title = "SuperBasic";
 
-// TODO: pass initial state (code from url) if it exists
-const store = createStore(reduce, undefined);
+const store = createStore(reduce);
 
 ReactDOM.render((
     <Provider store={store}>
         <HashRouter>
             <Switch>
-                <Route path="/" component={MainFrame} />
+                <Route path="/editor" component={EditorComponent} />
+                <Route path="/run" component={RunComponent} />
+                <Redirect from="/" to="/editor" />
             </Switch>
         </HashRouter>
     </Provider>

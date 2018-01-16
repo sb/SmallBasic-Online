@@ -1,0 +1,18 @@
+{
+    "ToolbarButton_New_Title": "New",
+    "ToolbarButton_New_Description": "Clears the editor and starts a new program",
+    "ToolbarButton_Publish_Title": "Publish",
+    "ToolbarButton_Publish_Description": "Get a publish url to share with friends",
+    "ToolbarButton_Cut_Title": "Cut",
+    "ToolbarButton_Cut_Description": "Cut selected text",
+    "ToolbarButton_Copy_Title": "Copy",
+    "ToolbarButton_Copy_Description": "Copy selected text",
+    "ToolbarButton_Paste_Title": "Paste",
+    "ToolbarButton_Paste_Description": "Paste copied text",
+    "ToolbarButton_Undo_Title": "Undo",
+    "ToolbarButton_Undo_Description": "Undo last action",
+    "ToolbarButton_Redo_Title": "Redo",
+    "ToolbarButton_Redo_Description": "Redo last undone action",
+    "ToolbarButton_Run_Title": "Run",
+    "ToolbarButton_Run_Description": "Run this program"
+}
