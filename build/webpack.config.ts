@@ -55,29 +55,21 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                 },
                 {
                     test: /\.css$/,
-                    loader: "style-loader"
+                    loaders: [
+                        "style-loader",
+                        "css-loader"
+                    ]
                 },
                 {
-                    test: /\.css$/,
-                    loader: "css-loader"
-                },
-                {
-                    test: /\.(png|jpg|jpeg|gif|ico)$/,
+                    test: /\.(png)$/,
                     use: [
                         {
                             loader: "file-loader",
                             options: {
-                                name: "./images/[name].[hash].[ext]"
+                                name: "./images/[hash].[ext]"
                             }
                         }
                     ]
-                },
-                {
-                    test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: "file-loader",
-                    options: {
-                        name: "./fonts/[name].[hash].[ext]"
-                    }
                 }
             ]
         },

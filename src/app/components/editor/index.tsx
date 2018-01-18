@@ -1,15 +1,18 @@
+import { ToolbarButton } from "../common/toolbar-button";
+import { ToolbarDivider } from "../common/toolbar-divider";
+import { CustomEditor } from "../common/custom-editor";
 import * as React from "react";
-import { ToolbarButton, ToolbarDivider, CustomEditor } from "../common";
 import { EditorResources } from "../../strings/editor";
 import { Documentation } from "./documentation";
+import { MasterLayout } from "../common/master-layout/index";
 
-const NewIcon = require("../../content/images/toolbar/new.png");
-const CutIcon = require("../../content/images/toolbar/cut.png");
-const CopyIcon = require("../../content/images/toolbar/copy.png");
-const PasteIcon = require("../../content/images/toolbar/paste.png");
-const UndoIcon = require("../../content/images/toolbar/undo.png");
-const RedoIcon = require("../../content/images/toolbar/redo.png");
-const RunIcon = require("../../content/images/toolbar/run.png");
+const NewIcon = require("./images/new.png");
+const CutIcon = require("./images/cut.png");
+const CopyIcon = require("./images/copy.png");
+const PasteIcon = require("./images/paste.png");
+const UndoIcon = require("./images/undo.png");
+const RedoIcon = require("./images/redo.png");
+const RunIcon = require("./images/run.png");
 
 interface EditorComponentProps {
 }
@@ -37,35 +40,30 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
 
     public render(): JSX.Element {
         return (
-            <div className="content">
-                <div className="toolbar body-box">
-                    <ToolbarButton title={EditorResources.ToolbarButton_New_Title} description={EditorResources.ToolbarButton_New_Description} image={NewIcon} />
-                    <ToolbarDivider />
-
-                    <ToolbarButton title={EditorResources.ToolbarButton_Cut_Title} description={EditorResources.ToolbarButton_Cut_Description} image={CutIcon} />
-                    <ToolbarButton title={EditorResources.ToolbarButton_Copy_Title} description={EditorResources.ToolbarButton_Copy_Description} image={CopyIcon} />
-                    <ToolbarButton title={EditorResources.ToolbarButton_Paste_Title} description={EditorResources.ToolbarButton_Paste_Description} image={PasteIcon} />
-                    <ToolbarDivider />
-
-                    <ToolbarButton title={EditorResources.ToolbarButton_Undo_Title} description={EditorResources.ToolbarButton_Undo_Description} image={UndoIcon} />
-                    <ToolbarButton title={EditorResources.ToolbarButton_Redo_Title} description={EditorResources.ToolbarButton_Redo_Description} image={RedoIcon} />
-                    <ToolbarDivider />
-
+            <MasterLayout
+                toolbar={[
+                    <ToolbarButton title={EditorResources.ToolbarButton_New_Title} description={EditorResources.ToolbarButton_New_Description} image={NewIcon} />,
+                    <ToolbarDivider />,
+                    <ToolbarButton title={EditorResources.ToolbarButton_Cut_Title} description={EditorResources.ToolbarButton_Cut_Description} image={CutIcon} />,
+                    <ToolbarButton title={EditorResources.ToolbarButton_Copy_Title} description={EditorResources.ToolbarButton_Copy_Description} image={CopyIcon} />,
+                    <ToolbarButton title={EditorResources.ToolbarButton_Paste_Title} description={EditorResources.ToolbarButton_Paste_Description} image={PasteIcon} />,
+                    <ToolbarDivider />,
+                    <ToolbarButton title={EditorResources.ToolbarButton_Undo_Title} description={EditorResources.ToolbarButton_Undo_Description} image={UndoIcon} />,
+                    <ToolbarButton title={EditorResources.ToolbarButton_Redo_Title} description={EditorResources.ToolbarButton_Redo_Description} image={RedoIcon} />,
+                    <ToolbarDivider />,
                     <ToolbarButton title={EditorResources.ToolbarButton_Run_Title} description={EditorResources.ToolbarButton_Run_Description} image={RunIcon} />
-                </div>
-
-                <div className="container-left body-box">
+                ]}
+                leftContainer={
                     <CustomEditor
                         id="code-editor-page-editor-id"
                         initialValue={this.state.code}
                         onChange={this.onEditorChange.bind(this)}
                     />
-                </div>
-
-                <div className="container-right body-box">
+                }
+                rightContainer={
                     <Documentation />
-                </div>
-            </div>
+                }
+            />
         );
     }
 }

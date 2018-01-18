@@ -66,7 +66,9 @@ export class Documentation extends React.Component<DocumentationProps, Documenta
                                             const property = library.properties[propertyName];
                                             return (
                                                 <li className="library-member" key={propertyName}>
-                                                    <p className="library-member-name" onClick={(() => this.memberClicked(propertyName)).bind(this)}>{propertyName}</p>
+                                                    <p className="library-member-name" onClick={(() => this.memberClicked(propertyName)).bind(this)}>
+                                                        {libraryName}.{propertyName}
+                                                    </p>
                                                     <div style={{ display: this.state.member === propertyName ? "inherit" : "none" }}>
                                                         <p className="description">{property.description}</p>
                                                     </div>
@@ -77,7 +79,9 @@ export class Documentation extends React.Component<DocumentationProps, Documenta
                                             const method = library.methods[methodName];
                                             return (
                                                 <li className="library-member" key={methodName}>
-                                                    <p className="library-member-name" onClick={(() => this.memberClicked(methodName)).bind(this)}>{methodName}</p>
+                                                    <p className="library-member-name" onClick={(() => this.memberClicked(methodName)).bind(this)}>
+                                                        {libraryName}.{methodName}({method.parametersDescription.map(parameter => parameter.name).join(", ")})
+                                                    </p>
                                                     <div style={{ display: this.state.member === methodName ? "inherit" : "none" }}>
                                                         <p className="description">{method.description}</p>
                                                         <ul>

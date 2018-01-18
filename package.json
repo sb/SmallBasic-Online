@@ -39,7 +39,6 @@
     "gulp": "3.9.1",
     "html-webpack-plugin": "2.30.1",
     "jasmine": "2.8.0",
-    "jquery": "2.2.4",
     "react": "16.0.0",
     "react-ace": "5.4.0",
     "react-dom": "16.0.0",

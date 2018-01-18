@@ -7,9 +7,6 @@ import * as ReactDOM from "react-dom";
 import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from "react-redux";
 
-import "./style.css";
-import "../../node_modules/jquery/dist/jquery.js";
-
 // TODO: get from settings along with version
 window.document.title = "SuperBasic";
 

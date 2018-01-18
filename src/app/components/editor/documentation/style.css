@@ -17,7 +17,7 @@
     background-repeat: no-repeat;
     background-size: 50px;
     position: relative;
-    background-image: url('../../../content/images/appicon.png');
+    background-image: url('./images/header.png');
     float: left;
 }
 
