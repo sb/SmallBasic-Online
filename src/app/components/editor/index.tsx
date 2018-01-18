@@ -55,7 +55,7 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
                 ]}
                 leftContainer={
                     <CustomEditor
-                        id="code-editor-page-editor-id"
+                        readOnly={false}
                         initialValue={this.state.code}
                         onChange={this.onEditorChange.bind(this)}
                     />
