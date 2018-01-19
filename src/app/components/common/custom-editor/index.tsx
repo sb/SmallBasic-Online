@@ -1,15 +1,8 @@
 /// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
-
 import "@timkendrick/monaco-editor";
-import * as React from "react";
 
-declare module window {
-    const monaco: {
-        editor: {
-            create(domElement: HTMLElement, options?: monaco.editor.IEditorConstructionOptions, override?: monaco.editor.IEditorOverrideServices): monaco.editor.IStandaloneCodeEditor;
-        }
-    };
-}
+import * as React from "react";
+import { CompletionService } from "../../../../compiler/services/completion";
 
 interface CustomEditorProps {
     readOnly: boolean;
@@ -17,26 +10,23 @@ interface CustomEditorProps {
     onChange: (value: string) => void;
 }
 
-declare module window {
-    const require: any;
-}
-
 export class CustomEditor extends React.Component<CustomEditorProps> {
-    private _editor: monaco.editor.IStandaloneCodeEditor;
+    private onResize: () => void;
+    private editor: monaco.editor.IStandaloneCodeEditor;
 
-    public render(): JSX.Element {
-        return <div ref="editor" style={{
-            height: "100%",
-            width: "100%"
-        }} />;
+    public constructor(props: CustomEditorProps) {
+        super(props);
+        this.onResize = () => {
+            this.editor.layout();
+        };
     }
 
-    public get editor(): monaco.editor.IStandaloneCodeEditor {
-        return this._editor;
+    public render(): JSX.Element {
+        return <div ref="editor" style={{ height: "100%", width: "100%" }} />;
     }
 
     public componentDidMount(): void {
-        this._editor = window.monaco.editor.create(this.refs["editor"] as HTMLElement, {
+        const options: monaco.editor.IEditorConstructionOptions = {
             language: "sb",
             scrollBeyondLastLine: false,
             readOnly: this.props.readOnly,
@@ -44,29 +34,20 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
             fontFamily: "Consolas, monospace, Hack",
             fontSize: 18,
             minimap: { enabled: false }
+        };
+
+        this.editor = (window as any).monaco.editor.create(this.refs["editor"], options);
+
+        this.editor.onDidChangeModelContent(() => {
+            this.props.onChange(this.editor.getValue());
         });
 
-        this._editor.onDidChangeModelContent(() => {
-            this.props.onChange(this._editor.getValue());
-        });
+        monaco.languages.registerCompletionItemProvider("sb", new CompletionService());
 
-        monaco.languages.registerCompletionItemProvider("sb", {
-            provideCompletionItems: () => {
-                return [
-                    {
-                        label: "option 1",
-                        kind: monaco.languages.CompletionItemKind.Function,
-                        documentation: "Description 1",
-                        insertText: `option1()`
-                    },
-                    {
-                        label: "option 2",
-                        kind: monaco.languages.CompletionItemKind.Field,
-                        documentation: "Description 2",
-                        insertText: `option2()`
-                    }
-                ];
-            }
-        });
+        window.addEventListener("resize", this.onResize);
+    }
+
+    public componentWillUnmount(): void {
+        window.removeEventListener("resize", this.onResize);
     }
 }
