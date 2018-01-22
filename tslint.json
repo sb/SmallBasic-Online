@@ -3,8 +3,6 @@
         "no-consecutive-blank-lines": true,
         "eofline": true,
         "no-var-keyword": true,
-        "no-var-requires": true,
-        "no-require-imports": true,
         "triple-equals": true,
         "typedef": [
             true,

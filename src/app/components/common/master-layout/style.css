@@ -1,0 +1,39 @@
+body {
+    background-color: #74c1df;
+    font-family: Consolas, monospace, Hack;
+}
+
+.body-box {
+    border: 1px solid black;
+    box-shadow: 5px 5px 5px #888888;
+    background-color: #fafafc;
+    padding: 10px;
+}
+
+.toolbar {
+    height: auto;
+    display: flex;
+    flex-flow: row wrap;
+    margin-bottom: 20px;
+    min-width: 200px;
+}
+
+.container-left {
+    display: flex;
+    flex-flow: column;
+    position: relative;
+
+    float: left;
+    width: calc(60% - 30px);
+    height: 600px;
+}
+
+.container-right {
+    display: flex;
+    flex-flow: column;
+    position: relative;
+
+    float: right;
+    width: calc(40% - 30px);
+    height: 600px;
+}

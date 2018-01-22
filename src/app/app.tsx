@@ -1,19 +1,25 @@
+import { EditorComponent } from "./components/editor";
+import { RunComponent } from "./components/run";
+import { reduce } from "./store";
 import * as React from "react";
-import { Main } from "./components";
+import { createStore } from "redux";
 import * as ReactDOM from "react-dom";
-import { HashRouter, Route, Switch } from "react-router-dom";
+import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
+import { Provider } from "react-redux";
 
-import "./content/scss/styles.scss";
-
-// TODO: remove below import once integration is complete
-import "../compiler/compilation";
-
+// TODO: get from settings along with version
 window.document.title = "SuperBasic";
 
+const store = createStore(reduce);
+
 ReactDOM.render((
-    <HashRouter>
-        <Switch>
-            <Route path="/" component={Main} />
-        </Switch>
-    </HashRouter>
+    <Provider store={store}>
+        <HashRouter>
+            <Switch>
+                <Route path="/editor" component={EditorComponent} />
+                <Route path="/run" component={RunComponent} />
+                <Redirect from="/" to="/editor" />
+            </Switch>
+        </HashRouter>
+    </Provider>
 ), document.getElementById("react-app"));

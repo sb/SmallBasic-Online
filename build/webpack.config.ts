@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as webpack from "webpack";
 import * as helpers from "./gulp-helpers";
-import * as ExtractTextPlugin from "extract-text-webpack-plugin";
 
 export interface IExternalParams {
     release: boolean;
@@ -26,8 +25,6 @@ export function factory(params: IFactoryParams): webpack.Configuration {
     const outputFolder = path.resolve("out", params.outputRelativePath);
 
     console.log(`Building ${release ? "release" : "debug"} configuration to folder: ${outputFolder}`);
-
-    const extractSCSS = new ExtractTextPlugin("styles.css");
 
     const config: webpack.Configuration = {
         entry: params.entryPath,
@@ -57,34 +54,27 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                     enforce: "pre"
                 },
                 {
-                    test: /\.scss$/,
-                    use: extractSCSS.extract({
-                        fallback: "style-loader",
-                        use: ["css-loader?sourceMap", "sass-loader?sourceMap"]
-                    })
+                    test: /\.css$/,
+                    loaders: [
+                        "style-loader",
+                        "css-loader"
+                    ]
                 },
                 {
-                    test: /\.(png|jpg|jpeg|gif|ico)$/,
+                    test: /\.(png|gif)$/,
                     use: [
                         {
                             loader: "file-loader",
                             options: {
-                                name: "./images/[name].[hash].[ext]"
+                                name: "./images/[hash].[ext]"
                             }
                         }
                     ]
-                },
-                {
-                    test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-                    loader: "file-loader",
-                    options: {
-                        name: "./fonts/[name].[hash].[ext]"
-                    }
                 }
             ]
         },
         resolve: {
-            extensions: [".tsx", ".ts", ".jsx", ".js", ".scss"]
+            extensions: [".tsx", ".ts", ".jsx", ".js"]
         },
         devServer: {
             contentBase: outputFolder
@@ -96,8 +86,7 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                 }
             }),
             new webpack.HotModuleReplacementPlugin(),
-            new webpack.NamedModulesPlugin(),
-            extractSCSS
+            new webpack.NamedModulesPlugin()
         ]
     };
 

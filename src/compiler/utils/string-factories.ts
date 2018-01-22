@@ -5,19 +5,19 @@ import { TokenKindResources } from "../strings/token-kinds";
 
 export function CommandSyntaxKindToString(kind: CommandSyntaxKind): string {
     switch (kind) {
-        case CommandSyntaxKind.If: return SyntaxKindResources.toString(SyntaxKindResources.Keys.IfCommandSyntax);
-        case CommandSyntaxKind.Else: return SyntaxKindResources.toString(SyntaxKindResources.Keys.ElseCommandSyntax);
-        case CommandSyntaxKind.ElseIf: return SyntaxKindResources.toString(SyntaxKindResources.Keys.ElseIfCommandSyntax);
-        case CommandSyntaxKind.EndIf: return SyntaxKindResources.toString(SyntaxKindResources.Keys.EndIfCommandSyntax);
-        case CommandSyntaxKind.For: return SyntaxKindResources.toString(SyntaxKindResources.Keys.ForCommandSyntax);
-        case CommandSyntaxKind.EndFor: return SyntaxKindResources.toString(SyntaxKindResources.Keys.EndForCommandSyntax);
-        case CommandSyntaxKind.While: return SyntaxKindResources.toString(SyntaxKindResources.Keys.WhileCommandSyntax);
-        case CommandSyntaxKind.EndWhile: return SyntaxKindResources.toString(SyntaxKindResources.Keys.EndWhileCommandSyntax);
-        case CommandSyntaxKind.Label: return SyntaxKindResources.toString(SyntaxKindResources.Keys.LabelCommandSyntax);
-        case CommandSyntaxKind.GoTo: return SyntaxKindResources.toString(SyntaxKindResources.Keys.GoToCommandSyntax);
-        case CommandSyntaxKind.Sub: return SyntaxKindResources.toString(SyntaxKindResources.Keys.SubCommandSyntax);
-        case CommandSyntaxKind.EndSub: return SyntaxKindResources.toString(SyntaxKindResources.Keys.EndSubCommandSyntax);
-        case CommandSyntaxKind.Expression: return SyntaxKindResources.toString(SyntaxKindResources.Keys.ExpressionCommandSyntax);
+        case CommandSyntaxKind.If: return SyntaxKindResources.IfCommandSyntax;
+        case CommandSyntaxKind.Else: return SyntaxKindResources.ElseCommandSyntax;
+        case CommandSyntaxKind.ElseIf: return SyntaxKindResources.ElseIfCommandSyntax;
+        case CommandSyntaxKind.EndIf: return SyntaxKindResources.EndIfCommandSyntax;
+        case CommandSyntaxKind.For: return SyntaxKindResources.ForCommandSyntax;
+        case CommandSyntaxKind.EndFor: return SyntaxKindResources.EndForCommandSyntax;
+        case CommandSyntaxKind.While: return SyntaxKindResources.WhileCommandSyntax;
+        case CommandSyntaxKind.EndWhile: return SyntaxKindResources.EndWhileCommandSyntax;
+        case CommandSyntaxKind.Label: return SyntaxKindResources.LabelCommandSyntax;
+        case CommandSyntaxKind.GoTo: return SyntaxKindResources.GoToCommandSyntax;
+        case CommandSyntaxKind.Sub: return SyntaxKindResources.SubCommandSyntax;
+        case CommandSyntaxKind.EndSub: return SyntaxKindResources.EndSubCommandSyntax;
+        case CommandSyntaxKind.Expression: return SyntaxKindResources.ExpressionCommandSyntax;
 
         default:
             throw new Error(`Unrecognized syntax kind: ${CommandSyntaxKind[kind]}`);
@@ -61,10 +61,10 @@ export function TokenKindToString(kind: TokenKind): string {
         case TokenKind.Or: return "Or";
         case TokenKind.And: return "And";
 
-        case TokenKind.Identifier: return TokenKindResources.toString(TokenKindResources.Keys.Identifier);
-        case TokenKind.NumberLiteral: return TokenKindResources.toString(TokenKindResources.Keys.NumberLiteral);
-        case TokenKind.StringLiteral: return TokenKindResources.toString(TokenKindResources.Keys.StringLiteral);
-        case TokenKind.Comment: return TokenKindResources.toString(TokenKindResources.Keys.Comment);
+        case TokenKind.Identifier: return TokenKindResources.Identifier;
+        case TokenKind.NumberLiteral: return TokenKindResources.NumberLiteral;
+        case TokenKind.StringLiteral: return TokenKindResources.StringLiteral;
+        case TokenKind.Comment: return TokenKindResources.Comment;
 
         default:
             throw new Error(`Unrecognized token kind: ${TokenKind[kind]}`);

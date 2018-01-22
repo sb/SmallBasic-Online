@@ -5,18 +5,30 @@ import { ClockLibrary } from "./libraries/clock";
 
 type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode) => void;
 
+// TODO: add the rest of the libraries
+
 export interface LibraryMethodDefinition {
+    readonly description: string;
+    readonly parametersDescription: {
+        readonly name: string;
+        readonly description: string;
+    }[];
+
     readonly argumentsCount: number;
     readonly returnsValue: boolean;
     readonly execute: LibraryExecuteSignature;
 }
 
 export interface LibraryPropertyDefinition {
+    readonly description: string;
+
     readonly getter?: LibraryExecuteSignature;
     readonly setter?: LibraryExecuteSignature;
 }
 
 export interface LibraryTypeDefinition {
+    readonly description: string;
+
     methods: { readonly [name: string]: LibraryMethodDefinition };
     properties: { readonly [name: string]: LibraryPropertyDefinition };
 }

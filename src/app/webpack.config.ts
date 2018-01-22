@@ -26,7 +26,7 @@ export default function (env: any): webpack.Configuration {
         minify: minifyOptions,
         hash: true,
         showErrors: false,
-        favicon: path.resolve(__dirname, "content/favicon.png")
+        favicon: path.resolve(__dirname, "content/appicon.png")
     }));
 
     return config;

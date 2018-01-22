@@ -3,10 +3,14 @@ import { LibraryTypeDefinition } from "../supported-libraries";
 import { ValueKind } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
+import { DocumentationResources } from "../../strings/documentation";
 
 export const TextWindowLibrary: LibraryTypeDefinition = {
+    description: DocumentationResources.TextWindow_Description,
     methods: {
         "Read": {
+            description: DocumentationResources.TextWindow_Read_Description,
+            parametersDescription: [],
             argumentsCount: 0,
             returnsValue: true,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {
@@ -26,6 +30,8 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             }
         },
         "ReadNumber": {
+            description: DocumentationResources.TextWindow_ReadNumber_Description,
+            parametersDescription: [],
             argumentsCount: 0,
             returnsValue: true,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {
@@ -45,6 +51,10 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             }
         },
         "WriteLine": {
+            description: DocumentationResources.TextWindow_WriteLine_Description,
+            parametersDescription: [
+                { name: "data", description: DocumentationResources.TextWindow_WriteLine_Data_Description }
+            ],
             argumentsCount: 1,
             returnsValue: false,
             execute: (engine: ExecutionEngine, _: ExecutionMode) => {

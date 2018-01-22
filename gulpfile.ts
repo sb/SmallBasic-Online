@@ -5,15 +5,14 @@ import * as helpers from "./build/gulp-helpers";
 import { generateModels } from "./build/generate-models";
 import { generateLocStrings } from "./build/generate-loc-strings";
 
-gulp.task("generate-errors-strings", () => generateLocStrings("ErrorResources", "errors"));
-gulp.task("generate-syntax-kinds-strings", () => generateLocStrings("SyntaxKindResources", "syntax-kinds"));
-gulp.task("generate-token-kinds-strings", () => generateLocStrings("TokenKindResources", "token-kinds"));
+// TODO: select user language
+const userLanguage = "en";
 
-gulp.task("generate-loc-strings", [
-    "generate-errors-strings",
-    "generate-syntax-kinds-strings",
-    "generate-token-kinds-strings"
-]);
+gulp.task("generate-errors-strings", () => generateLocStrings("ErrorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/errors.json`), path.resolve(__dirname, `./src/compiler/strings/errors.ts`)));
+gulp.task("generate-syntax-kinds-strings", () => generateLocStrings("SyntaxKindResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/syntax-kinds.json`), path.resolve(__dirname, `./src/compiler/strings/syntax-kinds.ts`)));
+gulp.task("generate-token-kinds-strings", () => generateLocStrings("TokenKindResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/token-kinds.json`), path.resolve(__dirname, `./src/compiler/strings/token-kinds.ts`)));
+gulp.task("generate-documentation-strings", () => generateLocStrings("DocumentationResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/documentation.json`), path.resolve(__dirname, `./src/compiler/strings/documentation.ts`)));
+gulp.task("generate-app-editor-strings", () => generateLocStrings("EditorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/app/editor.json`), path.resolve(__dirname, `./src/app/strings/editor.ts`)));
 
 gulp.task("generate-syntax-expressions", () => generateModels("syntax-expressions"));
 gulp.task("generate-syntax-commands", () => generateModels("syntax-commands"));
@@ -22,7 +21,15 @@ gulp.task("generate-bound-statements", () => generateModels("bound-statements"))
 gulp.task("generate-bound-expressions", () => generateModels("bound-expressions"));
 gulp.task("generate-instructions", () => generateModels("instructions"));
 
-gulp.task("generate-models", [
+gulp.task("generate-source-files", [
+    // loc
+    "generate-errors-strings",
+    "generate-syntax-kinds-strings",
+    "generate-token-kinds-strings",
+    "generate-documentation-strings",
+    "generate-app-editor-strings",
+
+    // compiler
     "generate-syntax-expressions",
     "generate-syntax-commands",
     "generate-syntax-statements",
@@ -31,39 +38,31 @@ gulp.task("generate-models", [
     "generate-instructions"
 ]);
 
-gulp.task("watch-source", ["generate-models", "generate-loc-strings"], () => {
-    gulp.watch("build/**", ["generate-models", "generate-loc-strings"]);
+gulp.task("build-source", ["generate-source-files"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: false, watch: false }));
 
-    helpers.runWebpack({
+gulp.task("watch-source", () => {
+    gulp.watch("build/**", ["generate-source-files"]);
+    return helpers.runWebpack({
         projectPath: "./src/app/webpack.config.ts",
         release: false,
         watch: true
     });
 });
 
-gulp.task("build-tests", () => helpers.runWebpack({
-    projectPath: "./tests/webpack.config.ts",
-    release: false,
-    watch: false
-}));
-
-gulp.task("run-tests", ["build-tests"], () => helpers.cmdToPromise("node", [
-    "./node_modules/jasmine/bin/jasmine.js",
-    "./out/tests/tests.js"
-]));
+gulp.task("build-tests", () => helpers.runWebpack({ projectPath: "./tests/webpack.config.ts", release: false, watch: false }));
+gulp.task("run-tests",  ["build-tests"], () => helpers.cmdToPromise("node", ["./node_modules/jasmine/bin/jasmine.js", "./out/tests/tests.js"]));
 
 gulp.task("watch-tests", () => {
-    gulp.watch(["build/**"], ["generate-models", "generate-loc-strings"]);
+    gulp.watch("build/**", ["generate-source-files"]);
     gulp.watch(["src/**", "tests/**"], ["run-tests"]);
 });
 
-gulp.task("release", ["generate-models", "generate-loc-strings"], () =>
+gulp.task("release", ["generate-source-files"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: true, watch: false }));
+
+gulp.task("deploy", ["generate-models", "generate-loc-strings"], () =>
     helpers.rimrafToPromise("./out/app")
-    .then(() => helpers.runWebpack({
-        projectPath: "./src/app/webpack.config.ts",
-        release: true,
-        watch: false
-    })));
+        .then(() => gulp.start("build-source-release"))
+        .then(() => { throw ` azure deploy not implemented yet`; }));
 
 gulp.task("package", ["release"], () => {
     const setupConfigPath = "./out/electron/electron-builder-config.json";
@@ -100,5 +99,6 @@ gulp.task("package", ["release"], () => {
                 }
             });
         }))
-        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath]));
+        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath]))
+        .then(() => { throw `github release not implemented yet`; });
 });
