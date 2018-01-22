@@ -12,13 +12,13 @@ import { CompletionService } from "../../../services/completion";
 interface CustomEditorProps {
     readOnly: boolean;
     initialValue: string;
-    onChange: (editor: CustomEditor) => void;
 }
 
 export class CustomEditor extends React.Component<CustomEditorProps> {
     private onResize: () => void;
     private decorations: string[];
-    private editor: monaco.editor.IStandaloneCodeEditor;
+
+    public editor: monaco.editor.IStandaloneCodeEditor;
 
     public render(): JSX.Element {
         return <div ref="editor" style={{ height: "100%", width: "100%" }} />;
@@ -34,14 +34,13 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
             value: this.props.initialValue,
             fontFamily: "Consolas, monospace, Hack",
             fontSize: 18,
-            minimap: { enabled: false }
+            glyphMargin: true,
+            minimap: {
+                enabled: false
+            }
         };
 
         this.editor = (window as any).monaco.editor.create(this.refs["editor"], options);
-
-        this.editor.onDidChangeModelContent(() => {
-            this.props.onChange(this);
-        });
 
         monaco.languages.registerCompletionItemProvider("sb", new CompletionService());
         monaco.languages.registerHoverProvider("sb", new HoverService());
@@ -57,8 +56,12 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
         window.removeEventListener("resize", this.onResize);
     }
 
-    public getValue(): string {
-        return this.editor.getValue();
+    public undo(): void {
+        this.editor.trigger("", "undo", "");
+    }
+
+    public redo(): void {
+        this.editor.trigger("", "redo", "");
     }
 
     public setDiagnostics(diagnostics: ReadonlyArray<Diagnostic>): void {
@@ -66,7 +69,8 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
             return {
                 range: EditorUtils.textRangeToEditorRange(diagnostic.range),
                 options: {
-                    className: "wavy-line"
+                    className: "wavy-line",
+                    glyphMarginClassName: "error-line-glyph"
                 }
             };
         }));

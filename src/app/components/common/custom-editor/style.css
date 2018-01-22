@@ -1,5 +1,9 @@
 .wavy-line {
     display: inline-block;
-    position:relative;
+    position: relative;
     background: url("./images/wavy-line.gif") bottom repeat-x;
+}
+
+.error-line-glyph {
+    background: red;
 }
