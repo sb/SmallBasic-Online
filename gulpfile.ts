@@ -50,13 +50,14 @@ gulp.task("watch-source", () => {
 });
 
 gulp.task("build-tests", () => helpers.runWebpack({ projectPath: "./tests/webpack.config.ts", release: false, watch: false }));
-gulp.task("run-tests", () => helpers.cmdToPromise("node", ["./node_modules/jasmine/bin/jasmine.js", "./out/tests/tests.js"]));
+gulp.task("run-tests",  ["build-tests"], () => helpers.cmdToPromise("node", ["./node_modules/jasmine/bin/jasmine.js", "./out/tests/tests.js"]));
 
 gulp.task("watch-tests", () => {
     gulp.watch("build/**", ["generate-source-files"]);
-    gulp.watch(["src/**", "tests/**"], ["build-tests"]);
-    gulp.watch("out/tests/**", ["run-tests"]);
+    gulp.watch(["src/**", "tests/**"], ["run-tests"]);
 });
+
+gulp.task("release", ["generate-source-files"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: true, watch: false }));
 
 gulp.task("deploy", ["generate-models", "generate-loc-strings"], () =>
     helpers.rimrafToPromise("./out/app")
