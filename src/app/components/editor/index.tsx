@@ -1,3 +1,4 @@
+import { Compilation } from "../../../compiler/compilation";
 import { ToolbarButton } from "../common/toolbar-button";
 import { ToolbarDivider } from "../common/toolbar-divider";
 import { CustomEditor } from "../common/custom-editor";
@@ -18,24 +19,26 @@ interface EditorComponentProps {
 }
 
 interface EditorComponentState {
-    code: string;
+    compilation: Compilation;
 }
 
 export class EditorComponent extends React.Component<EditorComponentProps, EditorComponentState> {
     public constructor(props: EditorComponentProps) {
         super(props);
         this.state = {
-            code: [
+            compilation: new Compilation([
                 `' A new Program!`,
                 `TextWindow.WriteLine("Hello World!")`
-            ].join("\n")
+            ].join("\n"))
         };
     }
 
-    private onEditorChange(code: string): void {
+    private onEditorChange(editor: CustomEditor): void {
         this.setState({
-            code: code
+            compilation: new Compilation(editor.getValue())
         });
+
+        editor.setDiagnostics(this.state.compilation.diagnostics);
     }
 
     public render(): JSX.Element {
@@ -56,7 +59,7 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
                 leftContainer={
                     <CustomEditor
                         readOnly={false}
-                        initialValue={this.state.code}
+                        initialValue={this.state.compilation.text}
                         onChange={this.onEditorChange.bind(this)}
                     />
                 }

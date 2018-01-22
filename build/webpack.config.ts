@@ -61,7 +61,7 @@ export function factory(params: IFactoryParams): webpack.Configuration {
                     ]
                 },
                 {
-                    test: /\.(png)$/,
+                    test: /\.(png|gif)$/,
                     use: [
                         {
                             loader: "file-loader",

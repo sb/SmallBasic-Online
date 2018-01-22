@@ -1,6 +1,6 @@
-import { Scanner } from "../syntax/scanner";
-import { TokenKind } from "../syntax/tokens";
-import { SupportedLibraries, LibraryTypeDefinition } from "../runtime/supported-libraries";
+import { TokenKind } from "../../compiler/syntax/tokens";
+import { LibraryTypeDefinition, SupportedLibraries } from "../../compiler/runtime/supported-libraries";
+import { Scanner } from "../../compiler/syntax/scanner";
 
 export class CompletionService implements monaco.languages.CompletionItemProvider {
     public readonly triggerCharacters: string[] = [

@@ -1,0 +1,5 @@
+.wavy-line {
+    display: inline-block;
+    position:relative;
+    background: url("./images/wavy-line.gif") bottom repeat-x;
+}
