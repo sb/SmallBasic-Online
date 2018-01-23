@@ -18,7 +18,15 @@ body {
     min-width: 200px;
 }
 
-.container-left {
+.full-container {
+    display: flex;
+    flex-flow: column;
+    position: relative;
+
+    height: 600px;
+}
+
+.master-container {
     display: flex;
     flex-flow: column;
     position: relative;
@@ -28,7 +36,7 @@ body {
     height: 600px;
 }
 
-.container-right {
+.sidebar {
     display: flex;
     flex-flow: column;
     position: relative;

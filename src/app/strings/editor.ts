@@ -17,6 +17,8 @@ export module EditorResources {
     export const ToolbarButton_Redo_Description = "Redo last undone action";
     export const ToolbarButton_Run_Title = "Run";
     export const ToolbarButton_Run_Description = "Run this program";
+    export const ToolbarButton_Stop_Title = "Stop";
+    export const ToolbarButton_Stop_Description = "Stop execution of the program and return to the editor";
     export const Modal_ConfirmNew_Text = "Are you sure you want to erase all code and start a new program?";
     export const Modal_Button_Yes = "Yes";
     export const Modal_Button_No = "No";

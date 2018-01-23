@@ -25,11 +25,11 @@ export class ActionFactory {
     }
 }
 
-export interface ReduxState {
+export interface AppState {
     readonly compilation: Compilation;
 }
 
-export function reduce(state: ReduxState | undefined, action: BaseAction): ReduxState {
+export function reduce(state: AppState | undefined, action: BaseAction): AppState {
     if (!state) {
         return {
             compilation: new Compilation("")

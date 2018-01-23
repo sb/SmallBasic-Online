@@ -33,4 +33,8 @@ export class Compilation {
             this.subModules = subModules;
         }
     }
+
+    public get isReadyToRun(): boolean {
+        return !!this.text.trim() && !this.diagnostics.length;
+    }
 }
