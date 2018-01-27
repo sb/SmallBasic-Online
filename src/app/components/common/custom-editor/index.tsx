@@ -1,13 +1,10 @@
-/// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
 import { HoverService } from "../../../services/hover";
-import "@timkendrick/monaco-editor";
-
 import * as React from "react";
-
-import "./style.css";
 import { Diagnostic } from "../../../../compiler/utils/diagnostics";
 import { EditorUtils } from "../../../services/utils";
 import { CompletionService } from "../../../services/completion";
+
+import "./style.css";
 
 interface CustomEditorProps {
     readOnly: boolean;

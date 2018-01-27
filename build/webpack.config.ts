@@ -1,6 +1,7 @@
 import * as path from "path";
 import * as webpack from "webpack";
 import * as helpers from "./gulp-helpers";
+import { Entry } from "webpack";
 
 export interface IExternalParams {
     release: boolean;
@@ -8,8 +9,7 @@ export interface IExternalParams {
 
 export interface IFactoryParams {
     env: any;
-    entryPath: string;
-    outputFile: string;
+    entryPath: Entry;
     outputRelativePath: string;
     target: "web" | "node" | "electron-main";
 }
@@ -30,7 +30,7 @@ export function factory(params: IFactoryParams): webpack.Configuration {
         entry: params.entryPath,
         output: {
             path: outputFolder,
-            filename: params.outputFile
+            filename: "[name].js"
         },
         target: params.target,
         devtool: "source-map",

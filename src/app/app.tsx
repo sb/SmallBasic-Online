@@ -1,21 +1,26 @@
+/// <reference path="../../node_modules/monaco-editor/monaco.d.ts" />
+
 import { EditorComponent } from "./components/editor";
 import { RunComponent } from "./components/run";
-import { reduce, ActionFactory } from "./store";
+import { reduce, AppState } from "./store";
 import * as React from "react";
 import { createStore } from "redux";
 import * as ReactDOM from "react-dom";
 import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from "react-redux";
+import { Compilation } from "../compiler/compilation";
 
 // TODO: get from settings along with version
 window.document.title = "SuperBasic";
 
-const store = createStore(reduce);
+const initialState: AppState = {
+    compilation: new Compilation([
+        `' A new Program!`,
+        `TextWindow.WriteLine("Hello World!")`
+    ].join("\n"))
+};
 
-store.dispatch(ActionFactory.setText([
-    `' A new Program!`,
-    `TextWindow.WriteLine("Hello World!")`
-].join("\n")));
+const store = createStore(reduce, initialState);
 
 ReactDOM.render((
     <Provider store={store}>
