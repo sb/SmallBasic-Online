@@ -19,5 +19,6 @@
     "ToolbarButton_Stop_Description": "Stop execution of the program and return to the editor",
     "Modal_ConfirmNew_Text": "Are you sure you want to erase all code and start a new program?",
     "Modal_Button_Yes": "Yes",
-    "Modal_Button_No": "No"
+    "Modal_Button_No": "No",
+    "TextWindow_EndMessage": "Press any key to continue..."
 }

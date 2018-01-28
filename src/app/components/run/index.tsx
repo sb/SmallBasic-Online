@@ -6,6 +6,8 @@ import { RouteComponentProps } from "react-router";
 import { Compilation } from "../../../compiler/compilation";
 import { AppState } from "../../store";
 import { Dispatch, connect } from "react-redux";
+import { ExecutionMode, ExecutionEngine } from "../../../compiler/execution-engine";
+import { TextWindowComponent } from "../common/text-window/index";
 
 const StopIcon = require("./images/stop.png");
 
@@ -21,12 +23,43 @@ interface PropsFromReact extends RouteComponentProps<PropsFromReact> {
 
 type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact;
 
-class PresentationalComponent extends React.Component<PresentationalComponentProps> {
+interface PresentationalComponentState {
+}
+
+class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
+    private isAlreadyMounted: boolean;
+    private tokens: string[];
+    private engine: ExecutionEngine;
+
     public constructor(props: PresentationalComponentProps) {
         super(props);
 
         if (!this.props.compilation.isReadyToRun) {
             this.props.history.push("/editor");
+        }
+
+        this.engine = new ExecutionEngine(this.props.compilation);
+
+        this.state = {
+            isMounted: false
+        };
+    }
+
+    public componentDidMount(): void {
+        this.tokens = [];
+        this.isAlreadyMounted = true;
+        this.execute();
+    }
+
+    public componentWillUnmount(): void {
+        this.tokens.forEach(PubSub.unsubscribe);
+        this.isAlreadyMounted = false;
+    }
+
+    private execute(): void {
+        if (this.isAlreadyMounted) {
+            this.engine.execute(ExecutionMode.RunToEnd);
+            setTimeout(this.execute.bind(this));
         }
     }
 
@@ -41,7 +74,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                         onClick={() => this.props.history.push("/editor")} />
                 ]}
                 masterContainer={
-                    <div>{this.props.compilation.text}</div>
+                    <TextWindowComponent engine={this.engine} />
                 }
             />
         );

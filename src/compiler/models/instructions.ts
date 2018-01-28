@@ -85,6 +85,7 @@ export interface StoreArrayElementInstruction extends BaseInstruction {
 export interface StorePropertyInstruction extends BaseInstruction {
     readonly library: string;
     readonly property: string;
+    readonly sourceRange: TextRange;
 }
 
 export interface LoadVariableInstruction extends BaseInstruction {
@@ -100,12 +101,14 @@ export interface LoadArrayElementInstruction extends BaseInstruction {
 export interface LoadPropertyInstruction extends BaseInstruction {
     readonly library: string;
     readonly property: string;
+    readonly sourceRange: TextRange;
 }
 
 export interface MethodCallInstruction extends BaseInstruction {
     readonly library: string;
     readonly method: string;
     readonly argumentsCount: number;
+    readonly sourceRange: TextRange;
 }
 
 export interface NegateInstruction extends BaseInstruction {
@@ -260,12 +263,14 @@ export class InstructionFactory {
 
     public static StoreProperty(
         library: string,
-        property: string)
+        property: string,
+        sourceRange: TextRange)
         : StorePropertyInstruction {
         return {
             kind: InstructionKind.StoreProperty,
             library: library,
-            property: property
+            property: property,
+            sourceRange: sourceRange
         };
     }
 
@@ -293,25 +298,29 @@ export class InstructionFactory {
 
     public static LoadProperty(
         library: string,
-        property: string)
+        property: string,
+        sourceRange: TextRange)
         : LoadPropertyInstruction {
         return {
             kind: InstructionKind.LoadProperty,
             library: library,
-            property: property
+            property: property,
+            sourceRange: sourceRange
         };
     }
 
     public static MethodCall(
         library: string,
         method: string,
-        argumentsCount: number)
+        argumentsCount: number,
+        sourceRange: TextRange)
         : MethodCallInstruction {
         return {
             kind: InstructionKind.MethodCall,
             library: library,
             method: method,
-            argumentsCount: argumentsCount
+            argumentsCount: argumentsCount,
+            sourceRange: sourceRange
         };
     }
 

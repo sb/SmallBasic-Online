@@ -46,7 +46,6 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
     input = input || [];
     output = output || [];
 
-    verifyCompilationErrors(text);
     const compilation = new Compilation(text);
     verifyErrors(text, compilation.diagnostics, []);
 

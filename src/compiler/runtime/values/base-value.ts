@@ -14,7 +14,8 @@ export enum ValueKind {
 
 export abstract class BaseValue {
     public abstract toBoolean(): boolean;
-    public abstract toDisplayString(): string;
+    public abstract toDebuggerString(): string;
+    public abstract toValueString(): string;
     public abstract get kind(): ValueKind;
 
     public abstract tryConvertToNumber(): BaseValue;

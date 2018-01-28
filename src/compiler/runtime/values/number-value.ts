@@ -15,8 +15,12 @@ export class NumberValue extends BaseValue {
         return false;
     }
 
-    public toDisplayString(): string {
+    public toDebuggerString(): string {
         return this.value.toString();
+    }
+
+    public toValueString(): string {
+        return this.toDebuggerString();
     }
 
     public get kind(): ValueKind {

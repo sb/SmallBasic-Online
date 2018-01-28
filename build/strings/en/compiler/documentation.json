@@ -8,5 +8,7 @@
     "TextWindow_Read_Description": "Reads a line of text from the text window. Returns the string entered by the user.",
     "TextWindow_ReadNumber_Description": "Reads a number from the text window. Returns the number entered by the user.",
     "TextWindow_WriteLine_Description": "Writes a string or a number to the text window on its own line.",
-    "TextWindow_WriteLine_Data_Description": "The string or number to be written to the text window."
+    "TextWindow_WriteLine_Data_Description": "The string or number to be written to the text window.",
+    "TextWindow_ForegroundColor_Description": "Gets or sets the foreground color of the text to be output in the text window.",
+    "TextWindow_BackgroundColor_Description": "Gets or sets the background color of the text to be output in the text window."
 }

@@ -22,4 +22,5 @@ export module EditorResources {
     export const Modal_ConfirmNew_Text = "Are you sure you want to erase all code and start a new program?";
     export const Modal_Button_Yes = "Yes";
     export const Modal_Button_No = "No";
+    export const TextWindow_EndMessage = "Press any key to continue...";
 }

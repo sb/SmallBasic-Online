@@ -1,0 +1,7 @@
+.text-window {
+    padding: 5px;
+    overflow-y: auto;
+    word-break: break-all;
+    font-size: 18px;
+    flex: 1;
+}

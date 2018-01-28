@@ -15,8 +15,12 @@ export class StringValue extends BaseValue {
         return this.value.toLowerCase() === Constants.True.toLowerCase();
     }
 
-    public toDisplayString(): string {
+    public toDebuggerString(): string {
         return `"${this.value.toString()}"`;
+    }
+
+    public toValueString(): string {
+        return this.value;
     }
 
     public get kind(): ValueKind {
