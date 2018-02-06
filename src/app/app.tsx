@@ -2,6 +2,7 @@
 
 import { EditorComponent } from "./components/editor";
 import { RunComponent } from "./components/run";
+import { DebugComponent } from "./components/debug";
 import { reduce, AppState } from "./store";
 import * as React from "react";
 import { createStore } from "redux";
@@ -16,7 +17,9 @@ window.document.title = "SuperBasic";
 const initialState: AppState = {
     compilation: new Compilation([
         `' A new Program!`,
-        `TextWindow.WriteLine("Hello World!")`
+        `TextWindow.WriteLine("What is your name?")`,
+        `name = TextWindow.Read()`,
+        `TextWindow.WriteLine("Hello " + name + "!")`
     ].join("\n"))
 };
 
@@ -28,6 +31,7 @@ ReactDOM.render((
             <Switch>
                 <Route path="/editor" component={EditorComponent} />
                 <Route path="/run" component={RunComponent} />
+                <Route path="/debug" component={DebugComponent} />
                 <Redirect from="/" to="/editor" />
             </Switch>
         </HashRouter>

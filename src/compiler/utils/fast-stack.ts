@@ -32,7 +32,11 @@ export class FastStack<T> {
         }
     }
 
-    public count(): number {
+    public get count(): number {
         return this.validLength;
+    }
+
+    public get items(): T[] {
+        return this.values.slice(0, this.validLength);
     }
 }

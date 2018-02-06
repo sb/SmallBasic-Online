@@ -4,20 +4,21 @@ import { ToolbarDivider } from "../common/toolbar-divider";
 import { CustomEditor } from "../common/custom-editor";
 import * as React from "react";
 import { EditorResources } from "../../strings/editor";
-import { Documentation } from "./documentation";
+import { DocumentationComponent } from "./documentation";
 import { MasterLayout } from "../common/master-layout";
 import { Modal } from "../common/modal";
 import { AppState, ActionFactory, SetTextAction } from "../../store";
 import { RouteComponentProps } from "react-router";
 import { Dispatch, connect } from "react-redux";
 
-const NewIcon = require("./images/new.png");
-const CutIcon = require("./images/cut.png");
-const CopyIcon = require("./images/copy.png");
-const PasteIcon = require("./images/paste.png");
-const UndoIcon = require("./images/undo.png");
-const RedoIcon = require("./images/redo.png");
-const RunIcon = require("./images/run.png");
+const NewIcon = require("../../content/buttons/new.png");
+const CutIcon = require("../../content/buttons/cut.png");
+const CopyIcon = require("../../content/buttons/copy.png");
+const PasteIcon = require("../../content/buttons/paste.png");
+const UndoIcon = require("../../content/buttons/undo.png");
+const RedoIcon = require("../../content/buttons/redo.png");
+const RunIcon = require("../../content/buttons/run.png");
+const DebugIcon = require("../../content/buttons/debug.png");
 
 interface PropsFromState {
     storeCompilation: Compilation;
@@ -37,6 +38,7 @@ interface PresentationalComponentState {
 }
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
+    private newModal: Modal;
     private editor: CustomEditor;
     private clipboard: string | undefined;
 
@@ -56,7 +58,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                             title={EditorResources.ToolbarButton_New_Title}
                             description={EditorResources.ToolbarButton_New_Description}
                             image={NewIcon}
-                            onClick={() => (this.refs["new-modal"] as Modal).open()} />,
+                            onClick={() => this.newModal.open()} />,
                         <ToolbarDivider />,
                         <ToolbarButton
                             title={EditorResources.ToolbarButton_Cut_Title}
@@ -90,20 +92,26 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                             description={EditorResources.ToolbarButton_Run_Description}
                             image={RunIcon}
                             onClick={() => this.props.history.push("/run")}
+                            disabled={!this.state.compilation.isReadyToRun} />,
+                        <ToolbarButton
+                            title={EditorResources.ToolbarButton_Debug_Title}
+                            description={EditorResources.ToolbarButton_Debug_Description}
+                            image={DebugIcon}
+                            onClick={() => this.props.history.push("/debug")}
                             disabled={!this.state.compilation.isReadyToRun} />
                     ]}
                     masterContainer={
                         <CustomEditor
-                            ref="editor"
+                            ref={editor => this.editor = editor!}
                             readOnly={false}
                             initialValue={this.state.compilation.text} />
                     }
                     sideBar={
-                        <Documentation />
+                        <DocumentationComponent />
                     }
                 />
                 <Modal
-                    ref="new-modal"
+                    ref={newModal => this.newModal = newModal!}
                     text={EditorResources.Modal_ConfirmNew_Text}
                     onClick={this.onNewModalButtonClick.bind(this)}
                     buttons={[
@@ -115,7 +123,6 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     }
 
     public componentDidMount(): void {
-        this.editor = this.refs["editor"] as CustomEditor;
         this.editor.setDiagnostics(this.state.compilation.diagnostics);
 
         this.editor.editor.onDidChangeModelContent(() => {

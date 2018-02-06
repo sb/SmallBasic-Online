@@ -1,37 +1,53 @@
 import { ModuleEmitter } from "./runtime/module-emitter";
 import { BaseInstruction } from "./models/instructions";
-import { StatementsParser } from "./syntax/statements-parser";
+import { StatementsParser, ParseTree } from "./syntax/statements-parser";
 import { CommandsParser } from "./syntax/command-parser";
 import { Diagnostic } from "./utils/diagnostics";
-import { ModuleBinder } from "./binding/module-binder";
+import { ModuleBinder, BoundTree } from "./binding/module-binder";
 import { Scanner } from "./syntax/scanner";
+import { BaseCommandSyntax } from "./models/syntax-commands";
+import { Token } from "./syntax/tokens";
+
+interface EmitResult {
+    readonly mainModule: ReadonlyArray<BaseInstruction>;
+    readonly subModules: { readonly [name: string]: ReadonlyArray<BaseInstruction> };
+}
 
 export class Compilation {
     public readonly diagnostics: ReadonlyArray<Diagnostic>;
-    public readonly mainModule: ReadonlyArray<BaseInstruction>;
-    public readonly subModules: { readonly [name: string]: ReadonlyArray<BaseInstruction> };
+    public readonly tokens: ReadonlyArray<Token>;
+    public readonly commands: ReadonlyArray<BaseCommandSyntax>;
+    public readonly parseTree: ParseTree;
+    public readonly boundTree: BoundTree;
 
     public constructor(public readonly text: string) {
         const diagnostics: Diagnostic[] = [];
 
-        const tokens = new Scanner(text, diagnostics).tokens;
-        const commands = new CommandsParser(tokens, diagnostics).commands;
-        const parseTree = new StatementsParser(commands, diagnostics).parseTree;
-        const boundTree = new ModuleBinder(parseTree, diagnostics).boundTree;
+        this.tokens = new Scanner(text, diagnostics).tokens;
+        this.commands = new CommandsParser(this.tokens, diagnostics).commands;
+        this.parseTree = new StatementsParser(this.commands, diagnostics).parseTree;
+        this.boundTree = new ModuleBinder(this.parseTree, diagnostics).boundTree;
 
         this.diagnostics = diagnostics;
+    }
 
-        if (!this.diagnostics.length) {
-            this.mainModule = new ModuleEmitter(boundTree.mainModule).instructions;
-            const subModules: { [name: string]: ReadonlyArray<BaseInstruction> } = {};
-
-            for (const name in boundTree.subModules) {
-                const subModule = boundTree.subModules[name];
-                subModules[name] = new ModuleEmitter(subModule).instructions;
-            }
-
-            this.subModules = subModules;
+    public emit(): EmitResult {
+        if (this.diagnostics.length) {
+            throw new Error(`Cannot emit a compilation with diagnostics`);
         }
+
+        const mainModule = new ModuleEmitter(this.boundTree.mainModule).instructions;
+        const subModules: { [name: string]: ReadonlyArray<BaseInstruction> } = {};
+
+        for (const name in this.boundTree.subModules) {
+            const subModule = this.boundTree.subModules[name];
+            subModules[name] = new ModuleEmitter(subModule).instructions;
+        }
+
+        return {
+            mainModule: mainModule,
+            subModules: subModules
+        };
     }
 
     public get isReadyToRun(): boolean {

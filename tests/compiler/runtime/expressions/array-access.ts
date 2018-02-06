@@ -13,4 +13,17 @@ TextWindow.WriteLine(y)`,
             [],
             ["9"]);
     });
+
+    it("can access non-existent arrays", () => {
+        verifyRuntimeResult(`
+TextWindow.WriteLine(x[0])
+TextWindow.WriteLine(x[0][0])
+TextWindow.WriteLine(x[2][3])`,
+            [],
+            [
+                "",
+                "",
+                ""
+            ]);
+    });
 });

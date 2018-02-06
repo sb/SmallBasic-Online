@@ -9,7 +9,7 @@ import { Dispatch, connect } from "react-redux";
 import { ExecutionMode, ExecutionEngine } from "../../../compiler/execution-engine";
 import { TextWindowComponent } from "../common/text-window/index";
 
-const StopIcon = require("./images/stop.png");
+const StopIcon = require("../../content/buttons/stop.png");
 
 interface PropsFromState {
     compilation: Compilation;
@@ -24,12 +24,11 @@ interface PropsFromReact extends RouteComponentProps<PropsFromReact> {
 type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact;
 
 interface PresentationalComponentState {
+    engine: ExecutionEngine;
 }
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
     private isAlreadyMounted: boolean;
-    private tokens: string[];
-    private engine: ExecutionEngine;
 
     public constructor(props: PresentationalComponentProps) {
         super(props);
@@ -38,27 +37,23 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
             this.props.history.push("/editor");
         }
 
-        this.engine = new ExecutionEngine(this.props.compilation);
-
         this.state = {
-            isMounted: false
+            engine: new ExecutionEngine(this.props.compilation)
         };
     }
 
     public componentDidMount(): void {
-        this.tokens = [];
         this.isAlreadyMounted = true;
         this.execute();
     }
 
     public componentWillUnmount(): void {
-        this.tokens.forEach(PubSub.unsubscribe);
         this.isAlreadyMounted = false;
     }
 
     private execute(): void {
         if (this.isAlreadyMounted) {
-            this.engine.execute(ExecutionMode.RunToEnd);
+            this.state.engine.execute(ExecutionMode.RunToEnd);
             setTimeout(this.execute.bind(this));
         }
     }
@@ -74,7 +69,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                         onClick={() => this.props.history.push("/editor")} />
                 ]}
                 masterContainer={
-                    <TextWindowComponent engine={this.engine} />
+                    <TextWindowComponent engine={this.state.engine} />
                 }
             />
         );

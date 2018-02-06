@@ -12,7 +12,7 @@ EndIf`,
             [],
             ["false"]);
     });
-    
+
     it("computes false and true", () => {
         verifyRuntimeResult(`
 If "false" and "true" Then
@@ -23,7 +23,7 @@ EndIf`,
             [],
             ["false"]);
     });
-    
+
     it("computes true and false", () => {
         verifyRuntimeResult(`
 If "true" and "false" Then
@@ -34,7 +34,7 @@ EndIf`,
             [],
             ["false"]);
     });
-    
+
     it("computes true and true", () => {
         verifyRuntimeResult(`
 If "true" and "true" Then
@@ -45,7 +45,7 @@ EndIf`,
             [],
             ["true"]);
     });
-    
+
     it("computes false or false", () => {
         verifyRuntimeResult(`
 If "false" or "false" Then
@@ -56,7 +56,7 @@ EndIf`,
             [],
             ["false"]);
     });
-    
+
     it("computes false or true", () => {
         verifyRuntimeResult(`
 If "false" or "true" Then
@@ -67,7 +67,7 @@ EndIf`,
             [],
             ["true"]);
     });
-    
+
     it("computes true or false", () => {
         verifyRuntimeResult(`
 If "true" or "false" Then
@@ -78,7 +78,7 @@ EndIf`,
             [],
             ["true"]);
     });
-    
+
     it("computes true or true", () => {
         verifyRuntimeResult(`
 If "true" or "true" Then

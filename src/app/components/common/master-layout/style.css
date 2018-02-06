@@ -36,7 +36,7 @@ body {
     height: 600px;
 }
 
-.sidebar {
+.sidebar-container {
     display: flex;
     flex-flow: column;
     position: relative;
@@ -44,4 +44,28 @@ body {
     float: right;
     width: calc(40% - 30px);
     height: 600px;
+}
+
+.sidebar-component {
+    flex: 1;
+    padding: 10px;
+}
+
+.sidebar-component-icon {
+    height: 50px;
+    width: 50px;
+    padding-right: 10px;
+    padding-left: 10px;
+    background-position: top;
+    background-repeat: no-repeat;
+    background-size: 50px;
+    position: relative;
+    float: left;
+}
+
+.sidebar-component-label {
+    font-size: xx-large;
+    font-weight: bold;
+    line-height: 50px;
+    margin-left: 10px;
 }

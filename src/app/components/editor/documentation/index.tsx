@@ -1,7 +1,10 @@
 import { SupportedLibraries } from "../../../../compiler/runtime/supported-libraries";
 import * as React from "react";
+import { EditorResources } from "../../../strings/editor";
 
 import "./style.css";
+
+const DocumentationIcon = require("./header.png");
 
 interface DocumentationProps {
 }
@@ -11,7 +14,7 @@ interface DocumentationState {
     member?: string;
 }
 
-export class Documentation extends React.Component<DocumentationProps, DocumentationState> {
+export class DocumentationComponent extends React.Component<DocumentationProps, DocumentationState> {
     public constructor(props: DocumentationProps) {
         super(props);
         this.state = {
@@ -50,9 +53,9 @@ export class Documentation extends React.Component<DocumentationProps, Documenta
 
     public render(): JSX.Element {
         return (
-            <div className="documentation">
-                <div className="documentation-icon"></div>
-                <div className="documentation-icon-label">Reference Documents</div>
+            <div className="documentation sidebar-component">
+                <div className="sidebar-component-icon" style={{ backgroundImage: `url("${DocumentationIcon}")` }}></div>
+                <div className="sidebar-component-label">{EditorResources.Documentation_Header}</div>
                 <ul>
                     {Object.keys(SupportedLibraries).map(libraryName => {
                         const library = SupportedLibraries[libraryName];

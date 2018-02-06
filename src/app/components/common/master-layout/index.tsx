@@ -22,7 +22,7 @@ export class MasterLayout extends React.Component<MasterLayoutProps> {
                             {this.props.masterContainer}
                         </div>
 
-                        <div className="sidebar body-box">
+                        <div className="sidebar-container body-box">
                             {this.props.sideBar}
                         </div>
                     </div>

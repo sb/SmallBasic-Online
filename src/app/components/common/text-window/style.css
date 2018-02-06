@@ -3,5 +3,5 @@
     overflow-y: auto;
     word-break: break-all;
     font-size: 18px;
-    flex: 1;
+    height: 100%;
 }

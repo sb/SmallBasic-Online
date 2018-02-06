@@ -87,8 +87,10 @@ export class ExecutionEngine {
         }
 
         const mainModuleName = "<Main>";
-        this._modules = compilation.subModules;
-        this._modules[mainModuleName] = compilation.mainModule;
+        const emitResult = compilation.emit();
+
+        this._modules = emitResult.subModules;
+        this._modules[mainModuleName] = emitResult.mainModule;
 
         this.executionStack.push({
             moduleName: mainModuleName,
@@ -106,11 +108,12 @@ export class ExecutionEngine {
 
     public execute(mode: ExecutionMode): void {
         while (true) {
-            if (this.executionStack.count() === 0) {
-                this.state = ExecutionState.Terminated;
+            if (this.state === ExecutionState.Terminated) {
+                return;
             }
 
-            if (this.state === ExecutionState.Terminated) {
+            if (this.executionStack.count === 0) {
+                this.terminate();
                 return;
             }
 
@@ -177,14 +180,15 @@ export class ExecutionEngine {
                     const storeArray = instruction as StoreArrayElementInstruction;
 
                     let indices = storeArray.indices;
-                    let parent = this._memory;
+                    let current = this._memory;
                     let index = storeArray.name;
 
                     while (indices-- > 0) {
-                        let current = parent[index] as ArrayValue;
-                        if (!current || current.kind !== ValueKind.Array) {
-                            parent[index] = current = new ArrayValue();
+                        if (!current[index] || current[index].kind !== ValueKind.Array) {
+                            current[index] = new ArrayValue();
                         }
+
+                        current = (current[index] as ArrayValue).value;
 
                         const indexValue = this.evaluationStack.pop();
                         switch (indexValue.kind) {
@@ -193,17 +197,14 @@ export class ExecutionEngine {
                                 index = indexValue.toValueString();
                                 break;
                             case ValueKind.Array:
-                                this._exception = new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, storeArray.sourceRange);
-                                this.state = ExecutionState.Terminated;
+                                this.terminate(new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, storeArray.sourceRange));
                                 return;
                             default:
                                 throw new Error(`Unexpected value kind ${ValueKind[indexValue.kind]}`);
                         }
-
-                        parent = current.value;
                     }
 
-                    parent[index] = value;
+                    current[index] = value;
                     frame.instructionCounter++;
                     break;
                 }
@@ -226,14 +227,15 @@ export class ExecutionEngine {
                     const loadArray = instruction as LoadArrayElementInstruction;
 
                     let indices = loadArray.indices;
-                    let parent = this._memory;
+                    let current = this._memory;
                     let index = loadArray.name;
 
                     while (indices-- > 0) {
-                        let current = parent[index] as ArrayValue;
-                        if (!current || current.kind !== ValueKind.Array) {
-                            parent[index] = current = new ArrayValue();
+                        if (!current[index] || current[index].kind !== ValueKind.Array) {
+                            current[index] = new ArrayValue();
                         }
+
+                        current = (current[index] as ArrayValue).value;
 
                         const indexValue = this.evaluationStack.pop();
                         switch (indexValue.kind) {
@@ -242,17 +244,18 @@ export class ExecutionEngine {
                                 index = indexValue.toValueString();
                                 break;
                             case ValueKind.Array:
-                                this._exception = new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, loadArray.sourceRange);
-                                this.state = ExecutionState.Terminated;
+                                this.terminate(new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, loadArray.sourceRange));
                                 return;
                             default:
                                 throw new Error(`Unexpected value kind ${ValueKind[indexValue.kind]}`);
                         }
-
-                        parent = current.value;
                     }
 
-                    this.evaluationStack.push(parent[index]);
+                    if (!current[index]) {
+                        current[index] = new StringValue("");
+                    }
+
+                    this.evaluationStack.push(current[index]);
                     frame.instructionCounter++;
                     break;
                 }
@@ -376,7 +379,7 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.Return: {
                     this.executionStack.pop();
-                    if (this.executionStack.count() > 0) {
+                    if (this.executionStack.count > 0) {
                         this.executionStack.peek().instructionCounter++;
                     }
                     break;

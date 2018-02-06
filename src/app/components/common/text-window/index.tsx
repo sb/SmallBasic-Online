@@ -9,6 +9,11 @@ import { StringValue } from "../../../../compiler/runtime/values/string-value";
 import { EditorResources } from "../../../strings/editor";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
 
+interface OutputLine {
+    text: string;
+    color: TextWindowColors;
+}
+
 interface TextWindowComponentProps {
     engine: ExecutionEngine;
 }
@@ -22,10 +27,7 @@ interface TextWindowComponentState {
     inputBuffer: string;
     inputKind?: ValueKind;
 
-    outputLines: {
-        text: string;
-        color: TextWindowColors;
-    }[];
+    outputLines: OutputLine[];
 }
 
 const inputColor: TextWindowColors = TextWindowColors.Gray;
@@ -55,6 +57,7 @@ function textWindowColorToCssColor(color: TextWindowColors): string {
 export class TextWindowComponent extends React.Component<TextWindowComponentProps, TextWindowComponentState> {
     private isAlreadyMounted: boolean;
     private tokens: string[];
+    private inputDiv: HTMLDivElement;
 
     public constructor(props: TextWindowComponentProps) {
         super(props);
@@ -91,24 +94,20 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 });
             }),
             this.props.engine.notifications.producedOutput.subscribe(() => {
-                this.setState({
-                    outputLines: this.state.outputLines.concat([{
-                        text: this.props.engine.buffer.readValue().toValueString(),
-                        color: this.state.foreground
-                    }])
+                this.appendOutput({
+                    text: this.props.engine.buffer.readValue().toValueString(),
+                    color: this.state.foreground
                 });
             }),
             this.props.engine.notifications.programTerminated.subscribe(exception => {
-                this.setState({
-                    outputLines: this.state.outputLines.concat([exception
-                        ? {
-                            text: exception.toString(),
-                            color: TextWindowColors.Red
-                        } : {
-                            text: EditorResources.TextWindow_EndMessage,
-                            color: this.state.foreground
-                        }])
-                });
+                this.appendOutput(exception
+                    ? {
+                        text: exception.toString(),
+                        color: TextWindowColors.Red
+                    } : {
+                        text: EditorResources.TextWindow_TerminationMessage,
+                        color: this.state.foreground
+                    });
             })
         ];
 
@@ -136,7 +135,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                     </div>
                 )}
 
-                <div style={{ color: textWindowColorToCssColor(inputColor) }}>
+                <div style={{ color: textWindowColorToCssColor(inputColor) }} ref={inputDiv => this.inputDiv = inputDiv!}>
                     <span>{this.state.inputBuffer}</span>
                     <span style={{ visibility: this.state.isCursorVisible ? "visible" : "hidden" }}>&#x2588;</span>
                 </div>
@@ -171,11 +170,12 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 this.props.engine.buffer.writeValue(input);
                 this.setState({
                     inputBuffer: "",
-                    inputKind: undefined,
-                    outputLines: this.state.outputLines.concat([{
-                        text: this.state.inputBuffer,
-                        color: inputColor
-                    }])
+                    inputKind: undefined
+                });
+
+                this.appendOutput({
+                    text: this.state.inputBuffer,
+                    color: inputColor
                 });
             }
         } else if (e.key.length === 1) {
@@ -202,5 +202,15 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 inputBuffer: this.state.inputBuffer + e.key
             });
         }
+    }
+
+    private appendOutput(output: OutputLine): void {
+        this.setState({
+            outputLines: this.state.outputLines.concat([output])
+        });
+
+        this.inputDiv.scrollIntoView({
+            behavior: "smooth"
+        });
     }
 }
