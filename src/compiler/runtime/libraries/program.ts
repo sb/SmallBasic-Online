@@ -7,8 +7,7 @@ export const ProgramLibrary: LibraryTypeDefinition = {
     methods: {
         "Pause": {
             description: DocumentationResources.Program_Pause_Description,
-            parametersDescription: [],
-            argumentsCount: 0,
+            parameters: [],
             returnsValue: false,
             execute: (engine, mode) => {
                 if (engine.state === ExecutionState.Paused) {
@@ -25,8 +24,7 @@ export const ProgramLibrary: LibraryTypeDefinition = {
         },
         "End": {
             description: DocumentationResources.Program_End_Description,
-            parametersDescription: [],
-            argumentsCount: 0,
+            parameters: [],
             returnsValue: false,
             execute: (engine) => {
                 engine.terminate();

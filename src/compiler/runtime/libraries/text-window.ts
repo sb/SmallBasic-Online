@@ -31,8 +31,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
     methods: {
         "Read": {
             description: DocumentationResources.TextWindow_Read_Description,
-            parametersDescription: [],
-            argumentsCount: 0,
+            parameters: [],
             returnsValue: true,
             execute: (engine) => {
                 if (engine.buffer.hasValue()) {
@@ -53,8 +52,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
         },
         "ReadNumber": {
             description: DocumentationResources.TextWindow_ReadNumber_Description,
-            parametersDescription: [],
-            argumentsCount: 0,
+            parameters: [],
             returnsValue: true,
             execute: (engine) => {
                 if (engine.buffer.hasValue()) {
@@ -75,10 +73,9 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
         },
         "WriteLine": {
             description: DocumentationResources.TextWindow_WriteLine_Description,
-            parametersDescription: [
+            parameters: [
                 { name: "data", description: DocumentationResources.TextWindow_WriteLine_Data_Description }
             ],
-            argumentsCount: 1,
             returnsValue: false,
             execute: (engine) => {
                 if (engine.state === ExecutionState.BlockedOnOutput) {

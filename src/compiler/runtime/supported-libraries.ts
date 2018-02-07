@@ -6,16 +6,12 @@ import { BaseInstruction } from "../models/instructions";
 
 type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode, instruction: BaseInstruction) => void;
 
-// TODO: add the rest of the libraries
-
 export interface LibraryMethodDefinition {
     readonly description: string;
-    readonly parametersDescription: {
+    readonly parameters: {
         readonly name: string;
         readonly description: string;
     }[];
-
-    readonly argumentsCount: number;
     readonly returnsValue: boolean;
     readonly execute: LibraryExecuteSignature;
 }

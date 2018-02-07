@@ -10,7 +10,6 @@ export const ClockLibrary: LibraryTypeDefinition = {
         "Time": {
             description: DocumentationResources.Clock_Time_Description,
             getter: (engine) => {
-                // TODO: correctly implement user's locale
                 const time = new Date().toLocaleTimeString();
                 engine.evaluationStack.push(new StringValue(time));
                 engine.executionStack.peek().instructionCounter++;

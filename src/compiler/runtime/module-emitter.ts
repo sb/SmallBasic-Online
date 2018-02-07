@@ -148,11 +148,11 @@ export class ModuleEmitter {
     }
 
     private emitLibraryMethodCall(statement: LibraryMethodCallBoundStatement): void {
-        const lineNumber = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression).line;
-        this._instructions.push(InstructionFactory.StatementStart(lineNumber));
+        const range = getExpressionRange((statement.syntax as ExpressionStatementSyntax).command.expression);
+        this._instructions.push(InstructionFactory.StatementStart(range.line));
 
         statement.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(InstructionFactory.CallLibraryMethod(statement.library, statement.method));
+        this._instructions.push(InstructionFactory.MethodCall(statement.library, statement.method, range));
     }
 
     private emitSubModuleCall(statement: SubModuleCallBoundStatement): void {
@@ -352,7 +352,7 @@ export class ModuleEmitter {
 
     private emitLibraryMethodCallExpression(expression: LibraryMethodCallBoundExpression): void {
         expression.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(InstructionFactory.MethodCall(expression.library, expression.name, expression.argumentsList.length, getExpressionRange(expression.syntax)));
+        this._instructions.push(InstructionFactory.MethodCall(expression.library, expression.name, getExpressionRange(expression.syntax)));
     }
 
     private emitVariableExpression(expression: VariableBoundExpression): void {

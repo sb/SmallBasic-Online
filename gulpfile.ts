@@ -5,7 +5,6 @@ import * as helpers from "./build/gulp-helpers";
 import { generateModels } from "./build/generate-models";
 import { generateLocStrings } from "./build/generate-loc-strings";
 
-// TODO: select user language
 const userLanguage = "en";
 
 gulp.task("generate-errors-strings", () => generateLocStrings("ErrorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/errors.json`), path.resolve(__dirname, `./src/compiler/strings/errors.ts`)));

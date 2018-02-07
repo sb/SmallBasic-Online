@@ -10,7 +10,6 @@ export enum InstructionKind {
     Jump,
     ConditionalJump,
     CallSubModule,
-    CallLibraryMethod,
     StoreVariable,
     StoreArrayElement,
     StoreProperty,
@@ -67,11 +66,6 @@ export interface CallSubModuleInstruction extends BaseInstruction {
     readonly name: string;
 }
 
-export interface CallLibraryMethodInstruction extends BaseInstruction {
-    readonly library: string;
-    readonly method: string;
-}
-
 export interface StoreVariableInstruction extends BaseInstruction {
     readonly name: string;
 }
@@ -107,7 +101,6 @@ export interface LoadPropertyInstruction extends BaseInstruction {
 export interface MethodCallInstruction extends BaseInstruction {
     readonly library: string;
     readonly method: string;
-    readonly argumentsCount: number;
     readonly sourceRange: TextRange;
 }
 
@@ -228,17 +221,6 @@ export class InstructionFactory {
         };
     }
 
-    public static CallLibraryMethod(
-        library: string,
-        method: string)
-        : CallLibraryMethodInstruction {
-        return {
-            kind: InstructionKind.CallLibraryMethod,
-            library: library,
-            method: method
-        };
-    }
-
     public static StoreVariable(
         name: string)
         : StoreVariableInstruction {
@@ -312,14 +294,12 @@ export class InstructionFactory {
     public static MethodCall(
         library: string,
         method: string,
-        argumentsCount: number,
         sourceRange: TextRange)
         : MethodCallInstruction {
         return {
             kind: InstructionKind.MethodCall,
             library: library,
             method: method,
-            argumentsCount: argumentsCount,
             sourceRange: sourceRange
         };
     }

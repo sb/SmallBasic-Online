@@ -7,7 +7,6 @@ import {
     CallSubModuleInstruction,
     InstructionKind,
     JumpInstruction,
-    CallLibraryMethodInstruction,
     StatementStartInstruction,
     StoreVariableInstruction,
     StoreArrayElementInstruction,
@@ -149,11 +148,6 @@ export class ExecutionEngine {
                         instructionCounter: 0,
                         moduleName: (instruction as CallSubModuleInstruction).name
                     });
-                    break;
-                }
-                case InstructionKind.CallLibraryMethod: {
-                    const callLibraryMethod = instruction as CallLibraryMethodInstruction;
-                    SupportedLibraries[callLibraryMethod.library].methods[callLibraryMethod.method].execute(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.StatementStart: {
