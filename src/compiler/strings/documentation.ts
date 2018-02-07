@@ -1,6 +1,19 @@
 // This file is generated through a build task. Do not edit by hand.
 
 export module DocumentationResources {
+    export const Array_Description = "This class provides a way of storing more than one value for a given name. These values can be accessed by another index.";
+    export const Array_ContainsIndex_Description = "Gets whether or not the array contains the specified index. This is very useful when deciding if the array's index was initialized by some value or not.";
+    export const Array_ContainsIndex_Array_Description = "The array to check.";
+    export const Array_ContainsIndex_Index_Description = "The index to check.";
+    export const Array_ContainsValue_Description = "Gets whether or not the array contains the specified value. This is very useful when deciding if the array's value was stored in some index.";
+    export const Array_ContainsValue_Array_Description = "The array to check.";
+    export const Array_ContainsValue_Index_Description = "The index to check.";
+    export const Array_GetAllIndices_Description = "Gets all the indices for the array, as another array. The index of the returned array starts from 1.";
+    export const Array_GetAllIndices_Array_Description = "The array whose indices are requested.";
+    export const Array_GetItemCount_Description = "Gets the count of all the items in the array.";
+    export const Array_GetItemCount_Array_Description = "The array whose item count is requested.";
+    export const Array_IsArray_Description = "Checks whether the value passed is an array or not.";
+    export const Array_IsArray_Value_Description = "The value to check.";
     export const Clock_Description = "This class provides access to the system clock.";
     export const Clock_Time_Description = "Gets the current system time.";
     export const Program_Description = "The Program class provides helpers to control the program execution.";

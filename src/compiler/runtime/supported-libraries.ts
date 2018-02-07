@@ -3,15 +3,13 @@ import { TextWindowLibrary } from "./libraries/text-window";
 import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
 import { BaseInstruction } from "../models/instructions";
+import { ArrayLibrary } from "./libraries/array";
 
 type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode, instruction: BaseInstruction) => void;
 
 export interface LibraryMethodDefinition {
     readonly description: string;
-    readonly parameters: {
-        readonly name: string;
-        readonly description: string;
-    }[];
+    readonly parameters: { [name: string]: string };
     readonly returnsValue: boolean;
     readonly execute: LibraryExecuteSignature;
 }
@@ -31,6 +29,7 @@ export interface LibraryTypeDefinition {
 }
 
 export const SupportedLibraries: { readonly [name: string]: LibraryTypeDefinition } = {
+    "Array": ArrayLibrary,
     "TextWindow": TextWindowLibrary,
     "Program": ProgramLibrary,
     "Clock": ClockLibrary

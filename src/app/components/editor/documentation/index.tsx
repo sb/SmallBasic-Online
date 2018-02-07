@@ -83,14 +83,14 @@ export class DocumentationComponent extends React.Component<DocumentationProps, 
                                             return (
                                                 <li className="library-member" key={methodName}>
                                                     <p className="library-member-name" onClick={(() => this.memberClicked(methodName)).bind(this)}>
-                                                        {libraryName}.{methodName}({method.parameters.map(parameter => parameter.name).join(", ")})
+                                                        {libraryName}.{methodName}({Object.keys(method.parameters).join(", ")})
                                                     </p>
                                                     <div style={{ display: this.state.member === methodName ? "inherit" : "none" }}>
                                                         <p className="description">{method.description}</p>
                                                         <ul>
-                                                            {method.parameters.map(parameter =>
-                                                                <li className="members-details" key={parameter.name}>
-                                                                    <p className="description"><b>{parameter.name}</b>: {parameter.description}</p>
+                                                            {Object.keys(method.parameters).map(name =>
+                                                                <li className="members-details" key={name}>
+                                                                    <p className="description"><b>{name}</b>: {method.parameters[name]}</p>
                                                                 </li>
                                                             )}
                                                         </ul>

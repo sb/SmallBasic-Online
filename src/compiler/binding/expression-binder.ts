@@ -106,10 +106,11 @@ export class ExpressionBinder {
             case BoundExpressionKind.LibraryMethod: {
                 const method = baseExpression as LibraryMethodBoundExpression;
                 const definition = SupportedLibraries[method.library].methods[method.name];
+                const parametersCount = Object.keys(definition.parameters).length;
 
-                if (argumentsList.length !== definition.parameters.length) {
+                if (argumentsList.length !== parametersCount) {
                     hasError = true;
-                    this.reportError(baseExpression, ErrorCode.UnexpectedArgumentsCount, definition.parameters.length.toString(), argumentsList.length.toString());
+                    this.reportError(baseExpression, ErrorCode.UnexpectedArgumentsCount, parametersCount.toString(), argumentsList.length.toString());
                 }
 
                 return BoundExpressionFactory.LibraryMethodCall(
