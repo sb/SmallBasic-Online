@@ -16,8 +16,12 @@ export class ArrayValue extends BaseValue {
         return false;
     }
 
-    public toDisplayString(): string {
-        return `[${Object.keys(this.value).map(key => `${key}=${this.value[key].toDisplayString()}`).join(", ")}]`;
+    public toDebuggerString(): string {
+        return `[${Object.keys(this.value).map(key => `${key}=${this.value[key].toDebuggerString()}`).join(", ")}]`;
+    }
+
+    public toValueString(): string {
+        return this.toDebuggerString();
     }
 
     public get kind(): ValueKind {
@@ -34,7 +38,7 @@ export class ArrayValue extends BaseValue {
             case ValueKind.Number:
                 return false;
             case ValueKind.Array:
-                return this.toDisplayString() === other.toDisplayString();
+                return this.toDebuggerString() === other.toDebuggerString();
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }

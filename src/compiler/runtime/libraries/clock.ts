@@ -1,4 +1,3 @@
-import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { LibraryTypeDefinition } from "../supported-libraries";
 import { StringValue } from "../values/string-value";
 import { DocumentationResources } from "../../strings/documentation";
@@ -10,7 +9,7 @@ export const ClockLibrary: LibraryTypeDefinition = {
     properties: {
         "Time": {
             description: DocumentationResources.Clock_Time_Description,
-            getter: (engine: ExecutionEngine, _: ExecutionMode) => {
+            getter: (engine) => {
                 // TODO: correctly implement user's locale
                 const time = new Date().toLocaleTimeString();
                 engine.evaluationStack.push(new StringValue(time));

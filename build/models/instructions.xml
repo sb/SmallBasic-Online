@@ -47,6 +47,7 @@
     <StorePropertyInstruction>
         <library type="string" />
         <property type="string" />
+        <sourceRange type="TextRange" />
     </StorePropertyInstruction>
 
     <LoadVariableInstruction>
@@ -62,12 +63,14 @@
     <LoadPropertyInstruction>
         <library type="string" />
         <property type="string" />
+        <sourceRange type="TextRange" />
     </LoadPropertyInstruction>
 
     <MethodCallInstruction>
         <library type="string" />
         <method type="string" />
         <argumentsCount type="number" />
+        <sourceRange type="TextRange" />
     </MethodCallInstruction>
 
     <NegateInstruction>

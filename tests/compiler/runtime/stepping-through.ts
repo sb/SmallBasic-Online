@@ -17,14 +17,14 @@ x = 3`);
         
         engine.execute(ExecutionMode.NextStatement);
         expect(engine.state).toBe(ExecutionState.Paused);
-        expect(engine.memory["x"].toDisplayString()).toBe("1");
+        expect(engine.memory["x"].toDebuggerString()).toBe("1");
         
         engine.execute(ExecutionMode.NextStatement);
         expect(engine.state).toBe(ExecutionState.Paused);
-        expect(engine.memory["x"].toDisplayString()).toBe("2");
+        expect(engine.memory["x"].toDebuggerString()).toBe("2");
         
         engine.execute(ExecutionMode.NextStatement);
         expect(engine.state).toBe(ExecutionState.Terminated);
-        expect(engine.memory["x"].toDisplayString()).toBe("3");
+        expect(engine.memory["x"].toDebuggerString()).toBe("3");
     });
 });

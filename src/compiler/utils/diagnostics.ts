@@ -39,7 +39,8 @@ export enum ErrorCode {
     CannotUseAnArrayAsAnIndexToAnotherArray,
     CannotUseOperatorWithAnArray,
     CannotUseOperatorWithAString,
-    CannotDivideByZero
+    CannotDivideByZero,
+    UnsupportedTextWindowColor
 }
 
 export class Diagnostic {

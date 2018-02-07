@@ -2,8 +2,9 @@ import { ExecutionEngine, ExecutionMode } from "./../execution-engine";
 import { TextWindowLibrary } from "./libraries/text-window";
 import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
+import { BaseInstruction } from "../models/instructions";
 
-type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode) => void;
+type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode, instruction: BaseInstruction) => void;
 
 // TODO: add the rest of the libraries
 

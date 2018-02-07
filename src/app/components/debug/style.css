@@ -1,0 +1,12 @@
+.debug-component {
+    height: 100%;
+}
+
+.debug-component .editor-container {
+    height: calc(50% - 10px);
+}
+
+.debug-component .text-window-container {
+    margin-top: 10px;
+    height: calc(50% - 10px);
+}

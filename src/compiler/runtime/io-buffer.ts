@@ -1,7 +1,16 @@
 import { BaseValue } from "./values/base-value";
+import { TextWindowColors } from "./libraries/text-window";
 
 export class IOBuffer {
     private value?: BaseValue;
+
+    public foreground: TextWindowColors;
+    public background: TextWindowColors;
+
+    public constructor() {
+        this.foreground = TextWindowColors.White;
+        this.background = TextWindowColors.Black;
+    }
 
     public hasValue(): boolean {
         return !!this.value;

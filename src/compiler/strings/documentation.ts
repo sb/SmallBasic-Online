@@ -11,4 +11,6 @@ export module DocumentationResources {
     export const TextWindow_ReadNumber_Description = "Reads a number from the text window. Returns the number entered by the user.";
     export const TextWindow_WriteLine_Description = "Writes a string or a number to the text window on its own line.";
     export const TextWindow_WriteLine_Data_Description = "The string or number to be written to the text window.";
+    export const TextWindow_ForegroundColor_Description = "Gets or sets the foreground color of the text to be output in the text window.";
+    export const TextWindow_BackgroundColor_Description = "Gets or sets the background color of the text to be output in the text window.";
 }

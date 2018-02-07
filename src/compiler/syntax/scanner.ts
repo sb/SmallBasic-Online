@@ -99,7 +99,8 @@ export class Scanner {
     private scanStringToken(): void {
         let lookAhead = this.index + 1;
         while (lookAhead < this.text.length) {
-            switch (this.text[lookAhead]) {
+            const ch = this.text[lookAhead];
+            switch (ch) {
                 case "\"":
                     this.addToken(this.text.substr(this.index, lookAhead - this.index + 1), TokenKind.StringLiteral);
                     return;
@@ -109,6 +110,12 @@ export class Scanner {
                     this.diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, token.range));
                     return;
                 default:
+                    if (!Scanner.isSupportedCharacter(ch)) {
+                        const column = this.column + lookAhead - this.index;
+                        const range = { line: this.line, start: column, end: column };
+                        this.diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, range, ch));
+                    }
+
                     lookAhead++;
                     break;
             }
@@ -185,5 +192,14 @@ export class Scanner {
 
         this._tokens.push(token);
         return token;
+    }
+
+    public static isSupportedCharacter(ch: string): boolean {
+        if (ch.length !== 1) {
+            throw `Must pass a single character at a time`;
+        }
+
+        const keycode = ch.charCodeAt(0);
+        return 32 <= keycode && keycode <= 126;
     }
 }

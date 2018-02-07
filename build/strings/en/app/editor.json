@@ -15,7 +15,17 @@
     "ToolbarButton_Redo_Description": "Redo last undone action",
     "ToolbarButton_Run_Title": "Run",
     "ToolbarButton_Run_Description": "Run this program",
+    "ToolbarButton_Debug_Title": "Debug",
+    "ToolbarButton_Debug_Description": "Debug this program",
+    "ToolbarButton_Stop_Title": "Stop",
+    "ToolbarButton_Stop_Description": "Stop execution of the program and return to the editor",
+    "ToolbarButton_Step_Title": "Step",
+    "ToolbarButton_Step_Description": "Step to the next statement of the program",
     "Modal_ConfirmNew_Text": "Are you sure you want to erase all code and start a new program?",
     "Modal_Button_Yes": "Yes",
-    "Modal_Button_No": "No"
+    "Modal_Button_No": "No",
+    "Documentation_Header": "Library",
+    "CallStack_Header": "Call Stack",
+    "Memory_Header": "Memory",
+    "TextWindow_TerminationMessage": "Program ended..."
 }

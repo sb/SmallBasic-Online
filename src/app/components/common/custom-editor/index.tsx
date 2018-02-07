@@ -1,13 +1,10 @@
-/// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
 import { HoverService } from "../../../services/hover";
-import "@timkendrick/monaco-editor";
-
 import * as React from "react";
-
-import "./style.css";
 import { Diagnostic } from "../../../../compiler/utils/diagnostics";
 import { EditorUtils } from "../../../services/utils";
 import { CompletionService } from "../../../services/completion";
+
+import "./style.css";
 
 interface CustomEditorProps {
     readOnly: boolean;
@@ -15,13 +12,14 @@ interface CustomEditorProps {
 }
 
 export class CustomEditor extends React.Component<CustomEditorProps> {
+    private editorDiv: HTMLDivElement;
     private onResize: () => void;
     private decorations: string[];
 
     public editor: monaco.editor.IStandaloneCodeEditor;
 
     public render(): JSX.Element {
-        return <div ref="editor" style={{ height: "100%", width: "100%" }} />;
+        return <div ref={div => this.editorDiv = div!} style={{ height: "100%", width: "100%" }} />;
     }
 
     public componentDidMount(): void {
@@ -40,7 +38,7 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
             }
         };
 
-        this.editor = (window as any).monaco.editor.create(this.refs["editor"], options);
+        this.editor = (window as any).monaco.editor.create(this.editorDiv, options);
 
         monaco.languages.registerCompletionItemProvider("sb", new CompletionService());
         monaco.languages.registerHoverProvider("sb", new HoverService());
@@ -74,5 +72,18 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
                 }
             };
         }));
+    }
+
+    public highlightLine(line: number): void {
+        const monacoRange = EditorUtils.textRangeToEditorRange({ line: line, start: 0, end: Number.MAX_VALUE });
+
+        this.decorations = this.editor.deltaDecorations(this.decorations, [{
+            range: monacoRange,
+            options: {
+                className: "debugger-line-highlight"
+            }
+        }]);
+
+        this.editor.revealLine(monacoRange.startLineNumber);
     }
 }

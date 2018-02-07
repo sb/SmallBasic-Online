@@ -55,4 +55,13 @@ not_ok = "value" $
             // I don't understand this character '&'.
             new Diagnostic(ErrorCode.UnrecognizedCharacter, { line: 4, start: 0, end: 1 }, "&"));
     });
+
+    it("prints an error when parsing a non-supported character in a string (escape character)", () => {
+        verifyCompilationErrors(`
+TextWindow.WriteLine("${String.fromCharCode(27)}")`,
+            // TextWindow.WriteLine(" ")
+            //                       ^
+            // I don't understand this character '\u001b'.
+            new Diagnostic(ErrorCode.UnrecognizedCharacter, { line: 1, start: 22, end: 22 }, "\u001b"));
+    });
 });

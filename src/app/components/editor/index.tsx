@@ -4,36 +4,48 @@ import { ToolbarDivider } from "../common/toolbar-divider";
 import { CustomEditor } from "../common/custom-editor";
 import * as React from "react";
 import { EditorResources } from "../../strings/editor";
-import { Documentation } from "./documentation";
+import { DocumentationComponent } from "./documentation";
 import { MasterLayout } from "../common/master-layout";
 import { Modal } from "../common/modal";
+import { AppState, ActionFactory, SetTextAction } from "../../store";
+import { RouteComponentProps } from "react-router";
+import { Dispatch, connect } from "react-redux";
 
-const NewIcon = require("./images/new.png");
-const CutIcon = require("./images/cut.png");
-const CopyIcon = require("./images/copy.png");
-const PasteIcon = require("./images/paste.png");
-const UndoIcon = require("./images/undo.png");
-const RedoIcon = require("./images/redo.png");
-const RunIcon = require("./images/run.png");
+const NewIcon = require("../../content/buttons/new.png");
+const CutIcon = require("../../content/buttons/cut.png");
+const CopyIcon = require("../../content/buttons/copy.png");
+const PasteIcon = require("../../content/buttons/paste.png");
+const UndoIcon = require("../../content/buttons/undo.png");
+const RedoIcon = require("../../content/buttons/redo.png");
+const RunIcon = require("../../content/buttons/run.png");
+const DebugIcon = require("../../content/buttons/debug.png");
 
-interface EditorComponentProps {
+interface PropsFromState {
+    storeCompilation: Compilation;
 }
 
-interface EditorComponentState {
+interface PropsFromDispatch {
+    setStoreText: (text: string) => SetTextAction;
+}
+
+interface PropsFromReact extends RouteComponentProps<PropsFromReact> {
+}
+
+type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact;
+
+interface PresentationalComponentState {
     compilation: Compilation;
 }
 
-export class EditorComponent extends React.Component<EditorComponentProps, EditorComponentState> {
+class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
+    private newModal: Modal;
     private editor: CustomEditor;
     private clipboard: string | undefined;
 
-    public constructor(props: EditorComponentProps) {
+    public constructor(props: PresentationalComponentProps) {
         super(props);
         this.state = {
-            compilation: new Compilation([
-                `' A new Program!`,
-                `TextWindow.WriteLine("Hello World!")`
-            ].join("\n"))
+            compilation: props.storeCompilation
         };
     }
 
@@ -46,7 +58,7 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
                             title={EditorResources.ToolbarButton_New_Title}
                             description={EditorResources.ToolbarButton_New_Description}
                             image={NewIcon}
-                            onClick={() => (this.refs["new-modal"] as Modal).open()} />,
+                            onClick={() => this.newModal.open()} />,
                         <ToolbarDivider />,
                         <ToolbarButton
                             title={EditorResources.ToolbarButton_Cut_Title}
@@ -79,20 +91,27 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
                             title={EditorResources.ToolbarButton_Run_Title}
                             description={EditorResources.ToolbarButton_Run_Description}
                             image={RunIcon}
-                            disabled={this.state.compilation.diagnostics.length > 0} />
+                            onClick={() => this.props.history.push("/run")}
+                            disabled={!this.state.compilation.isReadyToRun} />,
+                        <ToolbarButton
+                            title={EditorResources.ToolbarButton_Debug_Title}
+                            description={EditorResources.ToolbarButton_Debug_Description}
+                            image={DebugIcon}
+                            onClick={() => this.props.history.push("/debug")}
+                            disabled={!this.state.compilation.isReadyToRun} />
                     ]}
-                    leftContainer={
+                    masterContainer={
                         <CustomEditor
-                            ref="editor"
+                            ref={editor => this.editor = editor!}
                             readOnly={false}
                             initialValue={this.state.compilation.text} />
                     }
-                    rightContainer={
-                        <Documentation />
+                    sideBar={
+                        <DocumentationComponent />
                     }
                 />
                 <Modal
-                    ref="new-modal"
+                    ref={newModal => this.newModal = newModal!}
                     text={EditorResources.Modal_ConfirmNew_Text}
                     onClick={this.onNewModalButtonClick.bind(this)}
                     buttons={[
@@ -104,15 +123,16 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
     }
 
     public componentDidMount(): void {
-        this.editor = this.refs["editor"] as CustomEditor;
+        this.editor.setDiagnostics(this.state.compilation.diagnostics);
+
         this.editor.editor.onDidChangeModelContent(() => {
             const code = this.editor.editor.getValue();
-            const compilation = new Compilation(code);
-
-            this.editor.setDiagnostics(compilation.diagnostics);
+            this.props.setStoreText(code);
             this.setState({
-                compilation: compilation
+                compilation: new Compilation(code)
             });
+
+            this.editor.setDiagnostics(this.state.compilation.diagnostics);
         });
     }
 
@@ -153,3 +173,17 @@ export class EditorComponent extends React.Component<EditorComponentProps, Edito
         }]);
     }
 }
+
+function mapStateToProps(state: AppState): PropsFromState {
+    return {
+        storeCompilation: state.compilation
+    };
+}
+
+function mapDispatchToProps(dispatch: Dispatch<AppState>): PropsFromDispatch {
+    return {
+        setStoreText: (text: string) => dispatch(ActionFactory.setText(text))
+    };
+}
+
+export const EditorComponent = connect(mapStateToProps, mapDispatchToProps)(PresentationalComponent as any);

@@ -4,8 +4,8 @@ import "./style.css";
 
 interface MasterLayoutProps {
     toolbar: JSX.Element[];
-    leftContainer: JSX.Element;
-    rightContainer: JSX.Element;
+    masterContainer: JSX.Element;
+    sideBar?: JSX.Element;
 }
 
 export class MasterLayout extends React.Component<MasterLayoutProps> {
@@ -16,13 +16,21 @@ export class MasterLayout extends React.Component<MasterLayoutProps> {
                     {this.props.toolbar.map((item, i) => <div key={i}>{item}</div>)}
                 </div>
 
-                <div className="container-left body-box">
-                    {this.props.leftContainer}
-                </div>
+                {this.props.sideBar ?
+                    <div>
+                        <div className="master-container body-box">
+                            {this.props.masterContainer}
+                        </div>
 
-                <div className="container-right body-box">
-                    {this.props.rightContainer}
-                </div>
+                        <div className="sidebar-container body-box">
+                            {this.props.sideBar}
+                        </div>
+                    </div>
+                    :
+                    <div className="full-container body-box">
+                        {this.props.masterContainer}
+                    </div>
+                }
             </div>
         );
     }

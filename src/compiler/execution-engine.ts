@@ -32,6 +32,7 @@ import { ArrayValue } from "./runtime/values/array-value";
 import { IOBuffer } from "./runtime/io-buffer";
 import { TokenKindToString } from "./utils/string-factories";
 import { TokenKind } from "./syntax/tokens";
+import { NotificationHub } from "./runtime/notification-hub";
 
 interface StackFrame {
     moduleName: string;
@@ -59,6 +60,7 @@ export class ExecutionEngine {
     private _memory: { [name: string]: BaseValue } = {};
     private _modules: { [name: string]: ReadonlyArray<BaseInstruction> };
 
+    public readonly notifications: NotificationHub = new NotificationHub();
     public readonly evaluationStack: FastStack<BaseValue> = new FastStack<BaseValue>();
     public readonly executionStack: FastStack<StackFrame> = new FastStack<StackFrame>();
 
@@ -85,8 +87,10 @@ export class ExecutionEngine {
         }
 
         const mainModuleName = "<Main>";
-        this._modules = compilation.subModules;
-        this._modules[mainModuleName] = compilation.mainModule;
+        const emitResult = compilation.emit();
+
+        this._modules = emitResult.subModules;
+        this._modules[mainModuleName] = emitResult.mainModule;
 
         this.executionStack.push({
             moduleName: mainModuleName,
@@ -98,12 +102,18 @@ export class ExecutionEngine {
     public terminate(exception?: Diagnostic): void {
         this.state = ExecutionState.Terminated;
         this._exception = exception;
+
+        this.notifications.programTerminated.publish(exception);
     }
 
     public execute(mode: ExecutionMode): void {
         while (true) {
-            if (this.executionStack.count() === 0) {
-                this.state = ExecutionState.Terminated;
+            if (this.state === ExecutionState.Terminated) {
+                return;
+            }
+
+            if (this.executionStack.count === 0) {
+                this.terminate();
                 return;
             }
 
@@ -143,7 +153,7 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.CallLibraryMethod: {
                     const callLibraryMethod = instruction as CallLibraryMethodInstruction;
-                    SupportedLibraries[callLibraryMethod.library].methods[callLibraryMethod.method].execute(this, mode);
+                    SupportedLibraries[callLibraryMethod.library].methods[callLibraryMethod.method].execute(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.StatementStart: {
@@ -170,41 +180,37 @@ export class ExecutionEngine {
                     const storeArray = instruction as StoreArrayElementInstruction;
 
                     let indices = storeArray.indices;
-                    let parent = this._memory;
+                    let current = this._memory;
                     let index = storeArray.name;
 
                     while (indices-- > 0) {
-                        let current = parent[index] as ArrayValue;
-                        if (!current || current.kind !== ValueKind.Array) {
-                            parent[index] = current = new ArrayValue();
+                        if (!current[index] || current[index].kind !== ValueKind.Array) {
+                            current[index] = new ArrayValue();
                         }
+
+                        current = (current[index] as ArrayValue).value;
 
                         const indexValue = this.evaluationStack.pop();
                         switch (indexValue.kind) {
                             case ValueKind.Number:
-                                index = (indexValue as NumberValue).value.toString();
-                                break;
                             case ValueKind.String:
-                                index = (indexValue as StringValue).value;
+                                index = indexValue.toValueString();
                                 break;
                             case ValueKind.Array:
-                                this._exception = new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, storeArray.sourceRange);
-                                this.state = ExecutionState.Terminated;
+                                this.terminate(new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, storeArray.sourceRange));
                                 return;
                             default:
                                 throw new Error(`Unexpected value kind ${ValueKind[indexValue.kind]}`);
                         }
-
-                        parent = current.value;
                     }
 
-                    parent[index] = value;
+                    current[index] = value;
                     frame.instructionCounter++;
                     break;
                 }
                 case InstructionKind.StoreProperty: {
                     const storeProperty = instruction as StorePropertyInstruction;
-                    SupportedLibraries[storeProperty.library].properties[storeProperty.property].setter!(this, mode);
+                    SupportedLibraries[storeProperty.library].properties[storeProperty.property].setter!(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.LoadVariable: {
@@ -221,46 +227,46 @@ export class ExecutionEngine {
                     const loadArray = instruction as LoadArrayElementInstruction;
 
                     let indices = loadArray.indices;
-                    let parent = this._memory;
+                    let current = this._memory;
                     let index = loadArray.name;
 
                     while (indices-- > 0) {
-                        let current = parent[index] as ArrayValue;
-                        if (!current || current.kind !== ValueKind.Array) {
-                            parent[index] = current = new ArrayValue();
+                        if (!current[index] || current[index].kind !== ValueKind.Array) {
+                            current[index] = new ArrayValue();
                         }
+
+                        current = (current[index] as ArrayValue).value;
 
                         const indexValue = this.evaluationStack.pop();
                         switch (indexValue.kind) {
                             case ValueKind.Number:
-                                index = (indexValue as NumberValue).value.toString();
-                                break;
                             case ValueKind.String:
-                                index = (indexValue as StringValue).value;
+                                index = indexValue.toValueString();
                                 break;
                             case ValueKind.Array:
-                                this._exception = new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, loadArray.sourceRange);
-                                this.state = ExecutionState.Terminated;
+                                this.terminate(new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, loadArray.sourceRange));
                                 return;
                             default:
                                 throw new Error(`Unexpected value kind ${ValueKind[indexValue.kind]}`);
                         }
-
-                        parent = current.value;
                     }
 
-                    this.evaluationStack.push(parent[index]);
+                    if (!current[index]) {
+                        current[index] = new StringValue("");
+                    }
+
+                    this.evaluationStack.push(current[index]);
                     frame.instructionCounter++;
                     break;
                 }
                 case InstructionKind.LoadProperty: {
                     const loadProperty = instruction as LoadPropertyInstruction;
-                    SupportedLibraries[loadProperty.library].properties[loadProperty.property].getter!(this, mode);
+                    SupportedLibraries[loadProperty.library].properties[loadProperty.property].getter!(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.MethodCall: {
                     const methodCall = instruction as MethodCallInstruction;
-                    SupportedLibraries[methodCall.library].methods[methodCall.method].execute(this, mode);
+                    SupportedLibraries[methodCall.library].methods[methodCall.method].execute(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.Negate: {
@@ -373,7 +379,7 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.Return: {
                     this.executionStack.pop();
-                    if (this.executionStack.count() > 0) {
+                    if (this.executionStack.count > 0) {
                         this.executionStack.peek().instructionCounter++;
                     }
                     break;
@@ -395,7 +401,6 @@ export class ExecutionEngine {
                         return;
                     }
                     break;
-                case ExecutionState.Terminated:
                 case ExecutionState.Paused:
                     return;
             }

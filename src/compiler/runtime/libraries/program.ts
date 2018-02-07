@@ -1,4 +1,4 @@
-import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../execution-engine";
+import { ExecutionMode, ExecutionState } from "../../execution-engine";
 import { LibraryTypeDefinition } from "../supported-libraries";
 import { DocumentationResources } from "../../strings/documentation";
 
@@ -10,7 +10,7 @@ export const ProgramLibrary: LibraryTypeDefinition = {
             parametersDescription: [],
             argumentsCount: 0,
             returnsValue: false,
-            execute: (engine: ExecutionEngine, mode: ExecutionMode) => {
+            execute: (engine, mode) => {
                 if (engine.state === ExecutionState.Paused) {
                     engine.state = ExecutionState.Running;
                     engine.executionStack.peek().instructionCounter++;
@@ -28,7 +28,7 @@ export const ProgramLibrary: LibraryTypeDefinition = {
             parametersDescription: [],
             argumentsCount: 0,
             returnsValue: false,
-            execute: (engine: ExecutionEngine, _: ExecutionMode) => {
+            execute: (engine) => {
                 engine.terminate();
             }
         }

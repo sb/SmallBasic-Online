@@ -9,10 +9,10 @@ import { Diagnostic, ErrorCode } from "../../src/compiler/utils/diagnostics";
 export function serializeInstructions(text: string): string {
     verifyCompilationErrors(text);
 
-    const compilation = new Compilation(text);
+    const emitResult = new Compilation(text).emit();
     let modules: { [key: string]: ReadonlyArray<BaseInstruction> } = {
-        "Main": compilation.mainModule,
-        ...compilation.subModules
+        "Main": emitResult.mainModule,
+        ...emitResult.subModules
     };
 
     return Object.keys(modules).map(subModule => `
@@ -46,7 +46,6 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
     input = input || [];
     output = output || [];
 
-    verifyCompilationErrors(text);
     const compilation = new Compilation(text);
     verifyErrors(text, compilation.diagnostics, []);
 

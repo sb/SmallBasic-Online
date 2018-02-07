@@ -185,7 +185,7 @@ export class ModuleEmitter {
         this._instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(statement.value);
-        this._instructions.push(InstructionFactory.StoreProperty(statement.library, statement.property));
+        this._instructions.push(InstructionFactory.StoreProperty(statement.library, statement.property, getExpressionRange(statement.value.syntax)));
     }
 
     private emitExpression(expression: BaseBoundExpression): void {
@@ -347,12 +347,12 @@ export class ModuleEmitter {
     }
 
     private emitLibraryPropertyExpression(expression: LibraryPropertyBoundExpression): void {
-        this._instructions.push(InstructionFactory.LoadProperty(expression.library, expression.name));
+        this._instructions.push(InstructionFactory.LoadProperty(expression.library, expression.name, getExpressionRange(expression.syntax)));
     }
 
     private emitLibraryMethodCallExpression(expression: LibraryMethodCallBoundExpression): void {
         expression.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(InstructionFactory.MethodCall(expression.library, expression.name, expression.argumentsList.length));
+        this._instructions.push(InstructionFactory.MethodCall(expression.library, expression.name, expression.argumentsList.length, getExpressionRange(expression.syntax)));
     }
 
     private emitVariableExpression(expression: VariableBoundExpression): void {
