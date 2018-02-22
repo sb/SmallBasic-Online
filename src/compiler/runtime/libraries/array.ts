@@ -16,8 +16,8 @@ export const ArrayLibrary: LibraryTypeDefinition = {
             },
             returnsValue: true,
             execute: (engine) => {
-                const index = engine.evaluationStack.pop().tryConvertToNumber();
-                const array = engine.evaluationStack.pop();
+                const index = engine.evaluationStack.pop()!.tryConvertToNumber();
+                const array = engine.evaluationStack.pop()!;
                 let result = Constants.False;
 
                 if (array.kind === ValueKind.Array) {
@@ -28,7 +28,7 @@ export const ArrayLibrary: LibraryTypeDefinition = {
                 }
 
                 engine.evaluationStack.push(new StringValue(result));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         },
         "ContainsValue": {
@@ -39,8 +39,8 @@ export const ArrayLibrary: LibraryTypeDefinition = {
             },
             returnsValue: true,
             execute: (engine) => {
-                const value = engine.evaluationStack.pop();
-                const array = engine.evaluationStack.pop();
+                const value = engine.evaluationStack.pop()!;
+                const array = engine.evaluationStack.pop()!;
                 let result = Constants.False;
 
                 if (array.kind === ValueKind.Array) {
@@ -54,7 +54,7 @@ export const ArrayLibrary: LibraryTypeDefinition = {
                 }
 
                 engine.evaluationStack.push(new StringValue(result));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         },
         "GetAllIndices": {
@@ -64,7 +64,7 @@ export const ArrayLibrary: LibraryTypeDefinition = {
             },
             returnsValue: true,
             execute: (engine) => {
-                const array = engine.evaluationStack.pop();
+                const array = engine.evaluationStack.pop()!;
                 const newArray: {[key: string]: BaseValue} = {};
 
                 if(array.kind === ValueKind.Array) {
@@ -74,7 +74,7 @@ export const ArrayLibrary: LibraryTypeDefinition = {
                 }
 
                 engine.evaluationStack.push(new ArrayValue(newArray));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         },
         "GetItemCount": {
@@ -84,13 +84,13 @@ export const ArrayLibrary: LibraryTypeDefinition = {
             },
             returnsValue: true,
             execute: (engine) => {
-                const array = engine.evaluationStack.pop();
+                const array = engine.evaluationStack.pop()!;
                 const itemCount = array.kind === ValueKind.Array
                     ? Object.keys( (array as ArrayValue).value).length
                     : 0;
 
                 engine.evaluationStack.push(new NumberValue(itemCount));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         },
         "IsArray": {
@@ -100,10 +100,10 @@ export const ArrayLibrary: LibraryTypeDefinition = {
             },
             returnsValue: true,
             execute: (engine) => {
-                const value = engine.evaluationStack.pop();
+                const value = engine.evaluationStack.pop()!;
 
                 engine.evaluationStack.push(new StringValue(value.kind === ValueKind.Array ? Constants.True : Constants.False));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         }
     },

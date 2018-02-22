@@ -41,7 +41,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                     }
 
                     engine.evaluationStack.push(value);
-                    engine.executionStack.peek().instructionCounter++;
+                    engine.moveToNextInstruction();
 
                     engine.state = ExecutionState.Running;
                 } else {
@@ -62,7 +62,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                     }
 
                     engine.evaluationStack.push(value);
-                    engine.executionStack.peek().instructionCounter++;
+                    engine.moveToNextInstruction();
 
                     engine.state = ExecutionState.Running;
                 } else {
@@ -81,10 +81,10 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                 if (engine.state === ExecutionState.BlockedOnOutput) {
                     if (!engine.buffer.hasValue()) {
                         engine.state = ExecutionState.Running;
-                        engine.executionStack.peek().instructionCounter++;
+                        engine.moveToNextInstruction();
                     }
                 } else {
-                    engine.buffer.writeValue(new StringValue(engine.evaluationStack.pop().toValueString()));
+                    engine.buffer.writeValue(new StringValue(engine.evaluationStack.pop()!.toValueString()));
                     engine.state = ExecutionState.BlockedOnOutput;
                     engine.notifications.producedOutput.publish();
                 }
@@ -96,11 +96,11 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             description: DocumentationResources.TextWindow_ForegroundColor_Description,
             getter: (engine) => {
                 engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.foreground]));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             },
             setter: (engine, _, instruction) => {
-                const color = engine.evaluationStack.pop();
-                engine.executionStack.peek().instructionCounter++;
+                const color = engine.evaluationStack.pop()!;
+                engine.moveToNextInstruction();
 
                 switch (color.kind) {
                     case ValueKind.Number: {
@@ -132,11 +132,11 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
             description: DocumentationResources.TextWindow_BackgroundColor_Description,
             getter: (engine) => {
                 engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.background]));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             },
             setter: (engine, _, instruction) => {
-                const color = engine.evaluationStack.pop();
-                engine.executionStack.peek().instructionCounter++;
+                const color = engine.evaluationStack.pop()!;
+                engine.moveToNextInstruction();
 
                 switch (color.kind) {
                     case ValueKind.Number: {

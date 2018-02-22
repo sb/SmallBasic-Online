@@ -36,8 +36,8 @@ interface PresentationalComponentState {
 }
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
-    private editor: CustomEditor;
-    private isAlreadyMounted: boolean;
+    private editor?: CustomEditor;
+    private isAlreadyMounted: boolean = false;
 
     public constructor(props: PresentationalComponentProps) {
         super(props);
@@ -106,8 +106,9 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
             if (this.state.mode) {
                 this.state.engine.execute(this.state.mode);
 
-                if (this.state.engine.executionStack.count) {
-                    this.editor.highlightLine(this.state.engine.executionStack.peek().currentLine);
+                if (this.state.engine.executionStack.length) {
+                    const frame = this.state.engine.executionStack[this.state.engine.executionStack.length - 1];
+                    this.editor!.highlightLine(frame.currentLine);
                 }
 
                 if (this.state.engine.state === ExecutionState.Paused) {

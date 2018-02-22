@@ -12,12 +12,12 @@ export const ProgramLibrary: LibraryTypeDefinition = {
             execute: (engine, mode) => {
                 if (engine.state === ExecutionState.Paused) {
                     engine.state = ExecutionState.Running;
-                    engine.executionStack.peek().instructionCounter++;
+                    engine.moveToNextInstruction();
                 } else {
                     if (mode === ExecutionMode.Debug) {
                         engine.state = ExecutionState.Paused;
                     } else {
-                        engine.executionStack.peek().instructionCounter++;
+                        engine.moveToNextInstruction();
                     }
                 }
             }

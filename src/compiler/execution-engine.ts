@@ -24,7 +24,6 @@ import {
     ConditionalJumpInstruction,
     NegateInstruction
 } from "./models/instructions";
-import { FastStack } from "./utils/fast-stack";
 import { SupportedLibraries } from "./runtime/supported-libraries";
 import { Diagnostic, ErrorCode } from "./utils/diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
@@ -60,8 +59,8 @@ export class ExecutionEngine {
     private _modules: { [name: string]: ReadonlyArray<BaseInstruction> };
 
     public readonly notifications: NotificationHub = new NotificationHub();
-    public readonly evaluationStack: FastStack<BaseValue> = new FastStack<BaseValue>();
-    public readonly executionStack: FastStack<StackFrame> = new FastStack<StackFrame>();
+    public readonly evaluationStack: BaseValue[] = [];
+    public readonly executionStack: StackFrame[] = [];
 
     private _exception?: Diagnostic;
     private _buffer: IOBuffer = new IOBuffer();
@@ -111,12 +110,12 @@ export class ExecutionEngine {
                 return;
             }
 
-            if (this.executionStack.count === 0) {
+            if (this.executionStack.length === 0) {
                 this.terminate();
                 return;
             }
 
-            const frame = this.executionStack.peek();
+            const frame = this.executionStack[this.executionStack.length - 1];
             const instruction = this._modules[frame.moduleName][frame.instructionCounter];
 
             switch (instruction.kind) {
@@ -125,7 +124,7 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.ConditionalJump: {
-                    const value = this.evaluationStack.pop();
+                    const value = this.evaluationStack.pop()!;
                     const jump = instruction as ConditionalJumpInstruction;
                     if (value.toBoolean()) {
                         if (jump.trueTarget) {
@@ -165,12 +164,12 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.StoreVariable: {
-                    this._memory[(instruction as StoreVariableInstruction).name] = this.evaluationStack.pop();
+                    this._memory[(instruction as StoreVariableInstruction).name] = this.evaluationStack.pop()!;
                     frame.instructionCounter++;
                     break;
                 }
                 case InstructionKind.StoreArrayElement: {
-                    const value = this.evaluationStack.pop();
+                    const value = this.evaluationStack.pop()!;
                     const storeArray = instruction as StoreArrayElementInstruction;
 
                     let indices = storeArray.indices;
@@ -184,7 +183,7 @@ export class ExecutionEngine {
 
                         current = (current[index] as ArrayValue).value;
 
-                        const indexValue = this.evaluationStack.pop();
+                        const indexValue = this.evaluationStack.pop()!;
                         switch (indexValue.kind) {
                             case ValueKind.Number:
                             case ValueKind.String:
@@ -231,7 +230,7 @@ export class ExecutionEngine {
 
                         current = (current[index] as ArrayValue).value;
 
-                        const indexValue = this.evaluationStack.pop();
+                        const indexValue = this.evaluationStack.pop()!;
                         switch (indexValue.kind) {
                             case ValueKind.Number:
                             case ValueKind.String:
@@ -265,7 +264,7 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.Negate: {
                     const negation = instruction as NegateInstruction;
-                    const value = this.evaluationStack.pop().tryConvertToNumber();
+                    const value = this.evaluationStack.pop()!.tryConvertToNumber();
                     switch (value.kind) {
                         case ValueKind.Number:
                             this.evaluationStack.push(new NumberValue(-(value as NumberValue).value));
@@ -283,8 +282,8 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.Equal: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     if (leftHandSide.isEqualTo(rightHandSide)) {
                         this.evaluationStack.push(new StringValue(Constants.True));
                     } else {
@@ -294,8 +293,8 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.LessThan: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     if (leftHandSide.isLessThan(rightHandSide)) {
                         this.evaluationStack.push(new StringValue(Constants.True));
                     } else {
@@ -305,8 +304,8 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.GreaterThan: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     if (leftHandSide.isGreaterThan(rightHandSide)) {
                         this.evaluationStack.push(new StringValue(Constants.True));
                     } else {
@@ -316,8 +315,8 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.LessThanOrEqual: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     if (leftHandSide.isLessThan(rightHandSide) || leftHandSide.isEqualTo(rightHandSide)) {
                         this.evaluationStack.push(new StringValue(Constants.True));
                     } else {
@@ -327,8 +326,8 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.GreaterThanOrEqual: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     if (leftHandSide.isGreaterThan(rightHandSide) || leftHandSide.isEqualTo(rightHandSide)) {
                         this.evaluationStack.push(new StringValue(Constants.True));
                     } else {
@@ -338,26 +337,26 @@ export class ExecutionEngine {
                     break;
                 }
                 case InstructionKind.Add: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     leftHandSide.add(rightHandSide, this, instruction as AddInstruction);
                     break;
                 }
                 case InstructionKind.Subtract: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     leftHandSide.subtract(rightHandSide, this, instruction as SubtractInstruction);
                     break;
                 }
                 case InstructionKind.Multiply: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     leftHandSide.multiply(rightHandSide, this, instruction as MultiplyInstruction);
                     break;
                 }
                 case InstructionKind.Divide: {
-                    const rightHandSide = this.evaluationStack.pop();
-                    const leftHandSide = this.evaluationStack.pop();
+                    const rightHandSide = this.evaluationStack.pop()!;
+                    const leftHandSide = this.evaluationStack.pop()!;
                     leftHandSide.divide(rightHandSide, this, instruction as DivideInstruction);
                     break;
                 }
@@ -373,8 +372,8 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.Return: {
                     this.executionStack.pop();
-                    if (this.executionStack.count > 0) {
-                        this.executionStack.peek().instructionCounter++;
+                    if (this.executionStack.length > 0) {
+                        this.moveToNextInstruction();
                     }
                     break;
                 }
@@ -399,5 +398,9 @@ export class ExecutionEngine {
                     return;
             }
         }
+    }
+
+    public moveToNextInstruction(): void {
+        this.executionStack[this.executionStack.length - 1].instructionCounter++;
     }
 }

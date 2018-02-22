@@ -12,7 +12,7 @@ export const ClockLibrary: LibraryTypeDefinition = {
             getter: (engine) => {
                 const time = new Date().toLocaleTimeString();
                 engine.evaluationStack.push(new StringValue(time));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         }
     }
