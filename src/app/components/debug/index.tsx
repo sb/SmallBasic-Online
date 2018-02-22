@@ -106,15 +106,17 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
             if (this.state.mode) {
                 this.state.engine.execute(this.state.mode);
 
-                if (this.state.engine.executionStack.length) {
+                if (this.state.engine.state !== ExecutionState.Terminated) {
                     const frame = this.state.engine.executionStack[this.state.engine.executionStack.length - 1];
                     this.editor!.highlightLine(frame.currentLine);
-                }
 
-                if (this.state.engine.state === ExecutionState.Paused) {
-                    this.setState({
-                        mode: undefined
-                    });
+                    if (this.state.engine.state === ExecutionState.Paused) {
+                        this.setState({
+                            mode: undefined
+                        });
+                    }
+
+                    this.forceUpdate();
                 }
             }
 
