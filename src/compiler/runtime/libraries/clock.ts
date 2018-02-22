@@ -4,14 +4,14 @@ import { DocumentationResources } from "../../strings/documentation";
 import { ExecutionEngine } from "../../execution-engine";
 
 export class ClockLibrary implements LibraryTypeDefinition {
-    public readonly description: string = DocumentationResources.Clock_Description;
+    public readonly description: string = DocumentationResources.Clock;
 
     public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
         Time: {
-            description: DocumentationResources.Clock_Time_Description,
+            description: DocumentationResources.Clock_Time,
             getter: (engine: ExecutionEngine) => {
                 const time = new Date().toLocaleTimeString();
                 engine.evaluationStack.push(new StringValue(time));

@@ -40,7 +40,8 @@ export enum ErrorCode {
     CannotUseOperatorWithAnArray,
     CannotUseOperatorWithAString,
     CannotDivideByZero,
-    UnsupportedTextWindowColor
+    UnsupportedTextWindowColor,
+    PoppingAnEmptyStack
 }
 
 export class Diagnostic {

@@ -50,7 +50,7 @@ export class CompletionService implements monaco.languages.CompletionItemProvide
     }
 
     private getTypes(prefix?: string): monaco.languages.CompletionItem[] {
-        return Object.keys(SupportedLibraries).filter(name => this.startsWith(name, prefix)).map(name => {
+        return Object.keys(this._libraries).filter(name => this.startsWith(name, prefix)).map(name => {
             const type = this._libraries[name];
             return {
                 label: name,

@@ -3,11 +3,11 @@ import { LibraryTypeDefinition, LibraryPropertyDefinition, LibraryMethodDefiniti
 import { DocumentationResources } from "../../strings/documentation";
 
 export class ProgramLibrary implements LibraryTypeDefinition {
-    public readonly description: string = DocumentationResources.Program_Description;
+    public readonly description: string = DocumentationResources.Program;
 
     public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
         Pause: {
-            description: DocumentationResources.Program_Pause_Description,
+            description: DocumentationResources.Program_Pause,
             parameters: {},
             returnsValue: false,
             execute: (engine: ExecutionEngine, mode: ExecutionMode) => {
@@ -24,7 +24,7 @@ export class ProgramLibrary implements LibraryTypeDefinition {
             }
         },
         End: {
-            description: DocumentationResources.Program_End_Description,
+            description: DocumentationResources.Program_End,
             parameters: {},
             returnsValue: false,
             execute: (engine: ExecutionEngine) => {

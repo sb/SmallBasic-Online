@@ -4,6 +4,7 @@ import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
 import { BaseInstruction } from "../models/instructions";
 import { ArrayLibrary } from "./libraries/array";
+import { StackLibrary } from "./libraries/stack";
 
 type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode, instruction: BaseInstruction) => void;
 
@@ -34,5 +35,6 @@ export class SupportedLibraries {
     public readonly Array: ArrayLibrary = new ArrayLibrary();
     public readonly Clock: ClockLibrary = new ClockLibrary();
     public readonly Program: ProgramLibrary = new ProgramLibrary();
+    public readonly Stack: StackLibrary = new StackLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
 }

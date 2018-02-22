@@ -7,14 +7,14 @@ import { NumberValue } from "../values/number-value";
 import { ExecutionEngine } from "../../execution-engine";
 
 export class ArrayLibrary implements LibraryTypeDefinition {
-    public readonly description: string = DocumentationResources.Clock_Description;
+    public readonly description: string = DocumentationResources.Clock;
 
     public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
         ContainsIndex: {
-            description: DocumentationResources.Array_ContainsIndex_Description,
+            description: DocumentationResources.Array_ContainsIndex,
             parameters: {
-                array: DocumentationResources.Array_ContainsIndex_Array_Description,
-                index: DocumentationResources.Array_ContainsIndex_Index_Description
+                array: DocumentationResources.Array_ContainsIndex_Array,
+                index: DocumentationResources.Array_ContainsIndex_Index
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
@@ -34,10 +34,10 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             }
         },
         ContainsValue: {
-            description: DocumentationResources.Array_ContainsValue_Description,
+            description: DocumentationResources.Array_ContainsValue,
             parameters: {
-                array: DocumentationResources.Array_ContainsValue_Array_Description,
-                index: DocumentationResources.Array_ContainsValue_Index_Description
+                array: DocumentationResources.Array_ContainsValue_Array,
+                index: DocumentationResources.Array_ContainsValue_Index
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
@@ -60,9 +60,9 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             }
         },
         GetAllIndices: {
-            description: DocumentationResources.Array_GetAllIndices_Description,
+            description: DocumentationResources.Array_GetAllIndices,
             parameters: {
-                array: DocumentationResources.Array_GetAllIndices_Array_Description
+                array: DocumentationResources.Array_GetAllIndices_Array
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
@@ -80,9 +80,9 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             }
         },
         GetItemCount: {
-            description: DocumentationResources.Array_GetItemCount_Description,
+            description: DocumentationResources.Array_GetItemCount,
             parameters: {
-                array: DocumentationResources.Array_GetItemCount_Array_Description
+                array: DocumentationResources.Array_GetItemCount_Array
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
@@ -96,9 +96,9 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             }
         },
         IsArray: {
-            description: DocumentationResources.Array_IsArray_Description,
+            description: DocumentationResources.Array_IsArray,
             parameters: {
-                value: DocumentationResources.Array_IsArray_Value_Description
+                value: DocumentationResources.Array_IsArray_Value
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {

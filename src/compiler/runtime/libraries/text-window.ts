@@ -34,11 +34,11 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
     public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("backgroundColorChanged");
     public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("foregroundColorChanged");
 
-    public readonly description: string = DocumentationResources.TextWindow_Description;
+    public readonly description: string = DocumentationResources.TextWindow;
 
     public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
         Read: {
-            description: DocumentationResources.TextWindow_Read_Description,
+            description: DocumentationResources.TextWindow_Read,
             parameters: {},
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
@@ -59,7 +59,7 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
             }
         },
         ReadNumber: {
-            description: DocumentationResources.TextWindow_ReadNumber_Description,
+            description: DocumentationResources.TextWindow_ReadNumber,
             parameters: {},
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
@@ -80,9 +80,9 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
             }
         },
         WriteLine: {
-            description: DocumentationResources.TextWindow_WriteLine_Description,
+            description: DocumentationResources.TextWindow_WriteLine,
             parameters: {
-                data: DocumentationResources.TextWindow_WriteLine_Data_Description
+                data: DocumentationResources.TextWindow_WriteLine_Data
             },
             returnsValue: false,
             execute: (engine: ExecutionEngine) => {
@@ -102,7 +102,7 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
 
     public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
         ForegroundColor: {
-            description: DocumentationResources.TextWindow_ForegroundColor_Description,
+            description: DocumentationResources.TextWindow_ForegroundColor,
             getter: (engine: ExecutionEngine) => {
                 engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.foreground]));
                 engine.moveToNextInstruction();
@@ -138,7 +138,7 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
             }
         },
         BackgroundColor: {
-            description: DocumentationResources.TextWindow_BackgroundColor_Description,
+            description: DocumentationResources.TextWindow_BackgroundColor,
             getter: (engine: ExecutionEngine) => {
                 engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.background]));
                 engine.moveToNextInstruction();
