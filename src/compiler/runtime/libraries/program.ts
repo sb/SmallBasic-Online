@@ -1,15 +1,16 @@
-import { ExecutionMode, ExecutionState } from "../../execution-engine";
-import { LibraryTypeDefinition } from "../supported-libraries";
+import { ExecutionMode, ExecutionState, ExecutionEngine } from "../../execution-engine";
+import { LibraryTypeDefinition, LibraryPropertyDefinition, LibraryMethodDefinition } from "../supported-libraries";
 import { DocumentationResources } from "../../strings/documentation";
 
-export const ProgramLibrary: LibraryTypeDefinition = {
-    description: DocumentationResources.Program_Description,
-    methods: {
-        "Pause": {
+export class ProgramLibrary implements LibraryTypeDefinition {
+    public readonly description: string = DocumentationResources.Program_Description;
+
+    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
+        Pause: {
             description: DocumentationResources.Program_Pause_Description,
             parameters: {},
             returnsValue: false,
-            execute: (engine, mode) => {
+            execute: (engine: ExecutionEngine, mode: ExecutionMode) => {
                 if (engine.state === ExecutionState.Paused) {
                     engine.state = ExecutionState.Running;
                     engine.moveToNextInstruction();
@@ -22,15 +23,16 @@ export const ProgramLibrary: LibraryTypeDefinition = {
                 }
             }
         },
-        "End": {
+        End: {
             description: DocumentationResources.Program_End_Description,
             parameters: {},
             returnsValue: false,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 engine.terminate();
             }
         }
-    },
-    properties: {
-    }
-};
+    };
+
+    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
+    };
+}

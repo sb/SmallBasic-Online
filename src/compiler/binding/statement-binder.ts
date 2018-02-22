@@ -36,6 +36,7 @@ import {
 } from "../models/bound-expressions";
 
 export class StatementBinder {
+    private _libraries: SupportedLibraries = new SupportedLibraries();
     private DefinedLabels: { [name: string]: boolean } = {};
     private goToStatements: GoToStatementSyntax[] = [];
     private _module: BaseBoundStatement[];
@@ -153,7 +154,7 @@ export class StatementBinder {
                     case BoundExpressionKind.LibraryProperty: {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
-                        if (!SupportedLibraries[property.library].properties[property.name].setter) {
+                        if (!this._libraries[property.library].properties[property.name].setter) {
                             this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, getExpressionRange(property.syntax)));
                         }
 

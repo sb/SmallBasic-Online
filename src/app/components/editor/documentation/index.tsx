@@ -15,6 +15,8 @@ interface DocumentationState {
 }
 
 export class DocumentationComponent extends React.Component<DocumentationProps, DocumentationState> {
+    private _libraries: SupportedLibraries = new SupportedLibraries();
+
     public constructor(props: DocumentationProps) {
         super(props);
         this.state = {
@@ -58,7 +60,7 @@ export class DocumentationComponent extends React.Component<DocumentationProps, 
                 <div className="sidebar-component-label">{EditorResources.Documentation_Header}</div>
                 <ul>
                     {Object.keys(SupportedLibraries).map(libraryName => {
-                        const library = SupportedLibraries[libraryName];
+                        const library = this._libraries[libraryName];
                         return (
                             <li className="library-class" key={libraryName}>
                                 <p className="library-class-name" onClick={(() => this.libraryClicked(libraryName)).bind(this)}>{libraryName}</p>

@@ -30,7 +30,7 @@ import { ArrayValue } from "./runtime/values/array-value";
 import { IOBuffer } from "./runtime/io-buffer";
 import { TokenKindToString } from "./utils/string-factories";
 import { TokenKind } from "./syntax/tokens";
-import { NotificationHub } from "./runtime/notification-hub";
+import { PubSubPayloadChannel } from "./runtime/notifications";
 
 interface StackFrame {
     moduleName: string;
@@ -58,14 +58,16 @@ export class ExecutionEngine {
     private _memory: { [name: string]: BaseValue } = {};
     private _modules: { [name: string]: ReadonlyArray<BaseInstruction> };
 
-    public readonly notifications: NotificationHub = new NotificationHub();
-    public readonly evaluationStack: BaseValue[] = [];
-    public readonly executionStack: StackFrame[] = [];
-
     private _exception?: Diagnostic;
     private _buffer: IOBuffer = new IOBuffer();
 
+    public readonly evaluationStack: BaseValue[] = [];
+    public readonly executionStack: StackFrame[] = [];
+    public readonly libraries: SupportedLibraries = new SupportedLibraries();
+
     public state: ExecutionState = ExecutionState.Running;
+    
+    public readonly programTerminated: PubSubPayloadChannel<Diagnostic | undefined> = new PubSubPayloadChannel<Diagnostic | undefined>("programTerminated");
 
     public get memory(): { readonly [name: string]: BaseValue } {
         return this._memory;
@@ -101,7 +103,7 @@ export class ExecutionEngine {
         this.state = ExecutionState.Terminated;
         this._exception = exception;
 
-        this.notifications.programTerminated.publish(exception);
+        this.programTerminated.publish(exception);
     }
 
     public execute(mode: ExecutionMode): void {
@@ -203,7 +205,7 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.StoreProperty: {
                     const storeProperty = instruction as StorePropertyInstruction;
-                    SupportedLibraries[storeProperty.library].properties[storeProperty.property].setter!(this, mode, instruction);
+                    this.libraries[storeProperty.library].properties[storeProperty.property].setter!(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.LoadVariable: {
@@ -254,12 +256,12 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.LoadProperty: {
                     const loadProperty = instruction as LoadPropertyInstruction;
-                    SupportedLibraries[loadProperty.library].properties[loadProperty.property].getter!(this, mode, instruction);
+                    this.libraries[loadProperty.library].properties[loadProperty.property].getter!(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.MethodCall: {
                     const methodCall = instruction as MethodCallInstruction;
-                    SupportedLibraries[methodCall.library].methods[methodCall.method].execute(this, mode, instruction);
+                    this.libraries[methodCall.library].methods[methodCall.method].execute(this, mode, instruction);
                     break;
                 }
                 case InstructionKind.Negate: {

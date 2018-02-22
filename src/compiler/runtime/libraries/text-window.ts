@@ -1,11 +1,12 @@
-import { LibraryTypeDefinition } from "../supported-libraries";
+import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
 import { ValueKind } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
 import { DocumentationResources } from "../../strings/documentation";
 import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
-import { StorePropertyInstruction } from "../../models/instructions";
-import { ExecutionState } from "../../execution-engine";
+import { StorePropertyInstruction, BaseInstruction } from "../../models/instructions";
+import { ExecutionState, ExecutionEngine, ExecutionMode } from "../../execution-engine";
+import { PubSubPayloadChannel, PubSubChannel } from "../notifications";
 
 export enum TextWindowColors {
     Black = 0,
@@ -26,14 +27,21 @@ export enum TextWindowColors {
     White = 15
 }
 
-export const TextWindowLibrary: LibraryTypeDefinition = {
-    description: DocumentationResources.TextWindow_Description,
-    methods: {
-        "Read": {
+export class TextWindowLibrary implements LibraryTypeDefinition {
+    public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
+    public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
+
+    public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("backgroundColorChanged");
+    public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("foregroundColorChanged");
+
+    public readonly description: string = DocumentationResources.TextWindow_Description;
+
+    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
+        Read: {
             description: DocumentationResources.TextWindow_Read_Description,
             parameters: {},
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 if (engine.buffer.hasValue()) {
                     const value = engine.buffer.readValue();
                     if (value.kind !== ValueKind.String) {
@@ -46,15 +54,15 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                     engine.state = ExecutionState.Running;
                 } else {
                     engine.state = ExecutionState.BlockedOnStringInput;
-                    engine.notifications.blockedOnInput.publish(ValueKind.String);
+                    this.blockedOnInput.publish(ValueKind.String);
                 }
             }
         },
-        "ReadNumber": {
+        ReadNumber: {
             description: DocumentationResources.TextWindow_ReadNumber_Description,
             parameters: {},
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 if (engine.buffer.hasValue()) {
                     const value = engine.buffer.readValue();
                     if (value.kind !== ValueKind.Number) {
@@ -67,17 +75,17 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                     engine.state = ExecutionState.Running;
                 } else {
                     engine.state = ExecutionState.BlockedOnNumberInput;
-                    engine.notifications.blockedOnInput.publish(ValueKind.Number);
+                    this.blockedOnInput.publish(ValueKind.Number);
                 }
             }
         },
-        "WriteLine": {
+        WriteLine: {
             description: DocumentationResources.TextWindow_WriteLine_Description,
             parameters: {
-                "data": DocumentationResources.TextWindow_WriteLine_Data_Description
+                data: DocumentationResources.TextWindow_WriteLine_Data_Description
             },
             returnsValue: false,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 if (engine.state === ExecutionState.BlockedOnOutput) {
                     if (!engine.buffer.hasValue()) {
                         engine.state = ExecutionState.Running;
@@ -86,19 +94,20 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                 } else {
                     engine.buffer.writeValue(new StringValue(engine.evaluationStack.pop()!.toValueString()));
                     engine.state = ExecutionState.BlockedOnOutput;
-                    engine.notifications.producedOutput.publish();
+                    this.producedOutput.publish();
                 }
             }
         }
-    },
-    properties: {
-        "ForegroundColor": {
+    };
+
+    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
+        ForegroundColor: {
             description: DocumentationResources.TextWindow_ForegroundColor_Description,
-            getter: (engine) => {
+            getter: (engine: ExecutionEngine) => {
                 engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.foreground]));
                 engine.moveToNextInstruction();
             },
-            setter: (engine, _, instruction) => {
+            setter: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
                 const color = engine.evaluationStack.pop()!;
                 engine.moveToNextInstruction();
 
@@ -107,7 +116,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                         const numberValue = (color as NumberValue).value;
                         if (TextWindowColors[numberValue]) {
                             engine.buffer.foreground = numberValue;
-                            engine.notifications.foregroundColorChanged.publish(engine.buffer.foreground);
+                            this.foregroundColorChanged.publish(engine.buffer.foreground);
                             return;
                         }
                         break;
@@ -117,7 +126,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                         for (let color in TextWindowColors) {
                             if (color.toLowerCase() === stringValue) {
                                 engine.buffer.foreground = <any>TextWindowColors[color];
-                                engine.notifications.foregroundColorChanged.publish(engine.buffer.foreground);
+                                this.foregroundColorChanged.publish(engine.buffer.foreground);
                                 return;
                             }
                         }
@@ -128,13 +137,13 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                 engine.terminate(new Diagnostic(ErrorCode.UnsupportedTextWindowColor, (instruction as StorePropertyInstruction).sourceRange, color.toValueString()));
             }
         },
-        "BackgroundColor": {
+        BackgroundColor: {
             description: DocumentationResources.TextWindow_BackgroundColor_Description,
-            getter: (engine) => {
+            getter: (engine: ExecutionEngine) => {
                 engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.background]));
                 engine.moveToNextInstruction();
             },
-            setter: (engine, _, instruction) => {
+            setter: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
                 const color = engine.evaluationStack.pop()!;
                 engine.moveToNextInstruction();
 
@@ -143,7 +152,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                         const numberValue = (color as NumberValue).value;
                         if (TextWindowColors[numberValue]) {
                             engine.buffer.background = numberValue;
-                            engine.notifications.backgroundColorChanged.publish(engine.buffer.background);
+                            this.backgroundColorChanged.publish(engine.buffer.background);
                             return;
                         }
                         break;
@@ -153,7 +162,7 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                         for (let color in TextWindowColors) {
                             if (color.toLowerCase() === stringValue) {
                                 engine.buffer.background = <any>TextWindowColors[color];
-                                engine.notifications.backgroundColorChanged.publish(engine.buffer.background);
+                                this.backgroundColorChanged.publish(engine.buffer.background);
                                 return;
                             }
                         }
@@ -164,5 +173,5 @@ export const TextWindowLibrary: LibraryTypeDefinition = {
                 engine.terminate(new Diagnostic(ErrorCode.UnsupportedTextWindowColor, (instruction as StorePropertyInstruction).sourceRange, color.toValueString()));
             }
         }
-    }
-};
+    };
+}

@@ -56,8 +56,8 @@ function textWindowColorToCssColor(color: TextWindowColors): string {
 
 export class TextWindowComponent extends React.Component<TextWindowComponentProps, TextWindowComponentState> {
     private isAlreadyMounted: boolean;
-    private tokens: string[];
-    private inputDiv: HTMLDivElement;
+    private tokens: string[] = [];
+    private inputDiv?: HTMLDivElement;
 
     public constructor(props: TextWindowComponentProps) {
         super(props);
@@ -78,28 +78,28 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
 
     public componentDidMount(): void {
         this.tokens = [
-            this.props.engine.notifications.backgroundColorChanged.subscribe(color => {
+            this.props.engine.libraries.TextWindow.backgroundColorChanged.subscribe(color => {
                 this.setState({
                     background: color
                 });
             }),
-            this.props.engine.notifications.foregroundColorChanged.subscribe(color => {
+            this.props.engine.libraries.TextWindow.foregroundColorChanged.subscribe(color => {
                 this.setState({
                     foreground: color
                 });
             }),
-            this.props.engine.notifications.blockedOnInput.subscribe(kind => {
+            this.props.engine.libraries.TextWindow.blockedOnInput.subscribe(kind => {
                 this.setState({
                     inputKind: kind
                 });
             }),
-            this.props.engine.notifications.producedOutput.subscribe(() => {
+            this.props.engine.libraries.TextWindow.producedOutput.subscribe(() => {
                 this.appendOutput({
                     text: this.props.engine.buffer.readValue().toValueString(),
                     color: this.state.foreground
                 });
             }),
-            this.props.engine.notifications.programTerminated.subscribe(exception => {
+            this.props.engine.programTerminated.subscribe(exception => {
                 this.appendOutput(exception
                     ? {
                         text: exception.toString(),
@@ -209,7 +209,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
             outputLines: this.state.outputLines.concat([output])
         });
 
-        this.inputDiv.scrollIntoView({
+        this.inputDiv!.scrollIntoView({
             behavior: "smooth"
         });
     }

@@ -24,13 +24,15 @@ export interface LibraryPropertyDefinition {
 export interface LibraryTypeDefinition {
     readonly description: string;
 
-    methods: { readonly [name: string]: LibraryMethodDefinition };
-    properties: { readonly [name: string]: LibraryPropertyDefinition };
+    readonly methods: { readonly [name: string]: LibraryMethodDefinition };
+    readonly properties: { readonly [name: string]: LibraryPropertyDefinition };
 }
 
-export const SupportedLibraries: { readonly [name: string]: LibraryTypeDefinition } = {
-    "Array": ArrayLibrary,
-    "TextWindow": TextWindowLibrary,
-    "Program": ProgramLibrary,
-    "Clock": ClockLibrary
-};
+export class SupportedLibraries {
+    readonly [libraryName: string]: LibraryTypeDefinition;
+
+    public readonly Array: ArrayLibrary = new ArrayLibrary();
+    public readonly Clock: ClockLibrary = new ClockLibrary();
+    public readonly Program: ProgramLibrary = new ProgramLibrary();
+    public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
+}

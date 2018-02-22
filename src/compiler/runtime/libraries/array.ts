@@ -1,21 +1,23 @@
-import { LibraryTypeDefinition } from "../supported-libraries";
+import { LibraryTypeDefinition, LibraryPropertyDefinition, LibraryMethodDefinition } from "../supported-libraries";
 import { DocumentationResources } from "../../strings/documentation";
 import { ValueKind, Constants, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { ArrayValue } from "../values/array-value";
 import { NumberValue } from "../values/number-value";
+import { ExecutionEngine } from "../../execution-engine";
 
-export const ArrayLibrary: LibraryTypeDefinition = {
-    description: DocumentationResources.Clock_Description,
-    methods: {
-        "ContainsIndex": {
+export class ArrayLibrary implements LibraryTypeDefinition {
+    public readonly description: string = DocumentationResources.Clock_Description;
+
+    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
+        ContainsIndex: {
             description: DocumentationResources.Array_ContainsIndex_Description,
             parameters: {
-                "array": DocumentationResources.Array_ContainsIndex_Array_Description,
-                "index": DocumentationResources.Array_ContainsIndex_Index_Description
+                array: DocumentationResources.Array_ContainsIndex_Array_Description,
+                index: DocumentationResources.Array_ContainsIndex_Index_Description
             },
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 const index = engine.evaluationStack.pop()!.tryConvertToNumber();
                 const array = engine.evaluationStack.pop()!;
                 let result = Constants.False;
@@ -31,14 +33,14 @@ export const ArrayLibrary: LibraryTypeDefinition = {
                 engine.moveToNextInstruction();
             }
         },
-        "ContainsValue": {
+        ContainsValue: {
             description: DocumentationResources.Array_ContainsValue_Description,
             parameters: {
-                "array": DocumentationResources.Array_ContainsValue_Array_Description,
-                "index": DocumentationResources.Array_ContainsValue_Index_Description
+                array: DocumentationResources.Array_ContainsValue_Array_Description,
+                index: DocumentationResources.Array_ContainsValue_Index_Description
             },
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 const value = engine.evaluationStack.pop()!;
                 const array = engine.evaluationStack.pop()!;
                 let result = Constants.False;
@@ -57,17 +59,17 @@ export const ArrayLibrary: LibraryTypeDefinition = {
                 engine.moveToNextInstruction();
             }
         },
-        "GetAllIndices": {
+        GetAllIndices: {
             description: DocumentationResources.Array_GetAllIndices_Description,
             parameters: {
-                "array": DocumentationResources.Array_GetAllIndices_Array_Description
+                array: DocumentationResources.Array_GetAllIndices_Array_Description
             },
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 const array = engine.evaluationStack.pop()!;
-                const newArray: {[key: string]: BaseValue} = {};
+                const newArray: { [key: string]: BaseValue } = {};
 
-                if(array.kind === ValueKind.Array) {
+                if (array.kind === ValueKind.Array) {
                     Object.keys((array as ArrayValue).value).forEach((key, i) => {
                         newArray[i + 1] = new StringValue(key);
                     });
@@ -77,36 +79,37 @@ export const ArrayLibrary: LibraryTypeDefinition = {
                 engine.moveToNextInstruction();
             }
         },
-        "GetItemCount": {
+        GetItemCount: {
             description: DocumentationResources.Array_GetItemCount_Description,
             parameters: {
-                "array": DocumentationResources.Array_GetItemCount_Array_Description
+                array: DocumentationResources.Array_GetItemCount_Array_Description
             },
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 const array = engine.evaluationStack.pop()!;
                 const itemCount = array.kind === ValueKind.Array
-                    ? Object.keys( (array as ArrayValue).value).length
+                    ? Object.keys((array as ArrayValue).value).length
                     : 0;
 
                 engine.evaluationStack.push(new NumberValue(itemCount));
                 engine.moveToNextInstruction();
             }
         },
-        "IsArray": {
+        IsArray: {
             description: DocumentationResources.Array_IsArray_Description,
             parameters: {
-                "value": DocumentationResources.Array_IsArray_Value_Description
+                value: DocumentationResources.Array_IsArray_Value_Description
             },
             returnsValue: true,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 const value = engine.evaluationStack.pop()!;
 
                 engine.evaluationStack.push(new StringValue(value.kind === ValueKind.Array ? Constants.True : Constants.False));
                 engine.moveToNextInstruction();
             }
         }
-    },
-    properties: {
-    }
-};
+    };
+
+    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
+    };
+}
