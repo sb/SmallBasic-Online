@@ -6,10 +6,11 @@ import { TokenKind } from "../../syntax/tokens";
 import { BaseValue, ValueKind } from "./base-value";
 
 export class ArrayValue extends BaseValue {
-    public readonly value: { [key: string]: BaseValue } = {};
+    public readonly value: { [key: string]: BaseValue };
 
-    public constructor() {
+    public constructor(value : { [key: string]: BaseValue } = {}) {
         super();
+        this.value = value;
     }
 
     public toBoolean(): boolean {

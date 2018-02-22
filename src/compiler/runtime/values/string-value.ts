@@ -91,7 +91,7 @@ export class StringValue extends BaseValue {
         }
 
         engine.evaluationStack.push(result);
-        engine.executionStack.peek().instructionCounter++;
+        engine.moveToNextInstruction();
     }
 
     public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {

@@ -11,7 +11,6 @@ import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from "react-redux";
 import { Compilation } from "../compiler/compilation";
 
-// TODO: get from settings along with version
 window.document.title = "SuperBasic";
 
 const initialState: AppState = {

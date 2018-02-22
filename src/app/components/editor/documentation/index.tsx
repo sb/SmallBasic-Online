@@ -15,6 +15,8 @@ interface DocumentationState {
 }
 
 export class DocumentationComponent extends React.Component<DocumentationProps, DocumentationState> {
+    private _libraries: SupportedLibraries = new SupportedLibraries();
+
     public constructor(props: DocumentationProps) {
         super(props);
         this.state = {
@@ -57,8 +59,8 @@ export class DocumentationComponent extends React.Component<DocumentationProps, 
                 <div className="sidebar-component-icon" style={{ backgroundImage: `url("${DocumentationIcon}")` }}></div>
                 <div className="sidebar-component-label">{EditorResources.Documentation_Header}</div>
                 <ul>
-                    {Object.keys(SupportedLibraries).map(libraryName => {
-                        const library = SupportedLibraries[libraryName];
+                    {Object.keys(this._libraries).map(libraryName => {
+                        const library = this._libraries[libraryName];
                         return (
                             <li className="library-class" key={libraryName}>
                                 <p className="library-class-name" onClick={(() => this.libraryClicked(libraryName)).bind(this)}>{libraryName}</p>
@@ -83,14 +85,14 @@ export class DocumentationComponent extends React.Component<DocumentationProps, 
                                             return (
                                                 <li className="library-member" key={methodName}>
                                                     <p className="library-member-name" onClick={(() => this.memberClicked(methodName)).bind(this)}>
-                                                        {libraryName}.{methodName}({method.parametersDescription.map(parameter => parameter.name).join(", ")})
+                                                        {libraryName}.{methodName}({Object.keys(method.parameters).join(", ")})
                                                     </p>
                                                     <div style={{ display: this.state.member === methodName ? "inherit" : "none" }}>
                                                         <p className="description">{method.description}</p>
                                                         <ul>
-                                                            {method.parametersDescription.map(parameter =>
-                                                                <li className="members-details" key={parameter.name}>
-                                                                    <p className="description"><b>{parameter.name}</b>: {parameter.description}</p>
+                                                            {Object.keys(method.parameters).map(name =>
+                                                                <li className="members-details" key={name}>
+                                                                    <p className="description"><b>{name}</b>: {method.parameters[name]}</p>
                                                                 </li>
                                                             )}
                                                         </ul>

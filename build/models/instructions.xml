@@ -29,11 +29,6 @@
         <name type="string" />
     </CallSubModuleInstruction>
 
-    <CallLibraryMethodInstruction>
-        <library type="string" />
-        <method type="string" />
-    </CallLibraryMethodInstruction>
-
     <StoreVariableInstruction>
         <name type="string" />
     </StoreVariableInstruction>
@@ -69,7 +64,6 @@
     <MethodCallInstruction>
         <library type="string" />
         <method type="string" />
-        <argumentsCount type="number" />
         <sourceRange type="TextRange" />
     </MethodCallInstruction>
 

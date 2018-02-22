@@ -18,7 +18,7 @@ export class CallStackComponent extends React.Component<CallStackProps, CallStac
                 <div className="sidebar-component-icon" style={{ backgroundImage: `url("${CallStackIcon}")` }}></div>
                 <div className="sidebar-component-label">{EditorResources.CallStack_Header}</div>
                 <ul>
-                    {this.props.engine.executionStack.items.reverse().map((frame, i) =>
+                    {this.props.engine.executionStack.reverse().map((frame, i) =>
                         <li key={i}>
                             {frame.moduleName}: ({frame.currentLine})
                         </li>

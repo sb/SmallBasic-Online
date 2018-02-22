@@ -3,19 +3,14 @@ import { TextWindowLibrary } from "./libraries/text-window";
 import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
 import { BaseInstruction } from "../models/instructions";
+import { ArrayLibrary } from "./libraries/array";
+import { StackLibrary } from "./libraries/stack";
 
 type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode, instruction: BaseInstruction) => void;
 
-// TODO: add the rest of the libraries
-
 export interface LibraryMethodDefinition {
     readonly description: string;
-    readonly parametersDescription: {
-        readonly name: string;
-        readonly description: string;
-    }[];
-
-    readonly argumentsCount: number;
+    readonly parameters: { [name: string]: string };
     readonly returnsValue: boolean;
     readonly execute: LibraryExecuteSignature;
 }
@@ -30,12 +25,16 @@ export interface LibraryPropertyDefinition {
 export interface LibraryTypeDefinition {
     readonly description: string;
 
-    methods: { readonly [name: string]: LibraryMethodDefinition };
-    properties: { readonly [name: string]: LibraryPropertyDefinition };
+    readonly methods: { readonly [name: string]: LibraryMethodDefinition };
+    readonly properties: { readonly [name: string]: LibraryPropertyDefinition };
 }
 
-export const SupportedLibraries: { readonly [name: string]: LibraryTypeDefinition } = {
-    "TextWindow": TextWindowLibrary,
-    "Program": ProgramLibrary,
-    "Clock": ClockLibrary
-};
+export class SupportedLibraries {
+    readonly [libraryName: string]: LibraryTypeDefinition;
+
+    public readonly Array: ArrayLibrary = new ArrayLibrary();
+    public readonly Clock: ClockLibrary = new ClockLibrary();
+    public readonly Program: ProgramLibrary = new ProgramLibrary();
+    public readonly Stack: StackLibrary = new StackLibrary();
+    public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
+}

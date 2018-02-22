@@ -20,8 +20,10 @@ import "./runtime/expressions/negation";
 import "./runtime/expressions/subtraction";
 import "./runtime/expressions/to-boolean";
 
+import "./runtime/libraries/array";
 import "./runtime/libraries/clock";
 import "./runtime/libraries/program";
+import "./runtime/libraries/stack";
 import "./runtime/libraries/text-window";
 
 import "./runtime/statements/for-loop";

@@ -1,38 +1,38 @@
-import { ExecutionMode, ExecutionState } from "../../execution-engine";
-import { LibraryTypeDefinition } from "../supported-libraries";
+import { ExecutionMode, ExecutionState, ExecutionEngine } from "../../execution-engine";
+import { LibraryTypeDefinition, LibraryPropertyDefinition, LibraryMethodDefinition } from "../supported-libraries";
 import { DocumentationResources } from "../../strings/documentation";
 
-export const ProgramLibrary: LibraryTypeDefinition = {
-    description: DocumentationResources.Program_Description,
-    methods: {
-        "Pause": {
-            description: DocumentationResources.Program_Pause_Description,
-            parametersDescription: [],
-            argumentsCount: 0,
+export class ProgramLibrary implements LibraryTypeDefinition {
+    public readonly description: string = DocumentationResources.Program;
+
+    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
+        Pause: {
+            description: DocumentationResources.Program_Pause,
+            parameters: {},
             returnsValue: false,
-            execute: (engine, mode) => {
+            execute: (engine: ExecutionEngine, mode: ExecutionMode) => {
                 if (engine.state === ExecutionState.Paused) {
                     engine.state = ExecutionState.Running;
-                    engine.executionStack.peek().instructionCounter++;
+                    engine.moveToNextInstruction();
                 } else {
                     if (mode === ExecutionMode.Debug) {
                         engine.state = ExecutionState.Paused;
                     } else {
-                        engine.executionStack.peek().instructionCounter++;
+                        engine.moveToNextInstruction();
                     }
                 }
             }
         },
-        "End": {
-            description: DocumentationResources.Program_End_Description,
-            parametersDescription: [],
-            argumentsCount: 0,
+        End: {
+            description: DocumentationResources.Program_End,
+            parameters: {},
             returnsValue: false,
-            execute: (engine) => {
+            execute: (engine: ExecutionEngine) => {
                 engine.terminate();
             }
         }
-    },
-    properties: {
-    }
-};
+    };
+
+    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
+    };
+}

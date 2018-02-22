@@ -1,20 +1,22 @@
-import { LibraryTypeDefinition } from "../supported-libraries";
+import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
 import { StringValue } from "../values/string-value";
 import { DocumentationResources } from "../../strings/documentation";
+import { ExecutionEngine } from "../../execution-engine";
 
-export const ClockLibrary: LibraryTypeDefinition = {
-    description: DocumentationResources.Clock_Description,
-    methods: {
-    },
-    properties: {
-        "Time": {
-            description: DocumentationResources.Clock_Time_Description,
-            getter: (engine) => {
-                // TODO: correctly implement user's locale
+export class ClockLibrary implements LibraryTypeDefinition {
+    public readonly description: string = DocumentationResources.Clock;
+
+    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
+    };
+
+    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
+        Time: {
+            description: DocumentationResources.Clock_Time,
+            getter: (engine: ExecutionEngine) => {
                 const time = new Date().toLocaleTimeString();
                 engine.evaluationStack.push(new StringValue(time));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
             }
         }
-    }
-};
+    };
+}

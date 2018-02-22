@@ -93,7 +93,7 @@ export class NumberValue extends BaseValue {
         }
 
         engine.evaluationStack.push(result);
-        engine.executionStack.peek().instructionCounter++;
+        engine.moveToNextInstruction();
     }
 
     public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
@@ -105,7 +105,7 @@ export class NumberValue extends BaseValue {
                 return;
             case ValueKind.Number:
                 engine.evaluationStack.push(new NumberValue(this.value - (other as NumberValue).value));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
                 return;
             case ValueKind.Array:
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
@@ -124,7 +124,7 @@ export class NumberValue extends BaseValue {
                 return;
             case ValueKind.Number:
                 engine.evaluationStack.push(new NumberValue(this.value * (other as NumberValue).value));
-                engine.executionStack.peek().instructionCounter++;
+                engine.moveToNextInstruction();
                 return;
             case ValueKind.Array:
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
@@ -147,7 +147,7 @@ export class NumberValue extends BaseValue {
                     engine.terminate(new Diagnostic(ErrorCode.CannotDivideByZero, instruction.sourceRange));
                 } else {
                     engine.evaluationStack.push(new NumberValue(this.value / otherValue));
-                    engine.executionStack.peek().instructionCounter++;
+                    engine.moveToNextInstruction();
                 }
                 return;
             case ValueKind.Array:

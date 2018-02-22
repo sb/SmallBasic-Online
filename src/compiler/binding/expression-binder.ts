@@ -34,6 +34,8 @@ export interface ExpressionInfo {
 }
 
 export class ExpressionBinder {
+    private _libraries: SupportedLibraries = new SupportedLibraries();
+
     public readonly result: BaseBoundExpression;
 
     public constructor(syntax: BaseExpressionSyntax, private definedSubModules: { readonly [name: string]: boolean }, private diagnostics: Diagnostic[], expectedValue: boolean) {
@@ -105,11 +107,12 @@ export class ExpressionBinder {
         switch (baseExpression.kind) {
             case BoundExpressionKind.LibraryMethod: {
                 const method = baseExpression as LibraryMethodBoundExpression;
-                const definition = SupportedLibraries[method.library].methods[method.name];
+                const definition = this._libraries[method.library].methods[method.name];
+                const parametersCount = Object.keys(definition.parameters).length;
 
-                if (argumentsList.length !== definition.argumentsCount) {
+                if (argumentsList.length !== parametersCount) {
                     hasError = true;
-                    this.reportError(baseExpression, ErrorCode.UnexpectedArgumentsCount, definition.argumentsCount.toString(), argumentsList.length.toString());
+                    this.reportError(baseExpression, ErrorCode.UnexpectedArgumentsCount, parametersCount.toString(), argumentsList.length.toString());
                 }
 
                 return BoundExpressionFactory.LibraryMethodCall(
@@ -148,13 +151,13 @@ export class ExpressionBinder {
         }
 
         const libraryType = leftHandSide as LibraryTypeBoundExpression;
-        const propertyInfo = SupportedLibraries[libraryType.library].properties[rightHandSide];
+        const propertyInfo = this._libraries[libraryType.library].properties[rightHandSide];
 
         if (propertyInfo) {
             return BoundExpressionFactory.LibraryProperty(syntax, { hasError: hasError, hasValue: !!propertyInfo.getter }, libraryType.library, rightHandSide);
         }
 
-        const methodInfo = SupportedLibraries[libraryType.library].methods[rightHandSide];
+        const methodInfo = this._libraries[libraryType.library].methods[rightHandSide];
         if (methodInfo) {
             return BoundExpressionFactory.LibraryMethod(syntax, { hasError: hasError, hasValue: false }, libraryType.library, rightHandSide);
         }
@@ -178,7 +181,7 @@ export class ExpressionBinder {
     }
 
     private bindIdentifier(syntax: IdentifierExpressionSyntax): BaseBoundExpression {
-        if (SupportedLibraries[syntax.name]) {
+        if (this._libraries[syntax.name]) {
             return BoundExpressionFactory.LibraryType(syntax, { hasError: false, hasValue: false }, syntax.name);
         } else if (this.definedSubModules[syntax.name]) {
             return BoundExpressionFactory.SubModule(syntax, { hasError: false, hasValue: false }, syntax.name);
