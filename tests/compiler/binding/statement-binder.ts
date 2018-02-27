@@ -142,18 +142,18 @@ Clock.Time = 5`,
         verifyCompilationErrors(`
 x and y = 5`,
             // x and y = 5
-            // ^^^^^^^
-            // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 7 }));
+            // ^^^^^^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 11 }));
     });
 
     it("reports error on invalid LHS expressions - or", () => {
         verifyCompilationErrors(`
 x or y = 5`,
             // x or y = 5
-            // ^^^^^^
-            // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            // ^^^^^^^^^^^
+            // This value is not assigned to anything. Did you mean to assign it to a variable?
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 10 }));
     });
 
     it("reports error on invalid LHS expressions - negation", () => {

@@ -432,10 +432,10 @@ export class CommandsParser {
     }
 
     private static BinaryOperatorPrecedence: TokenKind[] = [
-        TokenKind.Equal,
-        TokenKind.NotEqual,
         TokenKind.Or,
         TokenKind.And,
+        TokenKind.Equal,
+        TokenKind.NotEqual,
         TokenKind.LessThan,
         TokenKind.GreaterThan,
         TokenKind.LessThanOrEqual,
