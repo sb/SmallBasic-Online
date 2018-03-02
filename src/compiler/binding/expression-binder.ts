@@ -1,6 +1,5 @@
 import { SupportedLibraries } from "../runtime/supported-libraries";
-import { getExpressionRange } from "../syntax/text-markers";
-import { Diagnostic, ErrorCode } from "../utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../diagnostics";
 import {
     ArrayAccessBoundExpression,
     BaseBoundExpression,
@@ -23,10 +22,9 @@ import {
     ParenthesisExpressionSyntax,
     StringLiteralExpressionSyntax,
     UnaryOperatorExpressionSyntax,
-    IdentifierExpressionSyntax,
-    MissingExpressionSyntax
-} from "../models/syntax-expressions";
-import { TokenKind } from "../syntax/tokens";
+    IdentifierExpressionSyntax
+} from "../syntax/nodes/expressions";
+import { TokenKind } from "../syntax/nodes/tokens";
 
 export interface ExpressionInfo {
     hasError: boolean;
@@ -55,7 +53,6 @@ export class ExpressionBinder {
             case ExpressionSyntaxKind.StringLiteral: expression = this.bindStringLiteral(syntax as StringLiteralExpressionSyntax); break;
             case ExpressionSyntaxKind.Identifier: expression = this.bindIdentifier(syntax as IdentifierExpressionSyntax); break;
             case ExpressionSyntaxKind.UnaryOperator: expression = this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax); break;
-            case ExpressionSyntaxKind.Missing: expression = this.bindMissing(syntax as MissingExpressionSyntax); break;
             default: throw new Error(`Invalid syntax kind: ${ExpressionSyntaxKind[syntax.kind]}`);
         }
 
@@ -173,25 +170,39 @@ export class ExpressionBinder {
     }
 
     private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression {
-        return BoundExpressionFactory.NumberLiteral(syntax, { hasError: false, hasValue: true }, syntax.value);
+        const value = parseFloat(syntax.token.text);
+        const expression = BoundExpressionFactory.NumberLiteral(syntax, { hasError: false, hasValue: true }, value);
+
+        if (isNaN(value)) {
+            this.reportError(expression, ErrorCode.ValueIsNotANumber, syntax.token.text);
+        }
+
+        return BoundExpressionFactory.NumberLiteral(syntax, { hasError: false, hasValue: true }, value);
     }
 
     private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression {
-        return BoundExpressionFactory.StringLiteral(syntax, { hasError: false, hasValue: true }, syntax.value);
+        let value = syntax.token.text;
+        if (value.length < 1 || value[0] !== "\"") {
+            throw new Error(`String literal '${value}' should have never been parsed without a starting double quotes`);
+        }
+
+        value = value.substr(1);
+        if (value.length && value[value.length - 1] === "\"") {
+            value = value.substr(0, value.length - 1);
+        }
+
+        return BoundExpressionFactory.StringLiteral(syntax, { hasError: false, hasValue: true }, value);
     }
 
     private bindIdentifier(syntax: IdentifierExpressionSyntax): BaseBoundExpression {
-        if (this._libraries[syntax.name]) {
-            return BoundExpressionFactory.LibraryType(syntax, { hasError: false, hasValue: false }, syntax.name);
-        } else if (this.definedSubModules[syntax.name]) {
-            return BoundExpressionFactory.SubModule(syntax, { hasError: false, hasValue: false }, syntax.name);
+        const name = syntax.token.text;
+        if (this._libraries[name]) {
+            return BoundExpressionFactory.LibraryType(syntax, { hasError: false, hasValue: false }, name);
+        } else if (this.definedSubModules[name]) {
+            return BoundExpressionFactory.SubModule(syntax, { hasError: false, hasValue: false }, name);
         } else {
-            return BoundExpressionFactory.Variable(syntax, { hasError: false, hasValue: true }, syntax.name);
+            return BoundExpressionFactory.Variable(syntax, { hasError: false, hasValue: true }, name);
         }
-    }
-
-    private bindMissing(syntax: MissingExpressionSyntax): BaseBoundExpression {
-        return BoundExpressionFactory.Variable(syntax, { hasError: true, hasValue: true }, "<Missing>");
     }
 
     private bindUnaryOperator(syntax: UnaryOperatorExpressionSyntax): NegationBoundExpression {
@@ -235,7 +246,7 @@ export class ExpressionBinder {
 
     private reportError(expression: BaseBoundExpression, code: ErrorCode, ...args: string[]): void {
         if (!expression.info.hasError) {
-            this.diagnostics.push(new Diagnostic(code, getExpressionRange(expression.syntax), ...args));
+            this.diagnostics.push(new Diagnostic(code, expression.syntax.range, ...args));
             expression.info.hasError = true;
         }
     }

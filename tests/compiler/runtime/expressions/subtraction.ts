@@ -1,6 +1,6 @@
 import "jasmine";
 import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
-import { Diagnostic, ErrorCode } from "../../../../src/compiler/utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../../../src/compiler/diagnostics";
 
 describe("Compiler.Runtime.Expressions.Subtraction", () => {
     it("computes subtraction - number minus number", () => {

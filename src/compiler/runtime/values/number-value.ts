@@ -1,10 +1,9 @@
 import { ExecutionEngine } from "../../execution-engine";
 import { StringValue } from "./string-value";
 import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
-import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
-import { TokenKindToString } from "../../utils/string-factories";
-import { TokenKind } from "../../syntax/tokens";
+import { Diagnostic, ErrorCode } from "../../diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
+import { TokenKind, Token } from "../../syntax/nodes/tokens";
 
 export class NumberValue extends BaseValue {
     public constructor(public readonly value: number) {
@@ -86,7 +85,7 @@ export class NumberValue extends BaseValue {
                 result = new NumberValue(this.value + (other as NumberValue).value);
                 break;
             case ValueKind.Array:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Plus)));
                 return;
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
@@ -101,14 +100,14 @@ export class NumberValue extends BaseValue {
 
         switch (other.kind) {
             case ValueKind.String:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
                 return;
             case ValueKind.Number:
                 engine.evaluationStack.push(new NumberValue(this.value - (other as NumberValue).value));
                 engine.moveToNextInstruction();
                 return;
             case ValueKind.Array:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
                 return;
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
@@ -120,14 +119,14 @@ export class NumberValue extends BaseValue {
 
         switch (other.kind) {
             case ValueKind.String:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
                 return;
             case ValueKind.Number:
                 engine.evaluationStack.push(new NumberValue(this.value * (other as NumberValue).value));
                 engine.moveToNextInstruction();
                 return;
             case ValueKind.Array:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
                 return;
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
@@ -139,7 +138,7 @@ export class NumberValue extends BaseValue {
         
         switch (other.kind) {
             case ValueKind.String:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Divide)));
                 return;
             case ValueKind.Number:
                 const otherValue = (other as NumberValue).value;
@@ -151,7 +150,7 @@ export class NumberValue extends BaseValue {
                 }
                 return;
             case ValueKind.Array:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Divide)));
                 return;
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);

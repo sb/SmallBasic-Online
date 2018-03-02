@@ -1,5 +1,5 @@
-import { TextRange } from "../syntax/text-markers";
-import { ErrorResources } from "../strings/errors";
+import { TextRange } from "./syntax/nodes/syntax-nodes";
+import { ErrorResources } from "./strings/errors";
 
 export enum ErrorCode {
     // Scanner Errors

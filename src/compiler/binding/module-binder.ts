@@ -1,6 +1,6 @@
 import { StatementBinder } from "./statement-binder";
 import { ParseTree } from "../syntax/statements-parser";
-import { Diagnostic, ErrorCode } from "../utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../diagnostics";
 import { BaseBoundStatement } from "../models/bound-statements";
 
 export interface BoundTree {

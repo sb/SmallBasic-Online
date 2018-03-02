@@ -1,6 +1,6 @@
 import "jasmine";
 import { verifyCompilationErrors } from "../helpers";
-import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../../src/compiler/diagnostics";
 
 describe("Compiler.Binding.StatementBinder", () => {
     it("reports errors on goto statements to non-existent labels", () => {

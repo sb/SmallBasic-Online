@@ -2,11 +2,11 @@ import { ModuleEmitter } from "./runtime/module-emitter";
 import { BaseInstruction } from "./models/instructions";
 import { StatementsParser, ParseTree } from "./syntax/statements-parser";
 import { CommandsParser } from "./syntax/command-parser";
-import { Diagnostic } from "./utils/diagnostics";
+import { Diagnostic } from "./diagnostics";
 import { ModuleBinder, BoundTree } from "./binding/module-binder";
 import { Scanner } from "./syntax/scanner";
-import { BaseCommandSyntax } from "./models/syntax-commands";
-import { Token } from "./syntax/tokens";
+import { Token } from "./syntax/nodes/tokens";
+import { BaseCommandSyntax } from "./syntax/nodes/commands";
 
 interface EmitResult {
     readonly mainModule: ReadonlyArray<BaseInstruction>;

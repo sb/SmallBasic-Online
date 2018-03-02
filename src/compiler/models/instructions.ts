@@ -1,6 +1,6 @@
 // This file is generated through a build task. Do not edit by hand.
 
-import { TextRange } from "../syntax/text-markers";
+import { TextRange } from "../syntax/nodes/syntax-nodes";
 
 export enum InstructionKind {
     StatementStart,

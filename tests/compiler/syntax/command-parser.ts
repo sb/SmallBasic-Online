@@ -1,6 +1,6 @@
 import "jasmine";
 import { verifyCompilationErrors, verifyRuntimeResult } from "../helpers";
-import { Diagnostic, ErrorCode } from "../../../src/compiler/utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../../src/compiler/diagnostics";
 
 describe("Compiler.Syntax.CommandParser", () => {
     it("reports uneven parens", () => {
@@ -14,17 +14,14 @@ X = ( 1 + (`,
 
     it("reports commands starting with a different token", () => {
         verifyCompilationErrors(`
+If x Then
 Then
 x = 1
 EndIf`,
             // Then
             // ^^^^
             // 'Then' is not a valid command.
-            new Diagnostic(ErrorCode.UnrecognizedCommand, { line: 1, start: 0, end: 4 }, "Then"),
-            // EndIf
-            // ^^^^^
-            // You cannot write 'EndIf command' without an earlier 'If command'.
-            new Diagnostic(ErrorCode.CannotHaveCommandWithoutPreviousCommand, { line: 3, start: 0, end: 5 }, "EndIf command", "If command"));
+            new Diagnostic(ErrorCode.UnrecognizedCommand, { line: 2, start: 0, end: 4 }, "Then"));
     });
 
     it("reports extra commands after a complete one", () => {
@@ -125,8 +122,8 @@ TextWindow.WriteLine(, , ,)`,
             new Diagnostic(ErrorCode.UnexpectedToken_ExpectingExpression, { line: 1, start: 21, end: 22 }, ","),
             // TextWindow.WriteLine(, , ,)
             // ^^^^^^^^^^^^^^^^^^^^
-            // I was expecting 1 arguments, but found 4 instead.
-            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "4"));
+            // I was expecting 1 arguments, but found 2 instead.
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "2"));
     });
 
     it("recovers on incomplete square brackets", () => {
@@ -140,15 +137,12 @@ x = ar[1`,
 
     it("recovers on additional tokens with errors", () => {
         verifyCompilationErrors(`
-For x + = 1 To 5 Step : 1`,
+For x + = 1 To 5 Step : 1
+EndFor`,
             // For x + = 1 To 5 Step : 1
             //       ^
             // Unexpected '+' here. I was expecting a token of type '=' instead.
-            new Diagnostic(ErrorCode.UnexpectedToken_ExpectingToken, { line: 1, start: 6, end: 7 }, "+", "="),
-            // For x + = 1 To 5 Step : 1
-            // ^^^^^^^^^^^^^^^^^^^^^^^
-            // Unexpected end of file. I was expecting a command of type 'EndFor command'.
-            new Diagnostic(ErrorCode.UnexpectedEOF_ExpectingCommand, { line: 1, start: 0, end: 23 }, "EndFor command"));
+            new Diagnostic(ErrorCode.UnexpectedToken_ExpectingToken, { line: 1, start: 6, end: 7 }, "+", "="));
     });
 
     it("ignores an empty line with comments", () => {

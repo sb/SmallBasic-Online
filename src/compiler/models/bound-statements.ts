@@ -1,7 +1,7 @@
 // This file is generated through a build task. Do not edit by hand.
 
-import { BaseStatementSyntax } from "./syntax-statements";
 import { BaseBoundExpression } from "./bound-expressions";
+import { BaseStatementSyntax, IfCondition, ElseIfCondition, ElseCondition } from "../syntax/nodes/statements";
 
 export enum BoundStatementKind {
     If,
@@ -22,7 +22,8 @@ export enum BoundStatementKind {
 
 export interface BaseBoundStatement {
     readonly kind: BoundStatementKind;
-    readonly syntax: BaseStatementSyntax;
+    // TODO: figure this part out: how can it be a syntax node but carry interfaces such as IfPart, etc...
+    readonly syntax: any;
 }
 
 export interface IfBoundStatement extends BaseBoundStatement {
@@ -117,7 +118,7 @@ export class BoundStatementFactory {
     }
 
     public static IfConditionPart(
-        syntax: BaseStatementSyntax,
+        syntax: IfCondition,
         condition: BaseBoundExpression,
         statementsList: BaseBoundStatement[])
         : IfConditionPartBoundStatement {
@@ -130,7 +131,7 @@ export class BoundStatementFactory {
     }
 
     public static ElseIfConditionPart(
-        syntax: BaseStatementSyntax,
+        syntax: ElseIfCondition,
         condition: BaseBoundExpression,
         statementsList: BaseBoundStatement[])
         : ElseIfConditionPartBoundStatement {
@@ -143,7 +144,7 @@ export class BoundStatementFactory {
     }
 
     public static ElseConditionPart(
-        syntax: BaseStatementSyntax,
+        syntax: ElseCondition,
         statementsList: BaseBoundStatement[])
         : ElseConditionPartBoundStatement {
         return {

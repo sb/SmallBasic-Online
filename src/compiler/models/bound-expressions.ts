@@ -1,7 +1,7 @@
 // This file is generated through a build task. Do not edit by hand.
 
-import { BaseExpressionSyntax } from "./syntax-expressions";
 import { ExpressionInfo } from "../binding/expression-binder";
+import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
 
 export enum BoundExpressionKind {
     Negation,

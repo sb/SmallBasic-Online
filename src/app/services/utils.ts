@@ -1,4 +1,4 @@
-import { TextRange } from "../../compiler/syntax/text-markers";
+import { TextRange } from "../../compiler/syntax/nodes/syntax-nodes";
 
 export module EditorUtils {
     export function textRangeToEditorRange(range: TextRange): monaco.Range {

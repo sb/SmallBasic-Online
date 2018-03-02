@@ -1,5 +1,5 @@
-import { TokenKind, Token } from "./tokens";
-import { ErrorCode, Diagnostic } from "../utils/diagnostics";
+import { ErrorCode, Diagnostic } from "../diagnostics";
+import { Token, TokenKind } from "./nodes/tokens";
 
 export class Scanner {
     private index: number = 0;
@@ -177,15 +177,11 @@ export class Scanner {
     }
 
     private addToken(current: string, kind: TokenKind): Token {
-        const token: Token = {
-            text: current,
-            kind: kind,
-            range: {
-                line: this.line,
-                start: this.column,
-                end: this.column + current.length
-            }
-        };
+        const token = new Token(current, kind, {
+            line: this.line,
+            start: this.column,
+            end: this.column + current.length
+        });
 
         this.index += current.length;
         this.column += current.length;

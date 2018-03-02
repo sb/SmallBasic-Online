@@ -2,5 +2,7 @@
     "Identifier": "identifier",
     "StringLiteral": "string",
     "NumberLiteral": "number",
-    "Comment": "comment"
+    "Comment": "comment",
+    "Label": "label",
+    "Expression": "expression"
 }

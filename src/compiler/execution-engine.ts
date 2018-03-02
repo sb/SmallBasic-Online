@@ -25,12 +25,11 @@ import {
     NegateInstruction
 } from "./models/instructions";
 import { SupportedLibraries } from "./runtime/supported-libraries";
-import { Diagnostic, ErrorCode } from "./utils/diagnostics";
+import { Diagnostic, ErrorCode } from "./diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
 import { IOBuffer } from "./runtime/io-buffer";
-import { TokenKindToString } from "./utils/string-factories";
-import { TokenKind } from "./syntax/tokens";
 import { PubSubPayloadChannel } from "./runtime/notifications";
+import { Token, TokenKind } from "./syntax/nodes/tokens";
 
 interface StackFrame {
     moduleName: string;
@@ -273,10 +272,10 @@ export class ExecutionEngine {
                             frame.instructionCounter++;
                             break;
                         case ValueKind.String:
-                            this.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, negation.sourceRange, TokenKindToString(TokenKind.Minus)));
+                            this.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, negation.sourceRange, Token.toDisplayString(TokenKind.Minus)));
                             break;
                         case ValueKind.Array:
-                            this.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, negation.sourceRange, TokenKindToString(TokenKind.Minus)));
+                            this.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, negation.sourceRange, Token.toDisplayString(TokenKind.Minus)));
                             break;
                         default:
                             throw new Error(`Unexpected value kind ${ValueKind[value.kind]}`);

@@ -4,7 +4,7 @@ import { NumberValue } from "../../src/compiler/runtime/values/number-value";
 import { StringValue } from "../../src/compiler/runtime/values/string-value";
 import "jasmine";
 import { Compilation } from "../../src/compiler/compilation";
-import { Diagnostic, ErrorCode } from "../../src/compiler/utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
 
 export function serializeInstructions(text: string): string {
     verifyCompilationErrors(text);

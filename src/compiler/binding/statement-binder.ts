@@ -1,9 +1,7 @@
 import { SupportedLibraries } from "../runtime/supported-libraries";
 import { ExpressionBinder } from "./expression-binder";
-import { getExpressionRange } from "../syntax/text-markers";
-import { Diagnostic } from "../utils/diagnostics";
-import { ErrorCode } from "../utils/diagnostics";
-import { BaseExpressionSyntax } from "../models/syntax-expressions";
+import { ErrorCode, Diagnostic } from "../diagnostics";
+import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
 import {
     BaseBoundStatement,
     BoundStatementFactory,
@@ -23,7 +21,7 @@ import {
     LabelStatementSyntax,
     StatementSyntaxKind,
     WhileStatementSyntax
-} from "../models/syntax-statements";
+} from "../syntax/nodes/statements";
 import {
     ArrayAccessBoundExpression,
     BaseBoundExpression,
@@ -64,12 +62,7 @@ export class StatementBinder {
             case StatementSyntaxKind.Label: return this.bindLabelStatement(syntax as LabelStatementSyntax);
             case StatementSyntaxKind.GoTo: return this.bindGoToStatement(syntax as GoToStatementSyntax);
             case StatementSyntaxKind.Expression: return this.bindExpressionStatement(syntax as ExpressionStatementSyntax);
-
-            case StatementSyntaxKind.IfConditionPart:
-            case StatementSyntaxKind.ElseIfConditionPart:
-            case StatementSyntaxKind.ElseConditionPart:
-            case StatementSyntaxKind.SubModule:
-                throw new Error(`Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`);
+            default: throw new Error(`Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`);
         }
     }
 
@@ -155,7 +148,7 @@ export class StatementBinder {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
                         if (!this._libraries[property.library].properties[property.name].setter) {
-                            this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, getExpressionRange(property.syntax)));
+                            this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, property.syntax.range));
                         }
 
                         return BoundStatementFactory.PropertyAssignment(syntax, property.library, property.name, binaryExpression.rightExpression);
@@ -164,7 +157,7 @@ export class StatementBinder {
                     default: {
                         this.diagnostics.push(new Diagnostic(
                             ErrorCode.ValueIsNotAssignable,
-                            getExpressionRange(binaryExpression.leftExpression.syntax)));
+                            binaryExpression.leftExpression.syntax.range));
 
                         return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
                     }
@@ -186,7 +179,7 @@ export class StatementBinder {
             ? ErrorCode.UnassignedExpressionStatement
             : ErrorCode.InvalidExpressionStatement;
 
-        this.diagnostics.push(new Diagnostic(errorCode, getExpressionRange(syntax.command.expression)));
+        this.diagnostics.push(new Diagnostic(errorCode, syntax.command.expression.range));
         return BoundStatementFactory.InvalidExpression(syntax, boundExpression);
     }
 

@@ -1,26 +1,8 @@
-import { TextRange } from "./text-markers";
-import { TokenKindToString } from "../utils/string-factories";
-import { Token, TokenKind } from "./tokens";
-import { ErrorCode, Diagnostic } from "../utils/diagnostics";
-import { BaseExpressionSyntax, ExpressionSyntaxFactory, ExpressionSyntaxKind } from "../models/syntax-expressions";
-import {
-    BaseCommandSyntax,
-    CommandSyntaxFactory,
-    ElseCommandSyntax,
-    ElseIfCommandSyntax,
-    EndForCommandSyntax,
-    EndIfCommandSyntax,
-    EndSubCommandSyntax,
-    EndWhileCommandSyntax,
-    ExpressionCommandSyntax,
-    ForCommandSyntax,
-    ForStepClauseCommandSyntax,
-    GoToCommandSyntax,
-    IfCommandSyntax,
-    LabelCommandSyntax,
-    SubCommandSyntax,
-    WhileCommandSyntax
-} from "../models/syntax-commands";
+import { ErrorCode, Diagnostic } from "../diagnostics";
+import { BaseCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, ForCommandSyntax, ForStepClause, EndForCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, SubCommandSyntax, EndSubCommandSyntax, ExpressionCommandSyntax } from "./nodes/commands";
+import { Token, TokenKind } from "./nodes/tokens";
+import { BaseExpressionSyntax, BinaryOperatorExpressionSyntax, UnaryOperatorExpressionSyntax, ObjectAccessExpressionSyntax, ArrayAccessExpressionSyntax, CallExpressionSyntax, IdentifierExpressionSyntax, NumberLiteralExpressionSyntax, StringLiteralExpressionSyntax, ParenthesisExpressionSyntax } from "./nodes/expressions";
+import { TextRange } from "./nodes/syntax-nodes";
 
 export class CommandsParser {
     private index: number = 0;
@@ -110,7 +92,7 @@ export class CommandsParser {
         const expression = this.parseBaseExpression();
         const thenKeyword = this.eat(TokenKind.ThenKeyword);
 
-        return CommandSyntaxFactory.If(ifKeyword, expression, thenKeyword);
+        return new IfCommandSyntax(ifKeyword, expression, thenKeyword);
     }
 
     private parseElseIfCommand(): ElseIfCommandSyntax {
@@ -118,19 +100,19 @@ export class CommandsParser {
         const expression = this.parseBaseExpression();
         const thenKeyword = this.eat(TokenKind.ThenKeyword);
 
-        return CommandSyntaxFactory.ElseIf(elseIfKeyword, expression, thenKeyword);
+        return new ElseIfCommandSyntax(elseIfKeyword, expression, thenKeyword);
     }
 
     private parseElseCommand(): ElseCommandSyntax {
         const elseKeyword = this.eat(TokenKind.ElseKeyword);
 
-        return CommandSyntaxFactory.Else(elseKeyword);
+        return new ElseCommandSyntax(elseKeyword);
     }
 
     private parseEndIfCommand(): EndIfCommandSyntax {
         const endIfKeyword = this.eat(TokenKind.EndIfKeyword);
 
-        return CommandSyntaxFactory.EndIf(endIfKeyword);
+        return new EndIfCommandSyntax(endIfKeyword);
     }
 
     private parseForCommand(): ForCommandSyntax {
@@ -141,68 +123,71 @@ export class CommandsParser {
         const toToken = this.eat(TokenKind.ToKeyword);
         const toExpression = this.parseBaseExpression();
 
-        let stepClauseSyntax: ForStepClauseCommandSyntax | undefined;
+        let stepClauseSyntax: ForStepClause | undefined;
 
         if (this.isNext(TokenKind.StepKeyword)) {
             const stepToken = this.eat(TokenKind.StepKeyword);
             const stepExpression = this.parseBaseExpression();
 
-            stepClauseSyntax = CommandSyntaxFactory.ForStepClause(stepToken, stepExpression);
+            stepClauseSyntax = {
+                stepToken: stepToken,
+                expression: stepExpression
+            };
         }
 
-        return CommandSyntaxFactory.For(forKeyword, identifierToken, equalToken, fromExpression, toToken, toExpression, stepClauseSyntax);
+        return new ForCommandSyntax(forKeyword, identifierToken, equalToken, fromExpression, toToken, toExpression, stepClauseSyntax);
     }
 
     private parseEndForCommand(): EndForCommandSyntax {
         const endForKeyword = this.eat(TokenKind.EndForKeyword);
 
-        return CommandSyntaxFactory.EndFor(endForKeyword);
+        return new EndForCommandSyntax(endForKeyword);
     }
 
     private parseWhileCommand(): WhileCommandSyntax {
         const whileToken = this.eat(TokenKind.WhileKeyword);
         const expression = this.parseBaseExpression();
 
-        return CommandSyntaxFactory.While(whileToken, expression);
+        return new WhileCommandSyntax(whileToken, expression);
     }
 
     private parseEndWhileCommand(): EndWhileCommandSyntax {
         const endWhileKeyword = this.eat(TokenKind.EndWhileKeyword);
 
-        return CommandSyntaxFactory.EndWhile(endWhileKeyword);
+        return new EndWhileCommandSyntax(endWhileKeyword);
     }
 
     private parseLabelCommand(): LabelCommandSyntax {
         const labelToken = this.eat(TokenKind.Identifier);
         const colonToken = this.eat(TokenKind.Colon);
 
-        return CommandSyntaxFactory.Label(labelToken, colonToken);
+        return new LabelCommandSyntax(labelToken, colonToken);
     }
 
     private parseGoToCommand(): GoToCommandSyntax {
         const gotoToken = this.eat(TokenKind.GoToKeyword);
         const labelToken = this.eat(TokenKind.Identifier);
 
-        return CommandSyntaxFactory.GoTo(gotoToken, labelToken);
+        return new GoToCommandSyntax(gotoToken, labelToken);
     }
 
     private parseSubCommand(): SubCommandSyntax {
         const subToken = this.eat(TokenKind.SubKeyword);
         const nameToken = this.eat(TokenKind.Identifier);
 
-        return CommandSyntaxFactory.Sub(subToken, nameToken);
+        return new SubCommandSyntax(subToken, nameToken);
     }
 
     private parseEndSubCommand(): EndSubCommandSyntax {
         const endSubToken = this.eat(TokenKind.EndSubKeyword);
 
-        return CommandSyntaxFactory.EndSub(endSubToken);
+        return new EndSubCommandSyntax(endSubToken);
     }
 
     private parseExpressionCommand(): ExpressionCommandSyntax {
         const expression = this.parseBaseExpression();
 
-        return CommandSyntaxFactory.Expression(expression);
+        return new ExpressionCommandSyntax(expression);
     }
 
     private parseBaseExpression(): BaseExpressionSyntax {
@@ -221,7 +206,7 @@ export class CommandsParser {
             const operatorToken = this.eat(expectedOperatorKind);
             const rightHandSide = this.parseBinaryOperator(precedence + 1);
 
-            expression = ExpressionSyntaxFactory.BinaryOperator(expression, operatorToken, rightHandSide);
+            expression = new BinaryOperatorExpressionSyntax(expression, operatorToken, rightHandSide);
         }
 
         return expression;
@@ -232,27 +217,23 @@ export class CommandsParser {
             const minusToken = this.eat(TokenKind.Minus);
             const expression = this.parseBaseExpression();
 
-            return ExpressionSyntaxFactory.UnaryOperator(minusToken, expression);
+            return new UnaryOperatorExpressionSyntax(minusToken, expression);
         }
 
         return this.parseCoreExpression();
     }
 
     private parseCoreExpression(): BaseExpressionSyntax {
+        let current: Token | undefined;
         let expression = this.parseTerminalExpression();
 
-        if (expression.kind === ExpressionSyntaxKind.Missing) {
-            return expression;
-        }
-
-        let current: Token | undefined;
         postfixExpression: while (current = this.peek()) {
             switch (current.kind) {
                 case TokenKind.Dot: {
                     const dotToken = this.eat(TokenKind.Dot);
                     const identifierToken = this.eat(TokenKind.Identifier);
 
-                    expression = ExpressionSyntaxFactory.ObjectAccess(expression, dotToken, identifierToken);
+                    expression = new ObjectAccessExpressionSyntax(expression, dotToken, identifierToken);
                     break;
                 }
                 case TokenKind.LeftSquareBracket: {
@@ -260,7 +241,7 @@ export class CommandsParser {
                     const indexExpression = this.parseBaseExpression();
                     const rightSquareBracket = this.eat(TokenKind.RightSquareBracket);
 
-                    expression = ExpressionSyntaxFactory.ArrayAccess(expression, leftSquareBracket, indexExpression, rightSquareBracket);
+                    expression = new ArrayAccessExpressionSyntax(expression, leftSquareBracket, indexExpression, rightSquareBracket);
                     break;
                 }
                 case TokenKind.LeftParen: {
@@ -288,7 +269,7 @@ export class CommandsParser {
                                             ErrorCode.UnexpectedToken_ExpectingToken,
                                             current.range,
                                             current.text,
-                                            TokenKindToString(TokenKind.Comma)));
+                                            Token.toDisplayString(TokenKind.Comma)));
 
                                         commasList.push(this.createMissingToken(current.range));
                                         break;
@@ -305,7 +286,7 @@ export class CommandsParser {
                     }
 
                     const rightParen = this.eat(TokenKind.RightParen);
-                    expression = ExpressionSyntaxFactory.Call(expression, leftParen, argumentsList, commasList, rightParen);
+                    expression = new CallExpressionSyntax(expression, leftParen, argumentsList, commasList, rightParen);
                     break;
                 }
                 default:
@@ -321,50 +302,33 @@ export class CommandsParser {
         if (!current) {
             const range = this.tokens[this.index - 1].range;
             this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingExpression, range));
-            return ExpressionSyntaxFactory.Missing(range);
+            return new IdentifierExpressionSyntax(this.createMissingToken(range));
         }
 
         switch (current.kind) {
             case TokenKind.Identifier: {
                 const identifierToken = this.eat(TokenKind.Identifier);
-                return ExpressionSyntaxFactory.Identifier(identifierToken.text, identifierToken);
+                return new IdentifierExpressionSyntax(identifierToken);
             }
             case TokenKind.NumberLiteral: {
                 const numberToken = this.eat(TokenKind.NumberLiteral);
-                let value = parseFloat(numberToken.text);
-
-                if (isNaN(value)) {
-                    this.reportError(new Diagnostic(ErrorCode.ValueIsNotANumber, numberToken.range, numberToken.text));
-                    value = 0;
-                }
-
-                return ExpressionSyntaxFactory.NumberLiteral(value, numberToken);
+                return new NumberLiteralExpressionSyntax(numberToken);
             }
             case TokenKind.StringLiteral: {
                 const stringToken = this.eat(TokenKind.StringLiteral);
-                let value = stringToken.text;
-
-                if (value.length < 1 || value[0] !== "\"") {
-                    throw new Error(`String literal '${value}' should have never been parsed without a starting double quotes`);
-                }
-
-                value = value.substr(1);
-                if (value.length && value[value.length - 1] === "\"") {
-                    value = value.substr(0, value.length - 1);
-                }
-
-                return ExpressionSyntaxFactory.StringLiteral(value, stringToken);
+                return new StringLiteralExpressionSyntax(stringToken);
             }
             case TokenKind.LeftParen: {
                 const leftParen = this.eat(TokenKind.LeftParen);
                 const expression = this.parseBaseExpression();
                 const rightParen = this.eat(TokenKind.RightParen);
 
-                return ExpressionSyntaxFactory.Parenthesis(leftParen, expression, rightParen);
+                return new ParenthesisExpressionSyntax(leftParen, expression, rightParen);
             }
             default: {
+                this.eat(current.kind);
                 this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingExpression, current.range, current.text));
-                return ExpressionSyntaxFactory.Missing(current.range);
+                return new IdentifierExpressionSyntax(this.createMissingToken(current.range));
             }
         }
     }
@@ -398,30 +362,26 @@ export class CommandsParser {
                         ErrorCode.UnexpectedToken_ExpectingToken,
                         current.range,
                         current.text,
-                        TokenKindToString(kind)));
+                        Token.toDisplayString(kind)));
                 }
             } else {
                 this.reportError(new Diagnostic(
                     ErrorCode.UnexpectedEOL_ExpectingToken,
                     this.tokens[this.index - 1].range,
-                    TokenKindToString(kind)));
+                    Token.toDisplayString(kind)));
             }
         } else {
             this.reportError(new Diagnostic(
                 ErrorCode.UnexpectedEOL_ExpectingToken,
                 this.tokens[this.index - 1].range,
-                TokenKindToString(kind)));
+                Token.toDisplayString(kind)));
         }
 
         return this.createMissingToken(this.tokens[this.tokens.length - 1].range);
     }
 
     private createMissingToken(range: TextRange): Token {
-        return {
-            kind: TokenKind.MissingToken,
-            text: "<Missing>",
-            range: range
-        };
+        return new Token("<Missing>", TokenKind.MissingToken, range);
     }
 
     private reportError(error: Diagnostic): void {

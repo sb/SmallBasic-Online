@@ -1,9 +1,8 @@
 import { ExecutionEngine } from "../../execution-engine";
 import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
-import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
-import { TokenKindToString } from "../../utils/string-factories";
-import { TokenKind } from "../../syntax/tokens";
+import { Diagnostic, ErrorCode } from "../../diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
+import { Token, TokenKind } from "../../syntax/nodes/tokens";
 
 export class ArrayValue extends BaseValue {
     public readonly value: { [key: string]: BaseValue };
@@ -54,18 +53,18 @@ export class ArrayValue extends BaseValue {
     }
 
     public add(_: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus)));
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Plus)));
     }
 
     public subtract(_: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
     }
 
     public multiply(_: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
     }
 
     public divide(_: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Divide)));
     }
 }

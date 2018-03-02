@@ -1,10 +1,8 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as xml2js from "xml2js";
 import * as rimraf from "rimraf";
 import { spawn } from "child_process";
 import { lstatSync, readdirSync } from "fs";
-import { parseNumbers, parseBooleans } from "xml2js/lib/processors";
 
 export function cmdToPromise(command: string, args: string[], cwd?: string): Promise<void> {
     console.log(`Executing command: ${command} ${args.join(" ")}`);
@@ -64,31 +62,5 @@ export function convertFilePromise(inputPath: string, outputPath: string, conver
     return converter(input).then(output => {
         fs.writeFileSync(outputPath, output, "utf8");
         return Promise.resolve<void>();
-    });
-}
-
-export function convertXMLFilePromise(inputPath: string, outputPath: string, converter: (value: any) => Promise<string>): Promise<void> {
-    return convertFilePromise(inputPath, outputPath, value => {
-        return new Promise<string>((resolve, reject) => {
-            const options: xml2js.OptionsV2 = {
-                strict: true,
-                attrkey: "attributes",
-                childkey: "children",
-                explicitRoot: false,
-                explicitArray: true,
-                explicitChildren: true,
-                preserveChildrenOrder: true,
-                attrValueProcessors: [parseNumbers, parseBooleans]
-            };
-
-            xml2js.parseString(value, options, (error, result) => {
-                if (error) {
-                    reject(error);
-                } else {
-                    resolve(converter(result));
-                }
-            });
-
-        });
     });
 }

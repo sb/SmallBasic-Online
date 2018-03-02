@@ -1,6 +1,6 @@
-import { TokenKind } from "../../compiler/syntax/tokens";
 import { LibraryTypeDefinition, SupportedLibraries } from "../../compiler/runtime/supported-libraries";
 import { Scanner } from "../../compiler/syntax/scanner";
+import { TokenKind } from "../../compiler/syntax/nodes/tokens";
 
 export class CompletionService implements monaco.languages.CompletionItemProvider {
     private _libraries: SupportedLibraries = new SupportedLibraries();

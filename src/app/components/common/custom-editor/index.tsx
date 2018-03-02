@@ -1,6 +1,6 @@
 import { HoverService } from "../../../services/hover";
 import * as React from "react";
-import { Diagnostic } from "../../../../compiler/utils/diagnostics";
+import { Diagnostic } from "../../../../compiler/diagnostics";
 import { EditorUtils } from "../../../services/utils";
 import { CompletionService } from "../../../services/completion";
 

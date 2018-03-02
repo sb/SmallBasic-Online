@@ -3,7 +3,7 @@ import { DocumentationResources } from "../../strings/documentation";
 import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
-import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
+import { Diagnostic, ErrorCode } from "../../diagnostics";
 import { BaseInstruction, MethodCallInstruction } from "../../models/instructions";
 
 export class StackLibrary implements LibraryTypeDefinition {
