@@ -64,3 +64,12 @@ export function convertFilePromise(inputPath: string, outputPath: string, conver
         return Promise.resolve<void>();
     });
 }
+
+// TODO: optimization pass to remove temp instructions
+// TODO: arithmetic operations to library calls
+// TODO: instructions execute themselves
+// TODO: libraries are minimal
+// TODO: engine is minimal
+// TODO: remove statement start into pdb
+// TODO: remove range and syntax from instructions, and add range to base
+// TODO: review the rest of the instructions (like jumps)

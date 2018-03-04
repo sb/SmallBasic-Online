@@ -7,7 +7,6 @@ import {
     CallSubModuleInstruction,
     InstructionKind,
     JumpInstruction,
-    StatementStartInstruction,
     StoreVariableInstruction,
     StoreArrayElementInstruction,
     StorePropertyInstruction,
@@ -23,18 +22,17 @@ import {
     DivideInstruction,
     ConditionalJumpInstruction,
     NegateInstruction
-} from "./models/instructions";
+} from "./runtime/instructions";
 import { SupportedLibraries } from "./runtime/supported-libraries";
 import { Diagnostic, ErrorCode } from "./diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
 import { IOBuffer } from "./runtime/io-buffer";
-import { PubSubPayloadChannel } from "./runtime/notifications";
+import { PubSubPayloadChannel } from "./notifications";
 import { Token, TokenKind } from "./syntax/nodes/tokens";
+import { ModuleBinder } from "./binding/module-binder";
 
 interface StackFrame {
     moduleName: string;
-    currentLine: number;
-
     instructionCounter: number;
 }
 
@@ -54,8 +52,9 @@ export enum ExecutionState {
 }
 
 export class ExecutionEngine {
+    private _currentLine: number = 0;
     private _memory: { [name: string]: BaseValue } = {};
-    private _modules: { [name: string]: ReadonlyArray<BaseInstruction> };
+    private _modules: { readonly [name: string]: ReadonlyArray<BaseInstruction> };
 
     private _exception?: Diagnostic;
     private _buffer: IOBuffer = new IOBuffer();
@@ -65,11 +64,15 @@ export class ExecutionEngine {
     public readonly libraries: SupportedLibraries = new SupportedLibraries();
 
     public state: ExecutionState = ExecutionState.Running;
-    
+
     public readonly programTerminated: PubSubPayloadChannel<Diagnostic | undefined> = new PubSubPayloadChannel<Diagnostic | undefined>("programTerminated");
 
     public get memory(): { readonly [name: string]: BaseValue } {
         return this._memory;
+    }
+
+    public get modules(): { readonly [name: string]: ReadonlyArray<BaseInstruction> } {
+        return this._modules;
     }
 
     public get exception(): Diagnostic | undefined {
@@ -85,15 +88,10 @@ export class ExecutionEngine {
             throw new Error(`Cannot execute a compilation with errors`);
         }
 
-        const mainModuleName = "<Main>";
-        const emitResult = compilation.emit();
-
-        this._modules = emitResult.subModules;
-        this._modules[mainModuleName] = emitResult.mainModule;
+        this._modules = compilation.emit();
 
         this.executionStack.push({
-            moduleName: mainModuleName,
-            currentLine: 0,
+            moduleName: ModuleBinder.MainModuleName,
             instructionCounter: 0
         });
     }
@@ -106,6 +104,10 @@ export class ExecutionEngine {
     }
 
     public execute(mode: ExecutionMode): void {
+        if (this.state === ExecutionState.Paused) {
+            this.state = ExecutionState.Running;
+        }
+
         while (true) {
             if (this.state === ExecutionState.Terminated) {
                 return;
@@ -117,7 +119,19 @@ export class ExecutionEngine {
             }
 
             const frame = this.executionStack[this.executionStack.length - 1];
+
+            if (frame.instructionCounter === this._modules[frame.moduleName].length) {
+                this.terminate();
+                return;
+            }
+
             const instruction = this._modules[frame.moduleName][frame.instructionCounter];
+
+            if (instruction.sourceRange.line !== this._currentLine && mode === ExecutionMode.NextStatement) {
+                this._currentLine = instruction.sourceRange.line;
+                this.state = ExecutionState.Paused;
+                return;
+            }
 
             switch (instruction.kind) {
                 case InstructionKind.Jump: {
@@ -144,24 +158,9 @@ export class ExecutionEngine {
                 }
                 case InstructionKind.CallSubModule: {
                     this.executionStack.push({
-                        currentLine: 0,
                         instructionCounter: 0,
                         moduleName: (instruction as CallSubModuleInstruction).name
                     });
-                    break;
-                }
-                case InstructionKind.StatementStart: {
-                    if (this.state === ExecutionState.Paused) {
-                        this.state = ExecutionState.Running;
-                        frame.instructionCounter++;
-                    } else {
-                        frame.currentLine = (instruction as StatementStartInstruction).line;
-                        if (mode === ExecutionMode.NextStatement) {
-                            this.state = ExecutionState.Paused;
-                        } else {
-                            frame.instructionCounter++;
-                        }
-                    }
                     break;
                 }
                 case InstructionKind.StoreVariable: {
@@ -371,19 +370,13 @@ export class ExecutionEngine {
                     frame.instructionCounter++;
                     break;
                 }
-                case InstructionKind.Return: {
-                    this.executionStack.pop();
-                    if (this.executionStack.length > 0) {
-                        this.moveToNextInstruction();
-                    }
-                    break;
-                }
                 default: {
                     throw new Error(`Unexpected instruction kind ${InstructionKind[instruction.kind]}`);
                 }
             }
 
-            switch (this.state) {
+            // TODO: remove that cast below
+            switch (<any>this.state) {
                 case ExecutionState.BlockedOnNumberInput:
                 case ExecutionState.BlockedOnStringInput:
                     if (!this._buffer.hasValue()) {

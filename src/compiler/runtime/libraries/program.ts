@@ -13,14 +13,11 @@ export class ProgramLibrary implements LibraryTypeDefinition {
             execute: (engine: ExecutionEngine, mode: ExecutionMode) => {
                 if (engine.state === ExecutionState.Paused) {
                     engine.state = ExecutionState.Running;
-                    engine.moveToNextInstruction();
-                } else {
-                    if (mode === ExecutionMode.Debug) {
-                        engine.state = ExecutionState.Paused;
-                    } else {
-                        engine.moveToNextInstruction();
-                    }
+                } else if (mode === ExecutionMode.Debug) {
+                    engine.state = ExecutionState.Paused;
                 }
+
+                engine.moveToNextInstruction();
             }
         },
         End: {

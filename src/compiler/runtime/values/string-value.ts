@@ -1,6 +1,6 @@
 import { NumberValue } from "./number-value";
 import { ExecutionEngine } from "../../execution-engine";
-import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
+import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../instructions";
 import { BaseValue, ValueKind, Constants } from "./base-value";
 import { TokenKind, Token } from "../../syntax/nodes/tokens";
 import { ErrorCode, Diagnostic } from "../../diagnostics";

@@ -4,7 +4,7 @@ import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { Diagnostic, ErrorCode } from "../../diagnostics";
-import { BaseInstruction, MethodCallInstruction } from "../../models/instructions";
+import { BaseInstruction, MethodCallInstruction } from "../instructions";
 
 export class StackLibrary implements LibraryTypeDefinition {
     private _stacks: { [name: string]: BaseValue[] } = {};

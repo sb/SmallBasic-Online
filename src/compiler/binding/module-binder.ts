@@ -4,20 +4,13 @@ import { Diagnostic, ErrorCode } from "../diagnostics";
 import { BaseBoundStatement } from "./nodes/statements";
 import { BaseStatementSyntax } from "../syntax/nodes/statements";
 
-export interface BoundTree {
-    readonly mainModule: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
-    readonly subModules: { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> };
-}
-
 export class ModuleBinder {
-    private mainModule: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
-    private subModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> };
+    public static readonly MainModuleName: string = "<Main>";
 
-    public get boundTree(): BoundTree {
-        return {
-            mainModule: this.mainModule,
-            subModules: this.subModules
-        };
+    private _boundModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> } = {};
+
+    public get boundModules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> } {
+        return this._boundModules;
     }
 
     public constructor(parseTree: ParseTree, private diagnostics: Diagnostic[]) {
@@ -35,11 +28,10 @@ export class ModuleBinder {
             }
         });
 
-        this.mainModule = new StatementBinder(parseTree.mainModule, subModuleNames, this.diagnostics).module;
-        this.subModules = {};
+        this._boundModules[ModuleBinder.MainModuleName] = new StatementBinder(parseTree.mainModule, subModuleNames, this.diagnostics).module;
 
         parseTree.subModules.forEach(subModule => {
-            this.subModules[subModule.subCommand.nameToken.text] =
+            this._boundModules[subModule.subCommand.nameToken.text] =
                 new StatementBinder(subModule.statementsList, subModuleNames, this.diagnostics).module;
         });
     }

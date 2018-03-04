@@ -4,9 +4,9 @@ import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
 import { DocumentationResources } from "../../strings/documentation";
 import { Diagnostic, ErrorCode } from "../../diagnostics";
-import { StorePropertyInstruction, BaseInstruction } from "../../models/instructions";
+import { StorePropertyInstruction, BaseInstruction } from "../instructions";
 import { ExecutionState, ExecutionEngine, ExecutionMode } from "../../execution-engine";
-import { PubSubPayloadChannel, PubSubChannel } from "../notifications";
+import { PubSubPayloadChannel, PubSubChannel } from "../../notifications";
 
 export enum TextWindowColors {
     Black = 0,

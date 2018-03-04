@@ -1,5 +1,5 @@
 import { ExecutionEngine } from "../../execution-engine";
-import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
+import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../instructions";
 import { Diagnostic, ErrorCode } from "../../diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
 import { Token, TokenKind } from "../../syntax/nodes/tokens";
