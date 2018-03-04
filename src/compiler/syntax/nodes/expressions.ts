@@ -14,23 +14,18 @@ export enum ExpressionSyntaxKind {
 }
 
 export abstract class BaseExpressionSyntax extends BaseSyntaxNode {
-    public abstract get range(): TextRange;
-    public abstract get kind(): ExpressionSyntaxKind;
+    public constructor(
+        public readonly kind: ExpressionSyntaxKind,
+        public readonly range: TextRange) {
+        super();
+    }
 }
 
 export class UnaryOperatorExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly operatorToken: Token,
         public readonly expression: BaseExpressionSyntax) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.UnaryOperator;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.operatorToken.range, this.expression.range);
+        super(ExpressionSyntaxKind.UnaryOperator, BaseSyntaxNode.CombineRanges(operatorToken.range, expression.range));
     }
 }
 
@@ -39,15 +34,7 @@ export class BinaryOperatorExpressionSyntax extends BaseExpressionSyntax {
         public readonly leftExpression: BaseExpressionSyntax,
         public readonly operatorToken: Token,
         public readonly rightExpression: BaseExpressionSyntax) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.BinaryOperator;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.leftExpression.range, this.rightExpression.range);
+        super(ExpressionSyntaxKind.BinaryOperator, BaseSyntaxNode.CombineRanges(leftExpression.range, rightExpression.range));
     }
 }
 
@@ -56,15 +43,7 @@ export class ObjectAccessExpressionSyntax extends BaseExpressionSyntax {
         public readonly baseExpression: BaseExpressionSyntax,
         public readonly dotToken: Token,
         public readonly identifierToken: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.ObjectAccess;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.baseExpression.range, this.identifierToken.range);
+        super(ExpressionSyntaxKind.ObjectAccess, BaseSyntaxNode.CombineRanges(baseExpression.range, identifierToken.range));
     }
 }
 
@@ -74,15 +53,7 @@ export class ArrayAccessExpressionSyntax extends BaseExpressionSyntax {
         public readonly leftBracketToken: Token,
         public readonly indexExpression: BaseExpressionSyntax,
         public readonly rightBracketToken: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.ArrayAccess;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.baseExpression.range, this.rightBracketToken.range);
+        super(ExpressionSyntaxKind.ArrayAccess, BaseSyntaxNode.CombineRanges(baseExpression.range, rightBracketToken.range));
     }
 }
 
@@ -93,60 +64,28 @@ export class CallExpressionSyntax extends BaseExpressionSyntax {
         public readonly argumentsList: BaseExpressionSyntax[],
         public readonly commasList: Token[],
         public readonly rightParenToken: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.Call;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.baseExpression.range, this.rightParenToken.range);
+        super(ExpressionSyntaxKind.Call, BaseSyntaxNode.CombineRanges(baseExpression.range, rightParenToken.range));
     }
 }
 
 export class IdentifierExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly token: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.Identifier;
-    }
-
-    public get range(): TextRange {
-        return this.token.range;
+        super(ExpressionSyntaxKind.Identifier, token.range);
     }
 }
 
 export class NumberLiteralExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly token: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.NumberLiteral;
-    }
-
-    public get range(): TextRange {
-        return this.token.range;
+        super(ExpressionSyntaxKind.NumberLiteral, token.range);
     }
 }
 
 export class StringLiteralExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly token: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.StringLiteral;
-    }
-
-    public get range(): TextRange {
-        return this.token.range;
+        super(ExpressionSyntaxKind.StringLiteral, token.range);
     }
 }
 
@@ -155,14 +94,6 @@ export class ParenthesisExpressionSyntax extends BaseExpressionSyntax {
         public readonly leftParenToken: Token,
         public readonly expression: BaseExpressionSyntax,
         public readonly rightParenToken: Token) {
-        super();
-    }
-
-    public get kind(): ExpressionSyntaxKind {
-        return ExpressionSyntaxKind.Parenthesis;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.leftParenToken.range, this.rightParenToken.range);
+        super(ExpressionSyntaxKind.Parenthesis, BaseSyntaxNode.CombineRanges(leftParenToken.range, rightParenToken.range));
     }
 }

@@ -20,8 +20,11 @@ export enum CommandSyntaxKind {
 }
 
 export abstract class BaseCommandSyntax extends BaseSyntaxNode {
-    public abstract get range(): TextRange;
-    public abstract get kind(): CommandSyntaxKind;
+    public constructor(
+        public readonly kind: CommandSyntaxKind,
+        public readonly range: TextRange) {
+        super();
+    }
 
     public static toDisplayString(kind: CommandSyntaxKind): string {
         switch (kind) {
@@ -48,30 +51,14 @@ export class IfCommandSyntax extends BaseCommandSyntax {
         readonly ifToken: Token,
         readonly expression: BaseExpressionSyntax,
         readonly thenToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.If;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.ifToken.range, this.thenToken.range);
+        super(CommandSyntaxKind.If, BaseCommandSyntax.CombineRanges(ifToken.range, thenToken.range));
     }
 }
 
 export class ElseCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly elseToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.Else;
-    }
-
-    public get range(): TextRange {
-        return this.elseToken.range;
+        super(CommandSyntaxKind.Else, elseToken.range);
     }
 }
 
@@ -80,30 +67,14 @@ export class ElseIfCommandSyntax extends BaseCommandSyntax {
         readonly elseIfToken: Token,
         readonly expression: BaseExpressionSyntax,
         readonly thenToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.ElseIf;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.elseIfToken.range, this.thenToken.range);
+        super(CommandSyntaxKind.ElseIf, BaseSyntaxNode.CombineRanges(elseIfToken.range, thenToken.range));
     }
 }
 
 export class EndIfCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly endIfToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.EndIf;
-    }
-
-    public get range(): TextRange {
-        return this.endIfToken.range;
+        super(CommandSyntaxKind.EndIf, endIfToken.range);
     }
 }
 
@@ -121,32 +92,16 @@ export class ForCommandSyntax extends BaseCommandSyntax {
         readonly toToken: Token,
         readonly toExpression: BaseExpressionSyntax,
         readonly stepClause: ForStepClause | undefined) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.For;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(
-            this.forToken.range,
-            this.stepClause ? this.stepClause.expression.range : this.toExpression.range);
+        super(CommandSyntaxKind.For, BaseSyntaxNode.CombineRanges(
+            forToken.range,
+            stepClause ? stepClause.expression.range : toExpression.range));
     }
 }
 
 export class EndForCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly endForToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.EndFor;
-    }
-
-    public get range(): TextRange {
-        return this.endForToken.range;
+        super(CommandSyntaxKind.EndFor, endForToken.range);
     }
 }
 
@@ -154,30 +109,14 @@ export class WhileCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly whileToken: Token,
         readonly expression: BaseExpressionSyntax) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.While;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.whileToken.range, this.expression.range);
+        super(CommandSyntaxKind.While, BaseSyntaxNode.CombineRanges(whileToken.range, expression.range));
     }
 }
 
 export class EndWhileCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly endWhileToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.EndWhile;
-    }
-
-    public get range(): TextRange {
-        return this.endWhileToken.range;
+        super(CommandSyntaxKind.EndWhile, endWhileToken.range);
     }
 }
 
@@ -185,15 +124,7 @@ export class LabelCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly labelToken: Token,
         readonly colonToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.Label;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.labelToken.range, this.colonToken.range);
+        super(CommandSyntaxKind.Label, BaseSyntaxNode.CombineRanges(labelToken.range, colonToken.range));
     }
 }
 
@@ -201,15 +132,7 @@ export class GoToCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly goToToken: Token,
         readonly labelToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.GoTo;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.goToToken.range, this.labelToken.range);
+        super(CommandSyntaxKind.GoTo, BaseSyntaxNode.CombineRanges(goToToken.range, labelToken.range));
     }
 }
 
@@ -217,60 +140,28 @@ export class SubCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly subToken: Token,
         readonly nameToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.Sub;
-    }
-
-    public get range(): TextRange {
-        return this.combineRanges(this.subToken.range, this.nameToken.range);
+        super(CommandSyntaxKind.Sub, BaseSyntaxNode.CombineRanges(subToken.range, nameToken.range));
     }
 }
 
 export class EndSubCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly endSubToken: Token) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.EndSub;
-    }
-
-    public get range(): TextRange {
-        return this.endSubToken.range;
+        super(CommandSyntaxKind.EndSub, endSubToken.range);
     }
 }
 
 export class ExpressionCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly expression: BaseExpressionSyntax) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return CommandSyntaxKind.Expression;
-    }
-
-    public get range(): TextRange {
-        return this.expression.range;
+        super(CommandSyntaxKind.Expression, expression.range);
     }
 }
 
 export class MissingCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        private readonly expectedRange: TextRange,
-        private readonly expectedKind: CommandSyntaxKind) {
-        super();
-    }
-
-    public get kind(): CommandSyntaxKind {
-        return this.expectedKind;
-    }
-
-    public get range(): TextRange {
-        return this.expectedRange;
+        expectedKind: CommandSyntaxKind,
+        expectedRange: TextRange) {
+        super(expectedKind, expectedRange);
     }
 }

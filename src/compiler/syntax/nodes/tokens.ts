@@ -1,4 +1,4 @@
-import { TextRange } from "./syntax-nodes";
+import { TextRange, BaseSyntaxNode } from "./syntax-nodes";
 import { SyntaxNodesResources } from "../../strings/syntax-nodes";
 
 export enum TokenKind {
@@ -46,11 +46,12 @@ export enum TokenKind {
     Comment
 }
 
-export class Token {
+export class Token extends BaseSyntaxNode {
     public constructor(
         public readonly text: string,
         public readonly kind: TokenKind,
         public readonly range: TextRange) {
+        super();
     }
 
     public static toDisplayString(kind: TokenKind): string {

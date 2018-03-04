@@ -1,16 +1,17 @@
 import { StatementBinder } from "./statement-binder";
 import { ParseTree } from "../syntax/statements-parser";
 import { Diagnostic, ErrorCode } from "../diagnostics";
-import { BaseBoundStatement } from "../models/bound-statements";
+import { BaseBoundStatement } from "./nodes/statements";
+import { BaseStatementSyntax } from "../syntax/nodes/statements";
 
 export interface BoundTree {
-    readonly mainModule: ReadonlyArray<BaseBoundStatement>;
-    readonly subModules: { readonly [name: string]: ReadonlyArray<BaseBoundStatement> };
+    readonly mainModule: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
+    readonly subModules: { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> };
 }
 
 export class ModuleBinder {
-    private mainModule: ReadonlyArray<BaseBoundStatement>;
-    private subModules: { [name: string]: ReadonlyArray<BaseBoundStatement> };
+    private mainModule: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
+    private subModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> };
 
     public get boundTree(): BoundTree {
         return {

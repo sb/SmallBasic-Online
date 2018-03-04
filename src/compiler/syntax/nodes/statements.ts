@@ -1,4 +1,5 @@
 import { SubCommandSyntax, EndSubCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, ForCommandSyntax, EndForCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax } from "./commands";
+import { BaseSyntaxNode } from "./syntax-nodes";
 
 export enum StatementSyntaxKind {
     SubModule,
@@ -10,8 +11,11 @@ export enum StatementSyntaxKind {
     Expression
 }
 
-export abstract class BaseStatementSyntax {
-    public abstract get kind(): StatementSyntaxKind;
+export abstract class BaseStatementSyntax extends BaseSyntaxNode {
+    public constructor(
+        public readonly kind: StatementSyntaxKind) {
+        super();
+    }
 }
 
 export class SubModuleStatementSyntax extends BaseStatementSyntax {
@@ -19,40 +23,32 @@ export class SubModuleStatementSyntax extends BaseStatementSyntax {
         readonly subCommand: SubCommandSyntax,
         readonly statementsList: BaseStatementSyntax[],
         readonly endSubCommand: EndSubCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.SubModule;
+        super(StatementSyntaxKind.SubModule);
     }
 }
 
-export interface IfCondition {
+export interface IfConditionSyntax {
     readonly headerCommand: IfCommandSyntax;
     readonly statementsList: BaseStatementSyntax[];
 }
 
-export interface ElseIfCondition {
+export interface ElseIfConditionSyntax {
     readonly headerCommand: ElseIfCommandSyntax;
     readonly statementsList: BaseStatementSyntax[];
 }
 
-export interface ElseCondition {
+export interface ElseConditionSyntax {
     readonly headerCommand: ElseCommandSyntax;
     readonly statementsList: BaseStatementSyntax[];
 }
 
 export class IfStatementSyntax extends BaseStatementSyntax {
     public constructor(
-        readonly ifPart: IfCondition,
-        readonly elseIfParts: ElseIfCondition[],
-        readonly elsePart: ElseCondition | undefined,
+        readonly ifPart: IfConditionSyntax,
+        readonly elseIfParts: ElseIfConditionSyntax[],
+        readonly elsePart: ElseConditionSyntax | undefined,
         readonly endIfCommand: EndIfCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.If;
+        super(StatementSyntaxKind.If);
     }
 }
 
@@ -61,11 +57,7 @@ export class WhileStatementSyntax extends BaseStatementSyntax {
         readonly whileCommand: WhileCommandSyntax,
         readonly statementsList: BaseStatementSyntax[],
         readonly endWhileCommand: EndWhileCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.While;
+        super(StatementSyntaxKind.While);
     }
 }
 
@@ -74,43 +66,27 @@ export class ForStatementSyntax extends BaseStatementSyntax {
         readonly forCommand: ForCommandSyntax,
         readonly statementsList: BaseStatementSyntax[],
         readonly endForCommand: EndForCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.For;
+        super(StatementSyntaxKind.For);
     }
 }
 
 export class LabelStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly command: LabelCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.Label;
+        super(StatementSyntaxKind.Label);
     }
 }
 
 export class GoToStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly command: GoToCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.GoTo;
+        super(StatementSyntaxKind.GoTo);
     }
 }
 
 export class ExpressionStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly command: ExpressionCommandSyntax) {
-        super();
-    }
-
-    public get kind(): StatementSyntaxKind {
-        return StatementSyntaxKind.Expression;
+        super(StatementSyntaxKind.Expression);
     }
 }

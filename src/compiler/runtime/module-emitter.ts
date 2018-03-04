@@ -1,8 +1,9 @@
 import { BaseInstruction, InstructionFactory, InstructionKind, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction } from "../models/instructions";
-import { BaseBoundStatement, BoundStatementKind, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement } from "../models/bound-statements";
-import { BaseBoundExpression, BoundExpressionKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression } from "../models/bound-expressions";
+import { BaseBoundStatement, BoundStatementKind, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement } from "../binding/nodes/statements";
+import { BaseBoundExpression, BoundExpressionKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression } from "../binding/nodes/expressions";
 import { Constants } from "./values/base-value";
-import { ForStatementSyntax, GoToStatementSyntax, ExpressionStatementSyntax } from "../syntax/nodes/statements";
+import { BaseStatementSyntax } from "../syntax/nodes/statements";
+import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
 
 export class ModuleEmitter {
     private jumpLabelCounter: number = 1;
@@ -12,13 +13,13 @@ export class ModuleEmitter {
         return this._instructions;
     }
 
-    public constructor(statements: ReadonlyArray<BaseBoundStatement>) {
+    public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>) {
         statements.forEach(statement => this.emitStatement(statement));
         this._instructions.push(InstructionFactory.Return());
         this.replaceTempInstructions();
     }
 
-    private emitStatement(statement: BaseBoundStatement): void {
+    private emitStatement(statement: BaseBoundStatement<BaseStatementSyntax>): void {
         switch (statement.kind) {
             case BoundStatementKind.If: this.emitIfStatement(statement as IfBoundStatement); break;
             case BoundStatementKind.While: this.emitWhileStatement(statement as WhileBoundStatement); break;
@@ -48,7 +49,7 @@ export class ModuleEmitter {
         this._instructions.push(InstructionFactory.TempLabel(endOfBlockLabel));
     }
 
-    private emitIfPart(condition: BaseBoundExpression, statements: BaseBoundStatement[], endOfBlockLabel: string): void {
+    private emitIfPart(condition: BaseBoundExpression<BaseExpressionSyntax>, statements: BaseBoundStatement<BaseStatementSyntax>[], endOfBlockLabel: string): void {
         const endOfPartLabel = this.generateJumpLabel();
 
         const lineNumber = condition.syntax.range.line;
@@ -128,7 +129,7 @@ export class ModuleEmitter {
             this._instructions.push(InstructionFactory.PushNumber(1));
         }
 
-        this._instructions.push(InstructionFactory.Add((statement.syntax as ForStatementSyntax).forCommand.range));
+        this._instructions.push(InstructionFactory.Add(statement.syntax.forCommand.range));
         this._instructions.push(InstructionFactory.StoreVariable(statement.identifier));
         this._instructions.push(InstructionFactory.TempJump(beforeCheckLabel));
 
@@ -136,58 +137,58 @@ export class ModuleEmitter {
     }
 
     private emitLabelStatement(statement: LabelBoundStatement): void {
-        this._instructions.push(InstructionFactory.TempLabel(statement.identifier));
+        this._instructions.push(InstructionFactory.TempLabel(statement.labelName));
     }
 
     private emitGoToStatement(statement: GoToBoundStatement): void {
-        const lineNumber = (statement.syntax as GoToStatementSyntax).command.labelToken.range.line;
+        const lineNumber = statement.syntax.command.labelToken.range.line;
         this._instructions.push(InstructionFactory.StatementStart(lineNumber));
 
-        this._instructions.push(InstructionFactory.TempJump(statement.identifier));
+        this._instructions.push(InstructionFactory.TempJump(statement.labelName));
     }
 
     private emitLibraryMethodCall(statement: LibraryMethodCallBoundStatement): void {
-        const range = (statement.syntax as ExpressionStatementSyntax).command.expression.range;
+        const range = statement.syntax.command.expression.range;
         this._instructions.push(InstructionFactory.StatementStart(range.line));
 
         statement.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(InstructionFactory.MethodCall(statement.library, statement.method, range));
+        this._instructions.push(InstructionFactory.MethodCall(statement.libraryName, statement.methodName, range));
     }
 
     private emitSubModuleCall(statement: SubModuleCallBoundStatement): void {
-        const lineNumber = (statement.syntax as ExpressionStatementSyntax).command.expression.range.line;
+        const lineNumber = statement.syntax.command.expression.range.line;
         this._instructions.push(InstructionFactory.StatementStart(lineNumber));
 
-        this._instructions.push(InstructionFactory.CallSubModule(statement.name));
+        this._instructions.push(InstructionFactory.CallSubModule(statement.subModuleName));
     }
 
     private emitVariableAssignment(statement: VariableAssignmentBoundStatement): void {
-        const lineNumber = (statement.syntax as ExpressionStatementSyntax).command.expression.range.line;
+        const lineNumber = statement.syntax.command.expression.range.line;
         this._instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(statement.value);
-        this._instructions.push(InstructionFactory.StoreVariable(statement.identifier));
+        this._instructions.push(InstructionFactory.StoreVariable(statement.variableName));
     }
 
     private emitArrayAssignment(statement: ArrayAssignmentBoundStatement): void {
-        const range = (statement.syntax as ExpressionStatementSyntax).command.expression.range;
+        const range = statement.syntax.command.expression.range;
         this._instructions.push(InstructionFactory.StatementStart(range.line));
 
         statement.indices.reverse().forEach(index => this.emitExpression(index));
         this.emitExpression(statement.value);
 
-        this._instructions.push(InstructionFactory.StoreArrayElement(statement.identifier, statement.indices.length, range));
+        this._instructions.push(InstructionFactory.StoreArrayElement(statement.arrayName, statement.indices.length, range));
     }
 
     private emitPropertyAssignment(statement: PropertyAssignmentBoundStatement): void {
-        const lineNumber = (statement.syntax as ExpressionStatementSyntax).command.expression.range.line;
+        const lineNumber = statement.syntax.command.expression.range.line;
         this._instructions.push(InstructionFactory.StatementStart(lineNumber));
 
         this.emitExpression(statement.value);
-        this._instructions.push(InstructionFactory.StoreProperty(statement.library, statement.property, statement.value.syntax.range));
+        this._instructions.push(InstructionFactory.StoreProperty(statement.libraryName, statement.propertyName, statement.value.syntax.range));
     }
 
-    private emitExpression(expression: BaseBoundExpression): void {
+    private emitExpression(expression: BaseBoundExpression<BaseExpressionSyntax>): void {
         switch (expression.kind) {
             case BoundExpressionKind.Negation: this.emitNegationExpression(expression as NegationBoundExpression); break;
             case BoundExpressionKind.Or: this.emitOrExpression(expression as OrBoundExpression); break;
@@ -342,20 +343,20 @@ export class ModuleEmitter {
 
     private emitArrayAccessExpression(expression: ArrayAccessBoundExpression): void {
         expression.indices.reverse().forEach(index => this.emitExpression(index));
-        this._instructions.push(InstructionFactory.LoadArrayElement(expression.name, expression.indices.length, expression.syntax.range));
+        this._instructions.push(InstructionFactory.LoadArrayElement(expression.arrayName, expression.indices.length, expression.syntax.range));
     }
 
     private emitLibraryPropertyExpression(expression: LibraryPropertyBoundExpression): void {
-        this._instructions.push(InstructionFactory.LoadProperty(expression.library, expression.name, expression.syntax.range));
+        this._instructions.push(InstructionFactory.LoadProperty(expression.libraryName, expression.propertyName, expression.syntax.range));
     }
 
     private emitLibraryMethodCallExpression(expression: LibraryMethodCallBoundExpression): void {
         expression.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(InstructionFactory.MethodCall(expression.library, expression.name, expression.syntax.range));
+        this._instructions.push(InstructionFactory.MethodCall(expression.libraryName, expression.MethodName, expression.syntax.range));
     }
 
     private emitVariableExpression(expression: VariableBoundExpression): void {
-        this._instructions.push(InstructionFactory.LoadVariable(expression.name));
+        this._instructions.push(InstructionFactory.LoadVariable(expression.variableName));
     }
 
     private emitStringLiteralExpression(expression: StringLiteralBoundExpression): void {

@@ -8,9 +8,9 @@ import {
     LabelStatementSyntax,
     GoToStatementSyntax,
     ExpressionStatementSyntax,
-    ElseIfCondition,
-    IfCondition,
-    ElseCondition
+    ElseIfConditionSyntax,
+    IfConditionSyntax,
+    ElseConditionSyntax
 } from "./nodes/statements";
 import {
     BaseCommandSyntax,
@@ -171,12 +171,12 @@ export class StatementsParser {
             CommandSyntaxKind.Else,
             CommandSyntaxKind.EndIf);
 
-        const ifPart: IfCondition = {
+        const ifPart: IfConditionSyntax = {
             headerCommand: ifCommand,
             statementsList: ifPartStatements
         };
 
-        const elseIfParts: ElseIfCondition[] = [];
+        const elseIfParts: ElseIfConditionSyntax[] = [];
 
         while (this.isNext(CommandSyntaxKind.ElseIf)) {
             const elseIfCommand = this.eat(CommandSyntaxKind.ElseIf) as ElseIfCommandSyntax;
@@ -191,7 +191,7 @@ export class StatementsParser {
             });
         }
 
-        let elsePart: ElseCondition | undefined;
+        let elsePart: ElseConditionSyntax | undefined;
         if (this.isNext(CommandSyntaxKind.Else)) {
             const elseCommand = this.eat(CommandSyntaxKind.Else) as ElseCommandSyntax;
             const statements = this.parseStatementsExcept(
@@ -266,7 +266,7 @@ export class StatementsParser {
                     current.range,
                     BaseCommandSyntax.toDisplayString(current.kind),
                     BaseCommandSyntax.toDisplayString(kind)));
-                return new MissingCommandSyntax(current.range, kind);
+                return new MissingCommandSyntax(kind, current.range);
             }
         } else {
             const range = this.commands[this.commands.length - 1].range;
@@ -274,7 +274,7 @@ export class StatementsParser {
                 ErrorCode.UnexpectedEOF_ExpectingCommand,
                 range,
                 BaseCommandSyntax.toDisplayString(kind)));
-            return new MissingCommandSyntax(range, kind);
+            return new MissingCommandSyntax(kind, range);
         }
     }
 }

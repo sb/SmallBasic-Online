@@ -358,26 +358,15 @@ export class CommandsParser {
                     this.index++;
                     return current;
                 } else {
-                    this.reportError(new Diagnostic(
-                        ErrorCode.UnexpectedToken_ExpectingToken,
-                        current.range,
-                        current.text,
-                        Token.toDisplayString(kind)));
+                    this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingToken, current.range, current.text, Token.toDisplayString(kind)));
+                    return this.createMissingToken(current.range);
                 }
-            } else {
-                this.reportError(new Diagnostic(
-                    ErrorCode.UnexpectedEOL_ExpectingToken,
-                    this.tokens[this.index - 1].range,
-                    Token.toDisplayString(kind)));
             }
-        } else {
-            this.reportError(new Diagnostic(
-                ErrorCode.UnexpectedEOL_ExpectingToken,
-                this.tokens[this.index - 1].range,
-                Token.toDisplayString(kind)));
         }
 
-        return this.createMissingToken(this.tokens[this.tokens.length - 1].range);
+        const range = this.tokens[this.index - 1].range;
+        this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingToken, range, Token.toDisplayString(kind)));
+        return this.createMissingToken(range);
     }
 
     private createMissingToken(range: TextRange): Token {
