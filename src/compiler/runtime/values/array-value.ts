@@ -5,11 +5,19 @@ import { BaseValue, ValueKind } from "./base-value";
 import { Token, TokenKind } from "../../syntax/nodes/tokens";
 
 export class ArrayValue extends BaseValue {
-    public readonly value: { [key: string]: BaseValue };
+    private _values: { [key: string]: BaseValue };
 
-    public constructor(value : { [key: string]: BaseValue } = {}) {
+    public constructor(value: { readonly [key: string]: BaseValue } = {}) {
         super();
-        this.value = value;
+        this._values = value;
+    }
+
+    public get values(): { readonly [key: string]: BaseValue } {
+        return this._values;
+    }
+
+    public setIndex(index: string, value: BaseValue): void {
+        this._values[index] = value;
     }
 
     public toBoolean(): boolean {
@@ -17,7 +25,7 @@ export class ArrayValue extends BaseValue {
     }
 
     public toDebuggerString(): string {
-        return `[${Object.keys(this.value).map(key => `${key}=${this.value[key].toDebuggerString()}`).join(", ")}]`;
+        return `[${Object.keys(this._values).map(key => `${key}=${this._values[key].toDebuggerString()}`).join(", ")}]`;
     }
 
     public toValueString(): string {
@@ -27,7 +35,7 @@ export class ArrayValue extends BaseValue {
     public get kind(): ValueKind {
         return ValueKind.Array;
     }
-    
+
     public tryConvertToNumber(): BaseValue {
         return this;
     }

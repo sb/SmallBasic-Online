@@ -1,11 +1,9 @@
 import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
-import { ValueKind } from "../values/base-value";
+import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
 import { DocumentationResources } from "../../strings/documentation";
-import { Diagnostic, ErrorCode } from "../../diagnostics";
-import { StorePropertyInstruction, BaseInstruction } from "../instructions";
-import { ExecutionState, ExecutionEngine, ExecutionMode } from "../../execution-engine";
+import { ExecutionState, ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel, PubSubChannel } from "../../notifications";
 
 export enum TextWindowColors {
@@ -27,7 +25,18 @@ export enum TextWindowColors {
     White = 15
 }
 
+const defaultForegroundColor = TextWindowColors.White;
+const defaultBackgroundColor = TextWindowColors.Black;
+
 export class TextWindowLibrary implements LibraryTypeDefinition {
+    private _foreground: TextWindowColors;
+    private _background: TextWindowColors;
+
+    public constructor() {
+        this._foreground = defaultForegroundColor;
+        this._background = defaultBackgroundColor;
+    }
+
     public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
     public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
 
@@ -35,6 +44,14 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
     public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("foregroundColorChanged");
 
     public readonly description: string = DocumentationResources.TextWindow;
+
+    public get foreground(): TextWindowColors {
+        return this._foreground;
+    }
+
+    public get background(): TextWindowColors {
+        return this._background;
+    }
 
     public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
         Read: {
@@ -48,13 +65,13 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
                         throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
                     }
 
-                    engine.evaluationStack.push(value);
-                    engine.moveToNextInstruction();
-
                     engine.state = ExecutionState.Running;
+                    engine.pushEvaluationStack(value);
+                    return true;
                 } else {
                     engine.state = ExecutionState.BlockedOnStringInput;
                     this.blockedOnInput.publish(ValueKind.String);
+                    return false;
                 }
             }
         },
@@ -69,13 +86,13 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
                         throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
                     }
 
-                    engine.evaluationStack.push(value);
-                    engine.moveToNextInstruction();
-
+                    engine.pushEvaluationStack(value);
                     engine.state = ExecutionState.Running;
+                    return true;
                 } else {
                     engine.state = ExecutionState.BlockedOnNumberInput;
                     this.blockedOnInput.publish(ValueKind.Number);
+                    return false;
                 }
             }
         },
@@ -89,13 +106,15 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
                 if (engine.state === ExecutionState.BlockedOnOutput) {
                     if (!engine.buffer.hasValue()) {
                         engine.state = ExecutionState.Running;
-                        engine.moveToNextInstruction();
+                        return true;
                     }
                 } else {
-                    engine.buffer.writeValue(new StringValue(engine.evaluationStack.pop()!.toValueString()));
+                    engine.buffer.writeValue(new StringValue(engine.popEvaluationStack().toValueString()));
                     engine.state = ExecutionState.BlockedOnOutput;
                     this.producedOutput.publish();
                 }
+
+                return false;
             }
         }
     };
@@ -103,74 +122,64 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
     public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
         ForegroundColor: {
             description: DocumentationResources.TextWindow_ForegroundColor,
-            getter: (engine: ExecutionEngine) => {
-                engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.foreground]));
-                engine.moveToNextInstruction();
+            getter: () => {
+                return new StringValue(TextWindowColors[this._foreground]);
             },
-            setter: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
-                const color = engine.evaluationStack.pop()!;
-                engine.moveToNextInstruction();
+            setter: (value: BaseValue) => {
+                let selectedColor = defaultForegroundColor;
 
-                switch (color.kind) {
+                switch (value.kind) {
                     case ValueKind.Number: {
-                        const numberValue = (color as NumberValue).value;
+                        const numberValue = (value as NumberValue).value;
                         if (TextWindowColors[numberValue]) {
-                            engine.buffer.foreground = numberValue;
-                            this.foregroundColorChanged.publish(engine.buffer.foreground);
-                            return;
+                            selectedColor = numberValue;
                         }
                         break;
                     }
                     case ValueKind.String: {
-                        const stringValue = (color as StringValue).value.toLowerCase();
+                        const stringValue = (value as StringValue).value.toLowerCase();
                         for (let color in TextWindowColors) {
                             if (color.toLowerCase() === stringValue) {
-                                engine.buffer.foreground = <any>TextWindowColors[color];
-                                this.foregroundColorChanged.publish(engine.buffer.foreground);
-                                return;
+                                selectedColor = <any>TextWindowColors[color];
                             }
                         }
                         break;
                     }
                 }
 
-                engine.terminate(new Diagnostic(ErrorCode.UnsupportedTextWindowColor, (instruction as StorePropertyInstruction).sourceRange, color.toValueString()));
+                this._foreground = selectedColor;
+                this.foregroundColorChanged.publish(this._foreground);
             }
         },
         BackgroundColor: {
             description: DocumentationResources.TextWindow_BackgroundColor,
-            getter: (engine: ExecutionEngine) => {
-                engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.background]));
-                engine.moveToNextInstruction();
+            getter: () => {
+                return new StringValue(TextWindowColors[this._background]);
             },
-            setter: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
-                const color = engine.evaluationStack.pop()!;
-                engine.moveToNextInstruction();
+            setter: (value: BaseValue) => {
+                let selectedColor = defaultBackgroundColor;
 
-                switch (color.kind) {
+                switch (value.kind) {
                     case ValueKind.Number: {
-                        const numberValue = (color as NumberValue).value;
+                        const numberValue = (value as NumberValue).value;
                         if (TextWindowColors[numberValue]) {
-                            engine.buffer.background = numberValue;
-                            this.backgroundColorChanged.publish(engine.buffer.background);
-                            return;
+                            selectedColor = numberValue;
                         }
                         break;
                     }
                     case ValueKind.String: {
-                        const stringValue = (color as StringValue).value.toLowerCase();
+                        const stringValue = (value as StringValue).value.toLowerCase();
                         for (let color in TextWindowColors) {
                             if (color.toLowerCase() === stringValue) {
-                                engine.buffer.background = <any>TextWindowColors[color];
-                                this.backgroundColorChanged.publish(engine.buffer.background);
-                                return;
+                                selectedColor = <any>TextWindowColors[color];
                             }
                         }
                         break;
                     }
                 }
 
-                engine.terminate(new Diagnostic(ErrorCode.UnsupportedTextWindowColor, (instruction as StorePropertyInstruction).sourceRange, color.toValueString()));
+                this._background = selectedColor;
+                this.backgroundColorChanged.publish(this._background);
             }
         }
     };

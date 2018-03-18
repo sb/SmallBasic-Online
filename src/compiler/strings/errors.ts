@@ -30,6 +30,5 @@ export module ErrorResources {
     export const CannotUseOperatorWithAnArray = "You cannot use the operator '{0}' with an array value";
     export const CannotUseOperatorWithAString = "You cannot use the operator '{0}' with a string value";
     export const CannotDivideByZero = "You cannot divide by zero. Please consider checking the divisor before dividing.";
-    export const UnsupportedTextWindowColor = "This is not a supported color name or number: '{0}'";
     export const PoppingAnEmptyStack = "This stack has no elements to be popped";
 }

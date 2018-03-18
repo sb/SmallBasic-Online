@@ -18,19 +18,19 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
-                const index = engine.evaluationStack.pop()!.tryConvertToNumber();
-                const array = engine.evaluationStack.pop()!;
+                const index = engine.popEvaluationStack().tryConvertToNumber();
+                const array = engine.popEvaluationStack();
                 let result = Constants.False;
 
                 if (array.kind === ValueKind.Array) {
                     if (index.kind === ValueKind.Number || index.kind === ValueKind.String)
-                        if ((array as ArrayValue).value[index.toValueString()]) {
+                        if ((array as ArrayValue).values[index.toValueString()]) {
                             result = Constants.True;
                         }
                 }
 
-                engine.evaluationStack.push(new StringValue(result));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new StringValue(result));
+                return true;
             }
         },
         ContainsValue: {
@@ -41,12 +41,12 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
-                const value = engine.evaluationStack.pop()!;
-                const array = engine.evaluationStack.pop()!;
+                const value = engine.popEvaluationStack();
+                const array = engine.popEvaluationStack();
                 let result = Constants.False;
 
                 if (array.kind === ValueKind.Array) {
-                    const arrayValue = (array as ArrayValue).value;
+                    const arrayValue = (array as ArrayValue).values;
                     for (let key in arrayValue) {
                         if (arrayValue[key].isEqualTo(value)) {
                             result = Constants.True;
@@ -55,8 +55,8 @@ export class ArrayLibrary implements LibraryTypeDefinition {
                     }
                 }
 
-                engine.evaluationStack.push(new StringValue(result));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new StringValue(result));
+                return true;
             }
         },
         GetAllIndices: {
@@ -66,17 +66,17 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
-                const array = engine.evaluationStack.pop()!;
+                const array = engine.popEvaluationStack();
                 const newArray: { [key: string]: BaseValue } = {};
 
                 if (array.kind === ValueKind.Array) {
-                    Object.keys((array as ArrayValue).value).forEach((key, i) => {
+                    Object.keys((array as ArrayValue).values).forEach((key, i) => {
                         newArray[i + 1] = new StringValue(key);
                     });
                 }
 
-                engine.evaluationStack.push(new ArrayValue(newArray));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new ArrayValue(newArray));
+                return true;
             }
         },
         GetItemCount: {
@@ -86,13 +86,13 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
-                const array = engine.evaluationStack.pop()!;
+                const array = engine.popEvaluationStack();
                 const itemCount = array.kind === ValueKind.Array
-                    ? Object.keys((array as ArrayValue).value).length
+                    ? Object.keys((array as ArrayValue).values).length
                     : 0;
 
-                engine.evaluationStack.push(new NumberValue(itemCount));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new NumberValue(itemCount));
+                return true;
             }
         },
         IsArray: {
@@ -102,10 +102,9 @@ export class ArrayLibrary implements LibraryTypeDefinition {
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
-                const value = engine.evaluationStack.pop()!;
-
-                engine.evaluationStack.push(new StringValue(value.kind === ValueKind.Array ? Constants.True : Constants.False));
-                engine.moveToNextInstruction();
+                const value = engine.popEvaluationStack();
+                engine.pushEvaluationStack(new StringValue(value.kind === ValueKind.Array ? Constants.True : Constants.False));
+                return true;
             }
         }
     };

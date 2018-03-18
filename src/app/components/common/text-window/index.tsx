@@ -66,8 +66,8 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.state = {
             isCursorVisible: true,
 
-            foreground: TextWindowColors.White,
-            background: TextWindowColors.Black,
+            foreground: props.engine.libraries.TextWindow.foreground,
+            background: props.engine.libraries.TextWindow.background,
 
             inputBuffer: "",
             inputKind: undefined,

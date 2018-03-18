@@ -89,8 +89,7 @@ export class StringValue extends BaseValue {
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
 
-        engine.evaluationStack.push(result);
-        engine.moveToNextInstruction();
+        engine.pushEvaluationStack(result);
     }
 
     public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {

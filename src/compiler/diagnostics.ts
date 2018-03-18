@@ -40,7 +40,6 @@ export enum ErrorCode {
     CannotUseOperatorWithAnArray,
     CannotUseOperatorWithAString,
     CannotDivideByZero,
-    UnsupportedTextWindowColor,
     PoppingAnEmptyStack
 }
 

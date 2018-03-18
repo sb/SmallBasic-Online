@@ -4,7 +4,7 @@ import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { Diagnostic, ErrorCode } from "../../diagnostics";
-import { BaseInstruction, MethodCallInstruction } from "../instructions";
+import { TextRange } from "../../syntax/nodes/syntax-nodes";
 
 export class StackLibrary implements LibraryTypeDefinition {
     private _stacks: { [name: string]: BaseValue[] } = {};
@@ -20,15 +20,15 @@ export class StackLibrary implements LibraryTypeDefinition {
             },
             returnsValue: false,
             execute: (engine: ExecutionEngine) => {
-                const value = engine.evaluationStack.pop()!;
-                const stackName = engine.evaluationStack.pop()!.toValueString();
+                const value = engine.popEvaluationStack();
+                const stackName = engine.popEvaluationStack().toValueString();
 
                 if (!this._stacks[stackName]) {
                     this._stacks[stackName] = [];
                 }
 
                 this._stacks[stackName].push(value);
-                engine.moveToNextInstruction();
+                return true;
             }
         },
         GetCount: {
@@ -38,11 +38,11 @@ export class StackLibrary implements LibraryTypeDefinition {
             },
             returnsValue: true,
             execute: (engine: ExecutionEngine) => {
-                const stackName = engine.evaluationStack.pop()!.toValueString();
+                const stackName = engine.popEvaluationStack().toValueString();
                 const count = this._stacks[stackName] ? this._stacks[stackName].length : 0;
 
-                engine.evaluationStack.push(new NumberValue(count));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new NumberValue(count));
+                return true;
             }
         },
         PopValue: {
@@ -51,15 +51,16 @@ export class StackLibrary implements LibraryTypeDefinition {
                 "stackName": DocumentationResources.Stack_PopValue_StackName
             },
             returnsValue: true,
-            execute: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
-                const stackName = engine.evaluationStack.pop()!.toValueString();
+            execute: (engine: ExecutionEngine, _: ExecutionMode, range: TextRange) => {
+                const stackName = engine.popEvaluationStack().toValueString();
 
                 if (this._stacks[stackName] && this._stacks[stackName].length) {
-                    engine.evaluationStack.push(this._stacks[stackName].pop()!);
-                    engine.moveToNextInstruction();
+                    engine.pushEvaluationStack(this._stacks[stackName].pop()!);
                 } else {
-                    engine.terminate(new Diagnostic(ErrorCode.PoppingAnEmptyStack, (instruction as MethodCallInstruction).sourceRange));
+                    engine.terminate(new Diagnostic(ErrorCode.PoppingAnEmptyStack, range));
                 }
+                
+                return true;
             }
         }
     };

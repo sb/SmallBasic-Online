@@ -17,7 +17,7 @@ export class ProgramLibrary implements LibraryTypeDefinition {
                     engine.state = ExecutionState.Paused;
                 }
 
-                engine.moveToNextInstruction();
+                return true;
             }
         },
         End: {
@@ -26,6 +26,7 @@ export class ProgramLibrary implements LibraryTypeDefinition {
             returnsValue: false,
             execute: (engine: ExecutionEngine) => {
                 engine.terminate();
+                return true;
             }
         }
     };

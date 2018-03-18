@@ -28,6 +28,5 @@
     "CannotUseOperatorWithAnArray": "You cannot use the operator '{0}' with an array value",
     "CannotUseOperatorWithAString": "You cannot use the operator '{0}' with a string value",
     "CannotDivideByZero": "You cannot divide by zero. Please consider checking the divisor before dividing.",
-    "UnsupportedTextWindowColor": "This is not a supported color name or number: '{0}'",
     "PoppingAnEmptyStack": "This stack has no elements to be popped"
 }

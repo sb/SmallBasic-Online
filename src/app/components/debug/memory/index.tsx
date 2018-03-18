@@ -18,9 +18,9 @@ export class MemoryComponent extends React.Component<MemoryProps, MemoryState> {
                 <div className="sidebar-component-icon" style={{ backgroundImage: `url("${MemoryIcon}")` }}></div>
                 <div className="sidebar-component-label">{EditorResources.Memory_Header}</div>
                 <ul>
-                    {Object.keys(this.props.engine.memory).sort().map((key, i) =>
+                    {Object.keys(this.props.engine.memory.values).sort().map((key, i) =>
                         <li key={i}>
-                            {key}: {this.props.engine.memory[key].toDebuggerString()}
+                            {key}: {this.props.engine.memory.values[key].toDebuggerString()}
                         </li>
                     )}
                 </ul>

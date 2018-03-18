@@ -91,8 +91,7 @@ export class NumberValue extends BaseValue {
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
 
-        engine.evaluationStack.push(result);
-        engine.moveToNextInstruction();
+        engine.pushEvaluationStack(result);
     }
 
     public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
@@ -103,8 +102,7 @@ export class NumberValue extends BaseValue {
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
                 return;
             case ValueKind.Number:
-                engine.evaluationStack.push(new NumberValue(this.value - (other as NumberValue).value));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new NumberValue(this.value - (other as NumberValue).value));
                 return;
             case ValueKind.Array:
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
@@ -122,8 +120,7 @@ export class NumberValue extends BaseValue {
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
                 return;
             case ValueKind.Number:
-                engine.evaluationStack.push(new NumberValue(this.value * (other as NumberValue).value));
-                engine.moveToNextInstruction();
+                engine.pushEvaluationStack(new NumberValue(this.value * (other as NumberValue).value));
                 return;
             case ValueKind.Array:
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
@@ -145,8 +142,7 @@ export class NumberValue extends BaseValue {
                 if (otherValue === 0) {
                     engine.terminate(new Diagnostic(ErrorCode.CannotDivideByZero, instruction.sourceRange));
                 } else {
-                    engine.evaluationStack.push(new NumberValue(this.value / otherValue));
-                    engine.moveToNextInstruction();
+                    engine.pushEvaluationStack(new NumberValue(this.value / otherValue));
                 }
                 return;
             case ValueKind.Array:
