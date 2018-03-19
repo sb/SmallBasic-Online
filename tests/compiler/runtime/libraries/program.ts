@@ -17,18 +17,18 @@ EndFor`);
 
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect(engine.buffer.readValue().toDebuggerString()).toBe(`"1"`);
+        expect(engine.libraries.TextWindow.readValueFromBuffer().toDebuggerString()).toBe(`"1"`);
 
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.Paused);
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect(engine.buffer.readValue().toDebuggerString()).toBe(`"2"`);
+        expect(engine.libraries.TextWindow.readValueFromBuffer().toDebuggerString()).toBe(`"2"`);
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect(engine.buffer.readValue().toDebuggerString()).toBe(`"3"`);
+        expect(engine.libraries.TextWindow.readValueFromBuffer().toDebuggerString()).toBe(`"3"`);
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.Terminated);

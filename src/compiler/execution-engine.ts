@@ -4,7 +4,6 @@ import { BaseInstruction } from "./runtime/instructions";
 import { SupportedLibraries } from "./runtime/supported-libraries";
 import { Diagnostic } from "./diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
-import { IOBuffer } from "./runtime/io-buffer";
 import { PubSubPayloadChannel } from "./notifications";
 import { ModuleBinder } from "./binding/module-binder";
 
@@ -37,7 +36,6 @@ export class ExecutionEngine {
 
     private _exception?: Diagnostic;
     private _currentLine: number = 0;
-    private _buffer: IOBuffer = new IOBuffer();
     private _state: ExecutionState = ExecutionState.Running;
 
     public readonly programTerminated: PubSubPayloadChannel<Diagnostic | undefined> = new PubSubPayloadChannel<Diagnostic | undefined>("programTerminated");
@@ -68,10 +66,6 @@ export class ExecutionEngine {
 
     public get currentLine(): number {
         return this._currentLine;
-    }
-
-    public get buffer(): IOBuffer {
-        return this._buffer;
     }
 
     public get state(): ExecutionState {
@@ -128,12 +122,12 @@ export class ExecutionEngine {
             switch (this.state) {
                 case ExecutionState.BlockedOnNumberInput:
                 case ExecutionState.BlockedOnStringInput:
-                    if (!this._buffer.hasValue()) {
+                    if (!this.libraries.TextWindow.bufferHasValue()) {
                         return;
                     }
                     break;
                 case ExecutionState.BlockedOnOutput:
-                    if (this._buffer.hasValue()) {
+                    if (this.libraries.TextWindow.bufferHasValue()) {
                         return;
                     }
                     break;
