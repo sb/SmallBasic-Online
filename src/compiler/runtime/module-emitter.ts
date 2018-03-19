@@ -1,9 +1,10 @@
-import { BaseInstruction, InstructionKind, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction, StoreVariableInstruction, PushNumberInstruction, LessThanInstruction, LoadVariableInstruction, AddInstruction, MethodCallInstruction, CallSubModuleInstruction, StoreArrayElementInstruction, StorePropertyInstruction, NegateInstruction, GreaterThanInstruction, LessThanOrEqualInstruction, GreaterThanOrEqualInstruction, PushStringInstruction, EqualInstruction, SubtractInstruction, MultiplyInstruction, DivideInstruction, LoadPropertyInstruction, LoadArrayElementInstruction, JumpInstruction, ConditionalJumpInstruction } from "./instructions";
+import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction, StoreVariableInstruction, PushNumberInstruction, LessThanInstruction, LoadVariableInstruction, AddInstruction, MethodCallInstruction, CallSubModuleInstruction, StoreArrayElementInstruction, StorePropertyInstruction, NegateInstruction, GreaterThanInstruction, LessThanOrEqualInstruction, GreaterThanOrEqualInstruction, PushStringInstruction, EqualInstruction, SubtractInstruction, MultiplyInstruction, DivideInstruction, LoadPropertyInstruction, LoadArrayElementInstruction } from "./instructions";
 import { BaseBoundStatement, BoundStatementKind, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement } from "../binding/nodes/statements";
 import { BaseBoundExpression, BoundExpressionKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression } from "../binding/nodes/expressions";
 import { Constants } from "./values/base-value";
 import { BaseStatementSyntax } from "../syntax/nodes/statements";
 import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
+import { Optimizations } from "./optimizations";
 
 export class ModuleEmitter {
     private jumpLabelCounter: number = 1;
@@ -15,7 +16,8 @@ export class ModuleEmitter {
 
     public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>) {
         statements.forEach(statement => this.emitStatement(statement));
-        this.replaceTempInstructions();
+
+        Optimizations.removeTempInstructions(this._instructions);
     }
 
     private emitStatement(statement: BaseBoundStatement<BaseStatementSyntax>): void {
@@ -352,50 +354,6 @@ export class ModuleEmitter {
 
     private emitParenthesisExpression(expression: ParenthesisBoundExpression): void {
         this.emitExpression(expression.expression);
-    }
-
-    private replaceTempInstructions(): void {
-        const labelToIndexMap: { [key: string]: number } = {};
-
-        for (let i = 0; i < this._instructions.length; i++) {
-            if (this._instructions[i].kind === InstructionKind.TempLabel) {
-                const label = this._instructions[i] as TempLabelInstruction;
-                if (labelToIndexMap[label.name]) {
-                    throw new Error(`Label ${label.name} exists twice in the same instruction set`);
-                }
-                labelToIndexMap[label.name] = i;
-                this._instructions.splice(i, 1);
-                i--;
-            }
-        }
-
-        function replaceJump(target: string | undefined): number | undefined {
-            if (target) {
-                const index = labelToIndexMap[target];
-                if (index === undefined) {
-                    throw new Error(`Index for label ${target} was not calculated`);
-                } else {
-                    return index;
-                }
-            } else {
-                return undefined;
-            }
-        }
-
-        for (let i = 0; i < this._instructions.length; i++) {
-            switch (this._instructions[i].kind) {
-                case InstructionKind.TempJump: {
-                    const jump = this._instructions[i] as TempJumpInstruction;
-                    this._instructions[i] = new JumpInstruction(replaceJump(jump.target)!, jump.sourceRange);
-                    break;
-                }
-                case InstructionKind.TempConditionalJump: {
-                    const jump = this._instructions[i] as TempConditionalJumpInstruction;
-                    this._instructions[i] = new ConditionalJumpInstruction(replaceJump(jump.trueTarget), replaceJump(jump.falseTarget), jump.sourceRange);
-                    break;
-                }
-            }
-        }
     }
 
     private generateJumpLabel(): string {

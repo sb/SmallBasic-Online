@@ -65,7 +65,5 @@ export function convertFilePromise(inputPath: string, outputPath: string, conver
     });
 }
 
-// TODO: optimization pass to remove temp instructions
 // TODO: arithmetic operations to library calls
-// TODO: separate library methods and properties to separate definitions
 // TODO: review the rest of the instructions (like jumps)

@@ -45,7 +45,6 @@ export abstract class BaseInstruction {
 }
 
 export class TempLabelInstruction extends BaseInstruction {
-    // TODO remove this class
     public constructor(
         public readonly name: string,
         range: TextRange) {
@@ -53,12 +52,11 @@ export class TempLabelInstruction extends BaseInstruction {
     }
 
     public execute(_1: ExecutionEngine, _2: ExecutionMode, _3: StackFrame): void {
-        throw new Error("This should have been removed during lowering");
+        throw new Error("This should have been removed during emit");
     }
 }
 
 export class TempJumpInstruction extends BaseInstruction {
-    // TODO remove this class
     public constructor(
         public readonly target: string,
         range: TextRange) {
@@ -66,12 +64,11 @@ export class TempJumpInstruction extends BaseInstruction {
     }
 
     public execute(_1: ExecutionEngine, _2: ExecutionMode, _3: StackFrame): void {
-        throw new Error("This should have been removed during lowering");
+        throw new Error("This should have been removed during emit");
     }
 }
 
 export class TempConditionalJumpInstruction extends BaseInstruction {
-    // TODO remove this class
     public constructor(
         public readonly trueTarget: string | undefined,
         public readonly falseTarget: string | undefined,
@@ -80,7 +77,7 @@ export class TempConditionalJumpInstruction extends BaseInstruction {
     }
 
     public execute(_1: ExecutionEngine, _2: ExecutionMode, _3: StackFrame): void {
-        throw new Error("This should have been removed during lowering");
+        throw new Error("This should have been removed during emit");
     }
 }
 
