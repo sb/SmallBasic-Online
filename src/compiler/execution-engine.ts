@@ -1,42 +1,15 @@
-import { NumberValue } from "./runtime/values/number-value";
-import { BaseValue, ValueKind, Constants } from "./runtime/values/base-value";
-import { StringValue } from "./runtime/values/string-value";
+import { BaseValue } from "./runtime/values/base-value";
 import { Compilation } from "./compilation";
-import {
-    BaseInstruction,
-    CallSubModuleInstruction,
-    InstructionKind,
-    JumpInstruction,
-    StatementStartInstruction,
-    StoreVariableInstruction,
-    StoreArrayElementInstruction,
-    StorePropertyInstruction,
-    LoadVariableInstruction,
-    LoadArrayElementInstruction,
-    LoadPropertyInstruction,
-    MethodCallInstruction,
-    PushNumberInstruction,
-    PushStringInstruction,
-    AddInstruction,
-    SubtractInstruction,
-    MultiplyInstruction,
-    DivideInstruction,
-    ConditionalJumpInstruction,
-    NegateInstruction
-} from "./models/instructions";
+import { BaseInstruction } from "./runtime/instructions";
 import { SupportedLibraries } from "./runtime/supported-libraries";
-import { Diagnostic, ErrorCode } from "./utils/diagnostics";
+import { Diagnostic } from "./diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
-import { IOBuffer } from "./runtime/io-buffer";
-import { TokenKindToString } from "./utils/string-factories";
-import { TokenKind } from "./syntax/tokens";
-import { PubSubPayloadChannel } from "./runtime/notifications";
+import { PubSubPayloadChannel } from "./notifications";
+import { ModuleBinder } from "./binding/module-binder";
 
-interface StackFrame {
+export interface StackFrame {
     moduleName: string;
-    currentLine: number;
-
-    instructionCounter: number;
+    instructionIndex: number;
 }
 
 export enum ExecutionMode {
@@ -55,30 +28,52 @@ export enum ExecutionState {
 }
 
 export class ExecutionEngine {
-    private _memory: { [name: string]: BaseValue } = {};
-    private _modules: { [name: string]: ReadonlyArray<BaseInstruction> };
+    private _executionStack: StackFrame[] = [];
+    private _evaluationStack: BaseValue[] = [];
+    private _memory: ArrayValue = new ArrayValue();
+    private _libraries: SupportedLibraries = new SupportedLibraries();
+    private _modules: { readonly [name: string]: ReadonlyArray<BaseInstruction> };
 
     private _exception?: Diagnostic;
-    private _buffer: IOBuffer = new IOBuffer();
+    private _currentLine: number = 0;
+    private _state: ExecutionState = ExecutionState.Running;
 
-    public readonly evaluationStack: BaseValue[] = [];
-    public readonly executionStack: StackFrame[] = [];
-    public readonly libraries: SupportedLibraries = new SupportedLibraries();
-
-    public state: ExecutionState = ExecutionState.Running;
-    
     public readonly programTerminated: PubSubPayloadChannel<Diagnostic | undefined> = new PubSubPayloadChannel<Diagnostic | undefined>("programTerminated");
 
-    public get memory(): { readonly [name: string]: BaseValue } {
+    public get executionStack(): ReadonlyArray<StackFrame> {
+        return this._executionStack;
+    }
+
+    public get evaluationStack(): ReadonlyArray<BaseValue> {
+        return this._evaluationStack;
+    }
+
+    public get memory(): ArrayValue {
         return this._memory;
+    }
+
+    public get libraries(): SupportedLibraries {
+        return this._libraries;
+    }
+
+    public get modules(): { readonly [name: string]: ReadonlyArray<BaseInstruction> } {
+        return this._modules;
     }
 
     public get exception(): Diagnostic | undefined {
         return this._exception;
     }
 
-    public get buffer(): IOBuffer {
-        return this._buffer;
+    public get currentLine(): number {
+        return this._currentLine;
+    }
+
+    public get state(): ExecutionState {
+        return this._state;
+    }
+
+    public set state(newState: ExecutionState) {
+        this._state = newState;
     }
 
     public constructor(compilation: Compilation) {
@@ -86,313 +81,53 @@ export class ExecutionEngine {
             throw new Error(`Cannot execute a compilation with errors`);
         }
 
-        const mainModuleName = "<Main>";
-        const emitResult = compilation.emit();
+        this._modules = compilation.emit();
 
-        this._modules = emitResult.subModules;
-        this._modules[mainModuleName] = emitResult.mainModule;
-
-        this.executionStack.push({
-            moduleName: mainModuleName,
-            currentLine: 0,
-            instructionCounter: 0
+        this._executionStack.push({
+            moduleName: ModuleBinder.MainModuleName,
+            instructionIndex: 0
         });
     }
 
-    public terminate(exception?: Diagnostic): void {
-        this.state = ExecutionState.Terminated;
-        this._exception = exception;
-
-        this.programTerminated.publish(exception);
-    }
-
     public execute(mode: ExecutionMode): void {
+        if (this._state === ExecutionState.Paused) {
+            this._state = ExecutionState.Running;
+        }
+
         while (true) {
-            if (this.state === ExecutionState.Terminated) {
+            if (this._state === ExecutionState.Terminated) {
                 return;
             }
 
-            if (this.executionStack.length === 0) {
+            if (this._executionStack.length === 0) {
                 this.terminate();
                 return;
             }
 
-            const frame = this.executionStack[this.executionStack.length - 1];
-            const instruction = this._modules[frame.moduleName][frame.instructionCounter];
-
-            switch (instruction.kind) {
-                case InstructionKind.Jump: {
-                    frame.instructionCounter = (instruction as JumpInstruction).target;
-                    break;
-                }
-                case InstructionKind.ConditionalJump: {
-                    const value = this.evaluationStack.pop()!;
-                    const jump = instruction as ConditionalJumpInstruction;
-                    if (value.toBoolean()) {
-                        if (jump.trueTarget) {
-                            frame.instructionCounter = jump.trueTarget;
-                        } else {
-                            frame.instructionCounter++;
-                        }
-                    } else {
-                        if (jump.falseTarget) {
-                            frame.instructionCounter = jump.falseTarget;
-                        } else {
-                            frame.instructionCounter++;
-                        }
-                    }
-                    break;
-                }
-                case InstructionKind.CallSubModule: {
-                    this.executionStack.push({
-                        currentLine: 0,
-                        instructionCounter: 0,
-                        moduleName: (instruction as CallSubModuleInstruction).name
-                    });
-                    break;
-                }
-                case InstructionKind.StatementStart: {
-                    if (this.state === ExecutionState.Paused) {
-                        this.state = ExecutionState.Running;
-                        frame.instructionCounter++;
-                    } else {
-                        frame.currentLine = (instruction as StatementStartInstruction).line;
-                        if (mode === ExecutionMode.NextStatement) {
-                            this.state = ExecutionState.Paused;
-                        } else {
-                            frame.instructionCounter++;
-                        }
-                    }
-                    break;
-                }
-                case InstructionKind.StoreVariable: {
-                    this._memory[(instruction as StoreVariableInstruction).name] = this.evaluationStack.pop()!;
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.StoreArrayElement: {
-                    const value = this.evaluationStack.pop()!;
-                    const storeArray = instruction as StoreArrayElementInstruction;
-
-                    let indices = storeArray.indices;
-                    let current = this._memory;
-                    let index = storeArray.name;
-
-                    while (indices-- > 0) {
-                        if (!current[index] || current[index].kind !== ValueKind.Array) {
-                            current[index] = new ArrayValue();
-                        }
-
-                        current = (current[index] as ArrayValue).value;
-
-                        const indexValue = this.evaluationStack.pop()!;
-                        switch (indexValue.kind) {
-                            case ValueKind.Number:
-                            case ValueKind.String:
-                                index = indexValue.toValueString();
-                                break;
-                            case ValueKind.Array:
-                                this.terminate(new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, storeArray.sourceRange));
-                                return;
-                            default:
-                                throw new Error(`Unexpected value kind ${ValueKind[indexValue.kind]}`);
-                        }
-                    }
-
-                    current[index] = value;
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.StoreProperty: {
-                    const storeProperty = instruction as StorePropertyInstruction;
-                    this.libraries[storeProperty.library].properties[storeProperty.property].setter!(this, mode, instruction);
-                    break;
-                }
-                case InstructionKind.LoadVariable: {
-                    let value = this._memory[(instruction as LoadVariableInstruction).name];
-                    if (!value) {
-                        value = new StringValue("");
-                    }
-
-                    this.evaluationStack.push(value);
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.LoadArrayElement: {
-                    const loadArray = instruction as LoadArrayElementInstruction;
-
-                    let indices = loadArray.indices;
-                    let current = this._memory;
-                    let index = loadArray.name;
-
-                    while (indices-- > 0) {
-                        if (!current[index] || current[index].kind !== ValueKind.Array) {
-                            current[index] = new ArrayValue();
-                        }
-
-                        current = (current[index] as ArrayValue).value;
-
-                        const indexValue = this.evaluationStack.pop()!;
-                        switch (indexValue.kind) {
-                            case ValueKind.Number:
-                            case ValueKind.String:
-                                index = indexValue.toValueString();
-                                break;
-                            case ValueKind.Array:
-                                this.terminate(new Diagnostic(ErrorCode.CannotUseAnArrayAsAnIndexToAnotherArray, loadArray.sourceRange));
-                                return;
-                            default:
-                                throw new Error(`Unexpected value kind ${ValueKind[indexValue.kind]}`);
-                        }
-                    }
-
-                    if (!current[index]) {
-                        current[index] = new StringValue("");
-                    }
-
-                    this.evaluationStack.push(current[index]);
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.LoadProperty: {
-                    const loadProperty = instruction as LoadPropertyInstruction;
-                    this.libraries[loadProperty.library].properties[loadProperty.property].getter!(this, mode, instruction);
-                    break;
-                }
-                case InstructionKind.MethodCall: {
-                    const methodCall = instruction as MethodCallInstruction;
-                    this.libraries[methodCall.library].methods[methodCall.method].execute(this, mode, instruction);
-                    break;
-                }
-                case InstructionKind.Negate: {
-                    const negation = instruction as NegateInstruction;
-                    const value = this.evaluationStack.pop()!.tryConvertToNumber();
-                    switch (value.kind) {
-                        case ValueKind.Number:
-                            this.evaluationStack.push(new NumberValue(-(value as NumberValue).value));
-                            frame.instructionCounter++;
-                            break;
-                        case ValueKind.String:
-                            this.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, negation.sourceRange, TokenKindToString(TokenKind.Minus)));
-                            break;
-                        case ValueKind.Array:
-                            this.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, negation.sourceRange, TokenKindToString(TokenKind.Minus)));
-                            break;
-                        default:
-                            throw new Error(`Unexpected value kind ${ValueKind[value.kind]}`);
-                    }
-                    break;
-                }
-                case InstructionKind.Equal: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    if (leftHandSide.isEqualTo(rightHandSide)) {
-                        this.evaluationStack.push(new StringValue(Constants.True));
-                    } else {
-                        this.evaluationStack.push(new StringValue(Constants.False));
-                    }
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.LessThan: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    if (leftHandSide.isLessThan(rightHandSide)) {
-                        this.evaluationStack.push(new StringValue(Constants.True));
-                    } else {
-                        this.evaluationStack.push(new StringValue(Constants.False));
-                    }
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.GreaterThan: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    if (leftHandSide.isGreaterThan(rightHandSide)) {
-                        this.evaluationStack.push(new StringValue(Constants.True));
-                    } else {
-                        this.evaluationStack.push(new StringValue(Constants.False));
-                    }
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.LessThanOrEqual: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    if (leftHandSide.isLessThan(rightHandSide) || leftHandSide.isEqualTo(rightHandSide)) {
-                        this.evaluationStack.push(new StringValue(Constants.True));
-                    } else {
-                        this.evaluationStack.push(new StringValue(Constants.False));
-                    }
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.GreaterThanOrEqual: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    if (leftHandSide.isGreaterThan(rightHandSide) || leftHandSide.isEqualTo(rightHandSide)) {
-                        this.evaluationStack.push(new StringValue(Constants.True));
-                    } else {
-                        this.evaluationStack.push(new StringValue(Constants.False));
-                    }
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.Add: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    leftHandSide.add(rightHandSide, this, instruction as AddInstruction);
-                    break;
-                }
-                case InstructionKind.Subtract: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    leftHandSide.subtract(rightHandSide, this, instruction as SubtractInstruction);
-                    break;
-                }
-                case InstructionKind.Multiply: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    leftHandSide.multiply(rightHandSide, this, instruction as MultiplyInstruction);
-                    break;
-                }
-                case InstructionKind.Divide: {
-                    const rightHandSide = this.evaluationStack.pop()!;
-                    const leftHandSide = this.evaluationStack.pop()!;
-                    leftHandSide.divide(rightHandSide, this, instruction as DivideInstruction);
-                    break;
-                }
-                case InstructionKind.PushNumber: {
-                    this.evaluationStack.push(new NumberValue((instruction as PushNumberInstruction).value));
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.PushString: {
-                    this.evaluationStack.push(new StringValue((instruction as PushStringInstruction).value));
-                    frame.instructionCounter++;
-                    break;
-                }
-                case InstructionKind.Return: {
-                    this.executionStack.pop();
-                    if (this.executionStack.length > 0) {
-                        this.moveToNextInstruction();
-                    }
-                    break;
-                }
-                default: {
-                    throw new Error(`Unexpected instruction kind ${InstructionKind[instruction.kind]}`);
-                }
+            const frame = this._executionStack[this._executionStack.length - 1];
+            if (frame.instructionIndex === this._modules[frame.moduleName].length) {
+                this._executionStack.pop();
+                continue;
             }
+
+            const instruction = this._modules[frame.moduleName][frame.instructionIndex];
+            if (instruction.sourceRange.line !== this._currentLine && mode === ExecutionMode.NextStatement) {
+                this._currentLine = instruction.sourceRange.line;
+                this._state = ExecutionState.Paused;
+                return;
+            }
+
+            instruction.execute(this, mode, frame);
 
             switch (this.state) {
                 case ExecutionState.BlockedOnNumberInput:
                 case ExecutionState.BlockedOnStringInput:
-                    if (!this._buffer.hasValue()) {
+                    if (!this.libraries.TextWindow.bufferHasValue()) {
                         return;
                     }
                     break;
                 case ExecutionState.BlockedOnOutput:
-                    if (this._buffer.hasValue()) {
+                    if (this.libraries.TextWindow.bufferHasValue()) {
                         return;
                     }
                     break;
@@ -402,7 +137,33 @@ export class ExecutionEngine {
         }
     }
 
-    public moveToNextInstruction(): void {
-        this.executionStack[this.executionStack.length - 1].instructionCounter++;
+    public terminate(exception?: Diagnostic): void {
+        this._state = ExecutionState.Terminated;
+        this._exception = exception;
+        this.programTerminated.publish(exception);
+    }
+
+    public popEvaluationStack(): BaseValue {
+        const value = this._evaluationStack.pop();
+        if (value) {
+            return value;
+        }
+
+        throw new Error("Evaluation stack empty");
+    }
+
+    public pushEvaluationStack(value: BaseValue): void {
+        this._evaluationStack.push(value);
+    }
+
+    public pushSubModule(name: string): void {
+        if (this._modules[name]) {
+            this._executionStack.push({
+                moduleName: name,
+                instructionIndex: 0
+            });
+        } else {
+            throw new Error(`SubModule ${name} not found`);
+        }
     }
 }

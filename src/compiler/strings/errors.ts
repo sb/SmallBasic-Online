@@ -12,7 +12,7 @@ export module ErrorResources {
     export const UnexpectedCommand_ExpectingCommand = "Unexpected command of type '{0}'. I was expecting a command of type '{1}'.";
     export const UnexpectedEOF_ExpectingCommand = "Unexpected end of file. I was expecting a command of type '{0}'.";
     export const CannotDefineASubInsideAnotherSub = "You cannot define a sub-module inside another sub-module.";
-    export const CannotHaveCommandWithoutPreviousCommand = "You cannot write '{0}' without an earlier '{1}'.";
+    export const CannotHaveCommandWithoutPreviousCommand = "You cannot write a command of type '{0}' without an earlier command of type '{1}'.";
     export const TwoSubModulesWithTheSameName = "Another sub-module with the same name '{0}' is already defined.";
     export const LabelDoesNotExist = "No label with the name '{0}' exists in the same module.";
     export const UnassignedExpressionStatement = "This value is not assigned to anything. Did you mean to assign it to a variable?";
@@ -30,6 +30,5 @@ export module ErrorResources {
     export const CannotUseOperatorWithAnArray = "You cannot use the operator '{0}' with an array value";
     export const CannotUseOperatorWithAString = "You cannot use the operator '{0}' with a string value";
     export const CannotDivideByZero = "You cannot divide by zero. Please consider checking the divisor before dividing.";
-    export const UnsupportedTextWindowColor = "This is not a supported color name or number: '{0}'";
     export const PoppingAnEmptyStack = "This stack has no elements to be popped";
 }

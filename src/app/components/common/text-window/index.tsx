@@ -66,8 +66,8 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.state = {
             isCursorVisible: true,
 
-            foreground: TextWindowColors.White,
-            background: TextWindowColors.Black,
+            foreground: props.engine.libraries.TextWindow.foreground,
+            background: props.engine.libraries.TextWindow.background,
 
             inputBuffer: "",
             inputKind: undefined,
@@ -95,7 +95,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
             }),
             this.props.engine.libraries.TextWindow.producedOutput.subscribe(() => {
                 this.appendOutput({
-                    text: this.props.engine.buffer.readValue().toValueString(),
+                    text: this.props.engine.libraries.TextWindow.readValueFromBuffer().toValueString(),
                     color: this.state.foreground
                 });
             }),
@@ -167,7 +167,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                     default: return;
                 }
 
-                this.props.engine.buffer.writeValue(input);
+                this.props.engine.libraries.TextWindow.writeValueToBuffer(input);
                 this.setState({
                     inputBuffer: "",
                     inputKind: undefined

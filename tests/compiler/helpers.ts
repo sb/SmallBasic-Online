@@ -1,25 +1,9 @@
-import { InstructionKind, BaseInstruction } from "../../src/compiler/models/instructions";
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../src/compiler/execution-engine";
-import { NumberValue } from "../../src/compiler/runtime/values/number-value";
-import { StringValue } from "../../src/compiler/runtime/values/string-value";
 import "jasmine";
 import { Compilation } from "../../src/compiler/compilation";
-import { Diagnostic, ErrorCode } from "../../src/compiler/utils/diagnostics";
-
-export function serializeInstructions(text: string): string {
-    verifyCompilationErrors(text);
-
-    const emitResult = new Compilation(text).emit();
-    let modules: { [key: string]: ReadonlyArray<BaseInstruction> } = {
-        "Main": emitResult.mainModule,
-        ...emitResult.subModules
-    };
-
-    return Object.keys(modules).map(subModule => `
-[${subModule}]
-
-${modules[subModule].map((instruction, i) => `${i}: ${InstructionKind[instruction.kind]} - ${JSON.stringify(instruction)}`).join("\n")}`).join("\n");
-}
+import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
+import { NumberValue } from "../../src/compiler/runtime/values/number-value";
+import { StringValue } from "../../src/compiler/runtime/values/string-value";
 
 export function verifyRuntimeError(text: string, exception: Diagnostic): void {
     verifyCompilationErrors(text);
@@ -30,7 +14,7 @@ export function verifyRuntimeError(text: string, exception: Diagnostic): void {
         engine.execute(ExecutionMode.RunToEnd);
 
         if (engine.state === ExecutionState.BlockedOnOutput) {
-            engine.buffer.readValue();
+            engine.libraries.TextWindow.readValueFromBuffer();
         }
     }
 
@@ -60,7 +44,7 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
                 } else if (typeof input[inputIndex] !== "number") {
                     throw new Error(`Expected input entry '${input[inputIndex]} to be a number`);
                 } else {
-                    engine.buffer.writeValue(new NumberValue(input[inputIndex++] as number));
+                    engine.libraries.TextWindow.writeValueToBuffer(new NumberValue(input[inputIndex++] as number));
                     break;
                 }
             }
@@ -70,7 +54,7 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
                 } else if (typeof input[inputIndex] !== "string") {
                     throw new Error(`Expected input entry '${input[inputIndex]} to be a string`);
                 } else {
-                    engine.buffer.writeValue(new StringValue(input[inputIndex++] as string));
+                    engine.libraries.TextWindow.writeValueToBuffer(new StringValue(input[inputIndex++] as string));
                     break;
                 }
             }
@@ -80,7 +64,7 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
                 } else if (typeof output[outputIndex] !== "string") {
                     throw new Error(`Expected output entry '${output[outputIndex]} to be a string`);
                 } else {
-                    expect((engine.buffer.readValue() as StringValue).value).toBe(output[outputIndex++]);
+                    expect((engine.libraries.TextWindow.readValueFromBuffer() as StringValue).value).toBe(output[outputIndex++]);
                     break;
                 }
             }
@@ -99,6 +83,8 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
     }
 
     expect(engine.state).toBe(ExecutionState.Terminated);
+    expect(engine.evaluationStack.length).toBe(0);
+
     expect(inputIndex).toBe(input.length, "Expected number of input entries to match");
     expect(outputIndex).toBe(output.length, "Expected number of output entries to match");
 

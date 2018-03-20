@@ -4,6 +4,7 @@ import { EditorResources } from "../../../strings/editor";
 
 import "./style.css";
 
+const libraries: SupportedLibraries = new SupportedLibraries();
 const DocumentationIcon = require("./header.png");
 
 interface DocumentationProps {
@@ -15,7 +16,6 @@ interface DocumentationState {
 }
 
 export class DocumentationComponent extends React.Component<DocumentationProps, DocumentationState> {
-    private _libraries: SupportedLibraries = new SupportedLibraries();
 
     public constructor(props: DocumentationProps) {
         super(props);
@@ -59,8 +59,8 @@ export class DocumentationComponent extends React.Component<DocumentationProps, 
                 <div className="sidebar-component-icon" style={{ backgroundImage: `url("${DocumentationIcon}")` }}></div>
                 <div className="sidebar-component-label">{EditorResources.Documentation_Header}</div>
                 <ul>
-                    {Object.keys(this._libraries).map(libraryName => {
-                        const library = this._libraries[libraryName];
+                    {Object.keys(libraries).map(libraryName => {
+                        const library = libraries[libraryName];
                         return (
                             <li className="library-class" key={libraryName}>
                                 <p className="library-class-name" onClick={(() => this.libraryClicked(libraryName)).bind(this)}>{libraryName}</p>

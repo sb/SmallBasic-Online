@@ -12,7 +12,7 @@ TextWindow.WriteLine(Clock.Time)`);
 
         engine.execute(ExecutionMode.RunToEnd);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect((engine.buffer.readValue() as StringValue).value).toMatch(/[0-9]{2}:[0-9]{2}:[0-9]{2}/);
+        expect((engine.libraries.TextWindow.readValueFromBuffer() as StringValue).value).toMatch(/[0-9]{2}:[0-9]{2}:[0-9]{2}/);
 
         engine.execute(ExecutionMode.RunToEnd);
         expect(engine.state).toBe(ExecutionState.Terminated);

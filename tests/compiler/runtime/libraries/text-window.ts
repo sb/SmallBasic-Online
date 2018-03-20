@@ -1,6 +1,5 @@
 import "jasmine";
-import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
-import { Diagnostic, ErrorCode } from "../../../../src/compiler/utils/diagnostics";
+import { verifyRuntimeResult } from "../../helpers";
 
 describe("Compiler.Runtime.Libraries.TextWindow", () => {
     it("no input or output", () => {
@@ -92,39 +91,59 @@ TextWindow.WriteLine(TextWindow.BackgroundColor)`,
             ]);
     });
 
-    it("terminates with error when setting background color to invalid number", () => {
-        verifyRuntimeError(`
-TextWindow.BackgroundColor = 44`,
-            // TextWindow.BackgroundColor = 44
-            //                              ^^
-            // This is not a supported color name or number: '44'
-            new Diagnostic(ErrorCode.UnsupportedTextWindowColor, { line: 1, start: 29, end: 31 }, "44"));
+    it("uses the default when an invalid number is used for background color", () => {
+        verifyRuntimeResult(`
+TextWindow.BackgroundColor  = "Red"
+TextWindow.WriteLine(TextWindow.BackgroundColor)
+TextWindow.BackgroundColor  = 9455
+TextWindow.WriteLine(TextWindow.BackgroundColor)
+`,
+            [],
+            [
+                "Red",
+                "Black"
+            ]);
     });
 
-    it("terminates with error when setting foreground color to invalid number", () => {
-        verifyRuntimeError(`
-TextWindow.ForegroundColor = 44`,
-            // TextWindow.ForegroundColor = 44
-            //                              ^^
-            // This is not a supported color name or number: '44'
-            new Diagnostic(ErrorCode.UnsupportedTextWindowColor, { line: 1, start: 29, end: 31 }, "44"));
+    it("uses the default when an invalid string is used for background color", () => {
+        verifyRuntimeResult(`
+TextWindow.BackgroundColor  = "Red"
+TextWindow.WriteLine(TextWindow.BackgroundColor)
+TextWindow.BackgroundColor  = "invalid"
+TextWindow.WriteLine(TextWindow.BackgroundColor)
+`,
+            [],
+            [
+                "Red",
+                "Black"
+            ]);
     });
 
-    it("terminates with error when setting background color to invalid string", () => {
-        verifyRuntimeError(`
-TextWindow.BackgroundColor = "Nothing"`,
-            // TextWindow.BackgroundColor = "Nothing"
-            //                              ^^^^^^^^^
-            // This is not a supported color name or number: 'Nothing'
-            new Diagnostic(ErrorCode.UnsupportedTextWindowColor, { line: 1, start: 29, end: 38 }, "Nothing"));
+    it("uses the default when an invalid number is used for foreground color", () => {
+        verifyRuntimeResult(`
+TextWindow.ForegroundColor  = "Red"
+TextWindow.WriteLine(TextWindow.ForegroundColor)
+TextWindow.ForegroundColor  = 9455
+TextWindow.WriteLine(TextWindow.ForegroundColor)
+`,
+            [],
+            [
+                "Red",
+                "White"
+            ]);
     });
 
-    it("terminates with error when setting foreground color to invalid string", () => {
-        verifyRuntimeError(`
-TextWindow.ForegroundColor = "Nothing"`,
-            // TextWindow.ForegroundColor = "Nothing"
-            //                              ^^^^^^^^^
-            // This is not a supported color name or number: 'Nothing'
-            new Diagnostic(ErrorCode.UnsupportedTextWindowColor, { line: 1, start: 29, end: 38 }, "Nothing"));
+    it("uses the default when an invalid string is used for foreground color", () => {
+        verifyRuntimeResult(`
+TextWindow.ForegroundColor  = "Red"
+TextWindow.WriteLine(TextWindow.ForegroundColor)
+TextWindow.ForegroundColor  = "invalid"
+TextWindow.WriteLine(TextWindow.ForegroundColor)
+`,
+            [],
+            [
+                "Red",
+                "White"
+            ]);
     });
 });

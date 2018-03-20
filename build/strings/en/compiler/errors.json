@@ -10,7 +10,7 @@
     "UnexpectedCommand_ExpectingCommand": "Unexpected command of type '{0}'. I was expecting a command of type '{1}'.",
     "UnexpectedEOF_ExpectingCommand": "Unexpected end of file. I was expecting a command of type '{0}'.",
     "CannotDefineASubInsideAnotherSub": "You cannot define a sub-module inside another sub-module.",
-    "CannotHaveCommandWithoutPreviousCommand": "You cannot write '{0}' without an earlier '{1}'.",
+    "CannotHaveCommandWithoutPreviousCommand": "You cannot write a command of type '{0}' without an earlier command of type '{1}'.",
     "TwoSubModulesWithTheSameName": "Another sub-module with the same name '{0}' is already defined.",
     "LabelDoesNotExist": "No label with the name '{0}' exists in the same module.",
     "UnassignedExpressionStatement": "This value is not assigned to anything. Did you mean to assign it to a variable?",
@@ -28,6 +28,5 @@
     "CannotUseOperatorWithAnArray": "You cannot use the operator '{0}' with an array value",
     "CannotUseOperatorWithAString": "You cannot use the operator '{0}' with a string value",
     "CannotDivideByZero": "You cannot divide by zero. Please consider checking the divisor before dividing.",
-    "UnsupportedTextWindowColor": "This is not a supported color name or number: '{0}'",
     "PoppingAnEmptyStack": "This stack has no elements to be popped"
 }

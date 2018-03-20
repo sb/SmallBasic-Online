@@ -2,24 +2,23 @@ import { ExecutionEngine, ExecutionMode } from "./../execution-engine";
 import { TextWindowLibrary } from "./libraries/text-window";
 import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
-import { BaseInstruction } from "../models/instructions";
 import { ArrayLibrary } from "./libraries/array";
 import { StackLibrary } from "./libraries/stack";
-
-type LibraryExecuteSignature = (engine: ExecutionEngine, mode: ExecutionMode, instruction: BaseInstruction) => void;
+import { TextRange } from "../syntax/nodes/syntax-nodes";
+import { BaseValue } from "./values/base-value";
 
 export interface LibraryMethodDefinition {
     readonly description: string;
     readonly parameters: { [name: string]: string };
     readonly returnsValue: boolean;
-    readonly execute: LibraryExecuteSignature;
+    readonly execute: (engine: ExecutionEngine, mode: ExecutionMode, range: TextRange) => boolean;
 }
 
 export interface LibraryPropertyDefinition {
     readonly description: string;
 
-    readonly getter?: LibraryExecuteSignature;
-    readonly setter?: LibraryExecuteSignature;
+    readonly getter?: () => BaseValue;
+    readonly setter?: (value: BaseValue) => void;
 }
 
 export interface LibraryTypeDefinition {

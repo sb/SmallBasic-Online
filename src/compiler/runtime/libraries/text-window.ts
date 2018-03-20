@@ -1,12 +1,10 @@
 import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
-import { ValueKind } from "../values/base-value";
+import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
 import { DocumentationResources } from "../../strings/documentation";
-import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
-import { StorePropertyInstruction, BaseInstruction } from "../../models/instructions";
-import { ExecutionState, ExecutionEngine, ExecutionMode } from "../../execution-engine";
-import { PubSubPayloadChannel, PubSubChannel } from "../notifications";
+import { ExecutionState, ExecutionEngine } from "../../execution-engine";
+import { PubSubPayloadChannel, PubSubChannel } from "../../notifications";
 
 export enum TextWindowColors {
     Black = 0,
@@ -27,7 +25,149 @@ export enum TextWindowColors {
     White = 15
 }
 
+const defaultForegroundColor = TextWindowColors.White;
+const defaultBackgroundColor = TextWindowColors.Black;
+
 export class TextWindowLibrary implements LibraryTypeDefinition {
+    private bufferValue?: BaseValue;
+    private _foregroundValue: TextWindowColors;
+    private _backgroundValue: TextWindowColors;
+
+    private _read: LibraryMethodDefinition = {
+        description: DocumentationResources.TextWindow_Read,
+        parameters: {},
+        returnsValue: true,
+        execute: (engine: ExecutionEngine) => {
+            if (this.bufferHasValue()) {
+                const value = this.readValueFromBuffer();
+                if (value.kind !== ValueKind.String) {
+                    throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
+                }
+
+                engine.state = ExecutionState.Running;
+                engine.pushEvaluationStack(value);
+                return true;
+            } else {
+                engine.state = ExecutionState.BlockedOnStringInput;
+                this.blockedOnInput.publish(ValueKind.String);
+                return false;
+            }
+        }
+    };
+
+    private _readNumber: LibraryMethodDefinition = {
+        description: DocumentationResources.TextWindow_ReadNumber,
+        parameters: {},
+        returnsValue: true,
+        execute: (engine: ExecutionEngine) => {
+            if (this.bufferHasValue()) {
+                const value = this.readValueFromBuffer();
+                if (value.kind !== ValueKind.Number) {
+                    throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
+                }
+
+                engine.pushEvaluationStack(value);
+                engine.state = ExecutionState.Running;
+                return true;
+            } else {
+                engine.state = ExecutionState.BlockedOnNumberInput;
+                this.blockedOnInput.publish(ValueKind.Number);
+                return false;
+            }
+        }
+    };
+
+    private _writeLine: LibraryMethodDefinition = {
+        description: DocumentationResources.TextWindow_WriteLine,
+        parameters: {
+            data: DocumentationResources.TextWindow_WriteLine_Data
+        },
+        returnsValue: false,
+        execute: (engine: ExecutionEngine) => {
+            if (engine.state === ExecutionState.BlockedOnOutput) {
+                if (!this.bufferHasValue()) {
+                    engine.state = ExecutionState.Running;
+                    return true;
+                }
+            } else {
+                this.writeValueToBuffer(new StringValue(engine.popEvaluationStack().toValueString()));
+                engine.state = ExecutionState.BlockedOnOutput;
+                this.producedOutput.publish();
+            }
+
+            return false;
+        }
+    };
+
+    private _foregroundColor: LibraryPropertyDefinition = {
+        description: DocumentationResources.TextWindow_ForegroundColor,
+        getter: () => {
+            return new StringValue(TextWindowColors[this._foregroundValue]);
+        },
+        setter: (value: BaseValue) => {
+            let selectedColor = defaultForegroundColor;
+
+            switch (value.kind) {
+                case ValueKind.Number: {
+                    const numberValue = (value as NumberValue).value;
+                    if (TextWindowColors[numberValue]) {
+                        selectedColor = numberValue;
+                    }
+                    break;
+                }
+                case ValueKind.String: {
+                    const stringValue = (value as StringValue).value.toLowerCase();
+                    for (let color in TextWindowColors) {
+                        if (color.toLowerCase() === stringValue) {
+                            selectedColor = <any>TextWindowColors[color];
+                        }
+                    }
+                    break;
+                }
+            }
+
+            this._foregroundValue = selectedColor;
+            this.foregroundColorChanged.publish(this._foregroundValue);
+        }
+    };
+
+    private _backgroundColor: LibraryPropertyDefinition = {
+        description: DocumentationResources.TextWindow_BackgroundColor,
+        getter: () => {
+            return new StringValue(TextWindowColors[this._backgroundValue]);
+        },
+        setter: (value: BaseValue) => {
+            let selectedColor = defaultBackgroundColor;
+
+            switch (value.kind) {
+                case ValueKind.Number: {
+                    const numberValue = (value as NumberValue).value;
+                    if (TextWindowColors[numberValue]) {
+                        selectedColor = numberValue;
+                    }
+                    break;
+                }
+                case ValueKind.String: {
+                    const stringValue = (value as StringValue).value.toLowerCase();
+                    for (let color in TextWindowColors) {
+                        if (color.toLowerCase() === stringValue) {
+                            selectedColor = <any>TextWindowColors[color];
+                        }
+                    }
+                    break;
+                }
+            }
+
+            this._backgroundValue = selectedColor;
+            this.backgroundColorChanged.publish(this._backgroundValue);
+        }
+    };
+
+    public constructor() {
+        this._foregroundValue = defaultForegroundColor;
+        this._backgroundValue = defaultBackgroundColor;
+    }
+
     public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
     public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
 
@@ -36,142 +176,44 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
 
     public readonly description: string = DocumentationResources.TextWindow;
 
-    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
-        Read: {
-            description: DocumentationResources.TextWindow_Read,
-            parameters: {},
-            returnsValue: true,
-            execute: (engine: ExecutionEngine) => {
-                if (engine.buffer.hasValue()) {
-                    const value = engine.buffer.readValue();
-                    if (value.kind !== ValueKind.String) {
-                        throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
-                    }
+    public get foreground(): TextWindowColors {
+        return this._foregroundValue;
+    }
 
-                    engine.evaluationStack.push(value);
-                    engine.moveToNextInstruction();
+    public get background(): TextWindowColors {
+        return this._backgroundValue;
+    }
 
-                    engine.state = ExecutionState.Running;
-                } else {
-                    engine.state = ExecutionState.BlockedOnStringInput;
-                    this.blockedOnInput.publish(ValueKind.String);
-                }
-            }
-        },
-        ReadNumber: {
-            description: DocumentationResources.TextWindow_ReadNumber,
-            parameters: {},
-            returnsValue: true,
-            execute: (engine: ExecutionEngine) => {
-                if (engine.buffer.hasValue()) {
-                    const value = engine.buffer.readValue();
-                    if (value.kind !== ValueKind.Number) {
-                        throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
-                    }
+    public bufferHasValue(): boolean {
+        return !!this.bufferValue;
+    }
 
-                    engine.evaluationStack.push(value);
-                    engine.moveToNextInstruction();
-
-                    engine.state = ExecutionState.Running;
-                } else {
-                    engine.state = ExecutionState.BlockedOnNumberInput;
-                    this.blockedOnInput.publish(ValueKind.Number);
-                }
-            }
-        },
-        WriteLine: {
-            description: DocumentationResources.TextWindow_WriteLine,
-            parameters: {
-                data: DocumentationResources.TextWindow_WriteLine_Data
-            },
-            returnsValue: false,
-            execute: (engine: ExecutionEngine) => {
-                if (engine.state === ExecutionState.BlockedOnOutput) {
-                    if (!engine.buffer.hasValue()) {
-                        engine.state = ExecutionState.Running;
-                        engine.moveToNextInstruction();
-                    }
-                } else {
-                    engine.buffer.writeValue(new StringValue(engine.evaluationStack.pop()!.toValueString()));
-                    engine.state = ExecutionState.BlockedOnOutput;
-                    this.producedOutput.publish();
-                }
-            }
+    public writeValueToBuffer(value: BaseValue): void {
+        if (this.bufferValue) {
+            throw new Error(`Existing value not read yet`);
         }
+
+        this.bufferValue = value;
+    }
+
+    public readValueFromBuffer(): BaseValue {
+        if (!this.bufferValue) {
+            throw new Error(`No value exists in buffer`);
+        }
+
+        const value = this.bufferValue;
+        this.bufferValue = undefined;
+        return value;
+    }
+
+    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
+        Read: this._read,
+        ReadNumber: this._readNumber,
+        WriteLine: this._writeLine
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
-        ForegroundColor: {
-            description: DocumentationResources.TextWindow_ForegroundColor,
-            getter: (engine: ExecutionEngine) => {
-                engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.foreground]));
-                engine.moveToNextInstruction();
-            },
-            setter: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
-                const color = engine.evaluationStack.pop()!;
-                engine.moveToNextInstruction();
-
-                switch (color.kind) {
-                    case ValueKind.Number: {
-                        const numberValue = (color as NumberValue).value;
-                        if (TextWindowColors[numberValue]) {
-                            engine.buffer.foreground = numberValue;
-                            this.foregroundColorChanged.publish(engine.buffer.foreground);
-                            return;
-                        }
-                        break;
-                    }
-                    case ValueKind.String: {
-                        const stringValue = (color as StringValue).value.toLowerCase();
-                        for (let color in TextWindowColors) {
-                            if (color.toLowerCase() === stringValue) {
-                                engine.buffer.foreground = <any>TextWindowColors[color];
-                                this.foregroundColorChanged.publish(engine.buffer.foreground);
-                                return;
-                            }
-                        }
-                        break;
-                    }
-                }
-
-                engine.terminate(new Diagnostic(ErrorCode.UnsupportedTextWindowColor, (instruction as StorePropertyInstruction).sourceRange, color.toValueString()));
-            }
-        },
-        BackgroundColor: {
-            description: DocumentationResources.TextWindow_BackgroundColor,
-            getter: (engine: ExecutionEngine) => {
-                engine.evaluationStack.push(new StringValue(TextWindowColors[engine.buffer.background]));
-                engine.moveToNextInstruction();
-            },
-            setter: (engine: ExecutionEngine, _: ExecutionMode, instruction: BaseInstruction) => {
-                const color = engine.evaluationStack.pop()!;
-                engine.moveToNextInstruction();
-
-                switch (color.kind) {
-                    case ValueKind.Number: {
-                        const numberValue = (color as NumberValue).value;
-                        if (TextWindowColors[numberValue]) {
-                            engine.buffer.background = numberValue;
-                            this.backgroundColorChanged.publish(engine.buffer.background);
-                            return;
-                        }
-                        break;
-                    }
-                    case ValueKind.String: {
-                        const stringValue = (color as StringValue).value.toLowerCase();
-                        for (let color in TextWindowColors) {
-                            if (color.toLowerCase() === stringValue) {
-                                engine.buffer.background = <any>TextWindowColors[color];
-                                this.backgroundColorChanged.publish(engine.buffer.background);
-                                return;
-                            }
-                        }
-                        break;
-                    }
-                }
-
-                engine.terminate(new Diagnostic(ErrorCode.UnsupportedTextWindowColor, (instruction as StorePropertyInstruction).sourceRange, color.toValueString()));
-            }
-        }
+        ForegroundColor: this._foregroundColor,
+        BackgroundColor: this._backgroundColor
     };
 }

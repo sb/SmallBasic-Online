@@ -1,10 +1,10 @@
-import { TokenKind } from "../../compiler/syntax/tokens";
 import { LibraryTypeDefinition, SupportedLibraries } from "../../compiler/runtime/supported-libraries";
 import { Scanner } from "../../compiler/syntax/scanner";
+import { TokenKind } from "../../compiler/syntax/nodes/tokens";
+
+const libraries: SupportedLibraries = new SupportedLibraries();
 
 export class CompletionService implements monaco.languages.CompletionItemProvider {
-    private _libraries: SupportedLibraries = new SupportedLibraries();
-
     public readonly triggerCharacters: string[] = [
         "."
     ];
@@ -24,7 +24,7 @@ export class CompletionService implements monaco.languages.CompletionItemProvide
 
         if (scanner.tokens[i].kind === TokenKind.Dot) {
             if (i > 0 && scanner.tokens[i - 1].kind === TokenKind.Identifier) {
-                const type = this._libraries[scanner.tokens[i - 1].text];
+                const type = libraries[scanner.tokens[i - 1].text];
                 if (type) {
                     return this.getMembers(type);
                 } else {
@@ -35,7 +35,7 @@ export class CompletionService implements monaco.languages.CompletionItemProvide
             }
         } else if (scanner.tokens[i].kind === TokenKind.Identifier) {
             if (i > 1 && scanner.tokens[i - 1].kind === TokenKind.Dot && scanner.tokens[i - 2].kind === TokenKind.Identifier) {
-                const type = this._libraries[scanner.tokens[i - 2].text];
+                const type = libraries[scanner.tokens[i - 2].text];
                 if (type) {
                     return this.getMembers(type, scanner.tokens[i].text);
                 } else {
@@ -50,8 +50,8 @@ export class CompletionService implements monaco.languages.CompletionItemProvide
     }
 
     private getTypes(prefix?: string): monaco.languages.CompletionItem[] {
-        return Object.keys(this._libraries).filter(name => this.startsWith(name, prefix)).map(name => {
-            const type = this._libraries[name];
+        return Object.keys(libraries).filter(name => this.startsWith(name, prefix)).map(name => {
+            const type = libraries[name];
             return {
                 label: name,
                 kind: monaco.languages.CompletionItemKind.Class,

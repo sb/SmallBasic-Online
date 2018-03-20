@@ -1,16 +1,23 @@
 import { ExecutionEngine } from "../../execution-engine";
-import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../models/instructions";
-import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
-import { TokenKindToString } from "../../utils/string-factories";
-import { TokenKind } from "../../syntax/tokens";
+import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../instructions";
+import { Diagnostic, ErrorCode } from "../../diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
+import { Token, TokenKind } from "../../syntax/nodes/tokens";
 
 export class ArrayValue extends BaseValue {
-    public readonly value: { [key: string]: BaseValue };
+    private _values: { [key: string]: BaseValue };
 
-    public constructor(value : { [key: string]: BaseValue } = {}) {
+    public constructor(value: { readonly [key: string]: BaseValue } = {}) {
         super();
-        this.value = value;
+        this._values = value;
+    }
+
+    public get values(): { readonly [key: string]: BaseValue } {
+        return this._values;
+    }
+
+    public setIndex(index: string, value: BaseValue): void {
+        this._values[index] = value;
     }
 
     public toBoolean(): boolean {
@@ -18,7 +25,7 @@ export class ArrayValue extends BaseValue {
     }
 
     public toDebuggerString(): string {
-        return `[${Object.keys(this.value).map(key => `${key}=${this.value[key].toDebuggerString()}`).join(", ")}]`;
+        return `[${Object.keys(this._values).map(key => `${key}=${this._values[key].toDebuggerString()}`).join(", ")}]`;
     }
 
     public toValueString(): string {
@@ -28,7 +35,7 @@ export class ArrayValue extends BaseValue {
     public get kind(): ValueKind {
         return ValueKind.Array;
     }
-    
+
     public tryConvertToNumber(): BaseValue {
         return this;
     }
@@ -53,19 +60,23 @@ export class ArrayValue extends BaseValue {
         return false;
     }
 
-    public add(_: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Plus)));
+    public add(_: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): BaseValue {
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Plus)));
+        return this;
     }
 
-    public subtract(_: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Minus)));
+    public subtract(_: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): BaseValue {
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
+        return this;
     }
 
-    public multiply(_: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Multiply)));
+    public multiply(_: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): BaseValue {
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
+        return this;
     }
 
-    public divide(_: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): void {
-        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, TokenKindToString(TokenKind.Divide)));
+    public divide(_: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): BaseValue {
+        engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Divide)));
+        return this;
     }
 }

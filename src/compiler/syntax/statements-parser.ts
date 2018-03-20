@@ -1,19 +1,19 @@
-import { getCommandRange } from "./text-markers";
-import { CommandSyntaxKindToString } from "../utils/string-factories";
-import { ErrorCode, Diagnostic } from "../utils/diagnostics";
+import { ErrorCode, Diagnostic } from "../diagnostics";
 import {
     BaseStatementSyntax,
-    ElseConditionPartStatementSyntax,
-    ElseIfConditionPartStatementSyntax,
     ForStatementSyntax,
     IfStatementSyntax,
-    StatementSyntaxFactory,
     SubModuleStatementSyntax,
-    WhileStatementSyntax
-} from "../models/syntax-statements";
+    WhileStatementSyntax,
+    LabelStatementSyntax,
+    GoToStatementSyntax,
+    ExpressionStatementSyntax,
+    ElseIfConditionSyntax,
+    IfConditionSyntax,
+    ElseConditionSyntax
+} from "./nodes/statements";
 import {
     BaseCommandSyntax,
-    CommandSyntaxFactory,
     CommandSyntaxKind,
     ElseCommandSyntax,
     ElseIfCommandSyntax,
@@ -27,8 +27,9 @@ import {
     IfCommandSyntax,
     LabelCommandSyntax,
     SubCommandSyntax,
-    WhileCommandSyntax
-} from "../models/syntax-commands";
+    WhileCommandSyntax,
+    MissingCommandSyntax
+} from "./nodes/commands";
 
 export interface ParseTree {
     readonly mainModule: ReadonlyArray<BaseStatementSyntax>;
@@ -58,9 +59,7 @@ export class StatementsParser {
                 case CommandSyntaxKind.Sub: {
                     if (startModuleCommand) {
                         this.eat(current.kind);
-                        diagnostics.push(new Diagnostic(
-                            ErrorCode.CannotDefineASubInsideAnotherSub,
-                            getCommandRange(current)));
+                        diagnostics.push(new Diagnostic(ErrorCode.CannotDefineASubInsideAnotherSub, current.range));
                     } else {
                         this.mainModule.push(...currentModuleStatements);
                         currentModuleStatements = [];
@@ -70,12 +69,8 @@ export class StatementsParser {
                 }
                 case CommandSyntaxKind.EndSub: {
                     if (startModuleCommand) {
-                        const endModuleCommand = this.eat(current.kind);
-
-                        this.subModules.push(StatementSyntaxFactory.SubModule(
-                            startModuleCommand,
-                            currentModuleStatements,
-                            endModuleCommand as EndSubCommandSyntax));
+                        const endModuleCommand = this.eat(current.kind) as EndSubCommandSyntax;
+                        this.subModules.push(new SubModuleStatementSyntax(startModuleCommand, currentModuleStatements, endModuleCommand));
 
                         startModuleCommand = undefined;
                         currentModuleStatements = [];
@@ -83,9 +78,9 @@ export class StatementsParser {
                         this.eat(current.kind);
                         diagnostics.push(new Diagnostic(
                             ErrorCode.CannotHaveCommandWithoutPreviousCommand,
-                            getCommandRange(current),
-                            CommandSyntaxKindToString(CommandSyntaxKind.EndSub),
-                            CommandSyntaxKindToString(CommandSyntaxKind.Sub)));
+                            current.range,
+                            BaseCommandSyntax.toDisplayString(CommandSyntaxKind.EndSub),
+                            BaseCommandSyntax.toDisplayString(CommandSyntaxKind.Sub)));
                     }
                     break;
                 }
@@ -102,7 +97,7 @@ export class StatementsParser {
         if (startModuleCommand) {
             const endModuleCommand = this.eat(CommandSyntaxKind.EndSub);
 
-            this.subModules.push(StatementSyntaxFactory.SubModule(
+            this.subModules.push(new SubModuleStatementSyntax(
                 startModuleCommand,
                 currentModuleStatements,
                 endModuleCommand as EndSubCommandSyntax));
@@ -122,9 +117,9 @@ export class StatementsParser {
                 this.eat(current.kind);
                 this.diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
-                    getCommandRange(current),
-                    CommandSyntaxKindToString(current.kind),
-                    CommandSyntaxKindToString(CommandSyntaxKind.If)));
+                    current.range,
+                    BaseCommandSyntax.toDisplayString(current.kind),
+                    BaseCommandSyntax.toDisplayString(CommandSyntaxKind.If)));
                 return;
             }
             case CommandSyntaxKind.For: {
@@ -134,9 +129,9 @@ export class StatementsParser {
                 this.eat(current.kind);
                 this.diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
-                    getCommandRange(current),
-                    CommandSyntaxKindToString(current.kind),
-                    CommandSyntaxKindToString(CommandSyntaxKind.For)));
+                    current.range,
+                    BaseCommandSyntax.toDisplayString(current.kind),
+                    BaseCommandSyntax.toDisplayString(CommandSyntaxKind.For)));
                 return;
             }
             case CommandSyntaxKind.While: {
@@ -146,22 +141,22 @@ export class StatementsParser {
                 this.eat(current.kind);
                 this.diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
-                    getCommandRange(current),
-                    CommandSyntaxKindToString(current.kind),
-                    CommandSyntaxKindToString(CommandSyntaxKind.While)));
+                    current.range,
+                    BaseCommandSyntax.toDisplayString(current.kind),
+                    BaseCommandSyntax.toDisplayString(CommandSyntaxKind.While)));
                 return;
             }
             case CommandSyntaxKind.Label: {
                 const statement = this.eat(CommandSyntaxKind.Label);
-                return StatementSyntaxFactory.Label(statement as LabelCommandSyntax);
+                return new LabelStatementSyntax(statement as LabelCommandSyntax);
             }
             case CommandSyntaxKind.GoTo: {
                 const statement = this.eat(CommandSyntaxKind.GoTo);
-                return StatementSyntaxFactory.GoTo(statement as GoToCommandSyntax);
+                return new GoToStatementSyntax(statement as GoToCommandSyntax);
             }
             case CommandSyntaxKind.Expression: {
                 const statement = this.eat(CommandSyntaxKind.Expression);
-                return StatementSyntaxFactory.Expression(statement as ExpressionCommandSyntax);
+                return new ExpressionStatementSyntax(statement as ExpressionCommandSyntax);
             }
             default: {
                 throw new Error(`Unexpected command ${CommandSyntaxKind[current.kind]} here`);
@@ -176,8 +171,12 @@ export class StatementsParser {
             CommandSyntaxKind.Else,
             CommandSyntaxKind.EndIf);
 
-        const ifPart = StatementSyntaxFactory.IfConditionPart(ifCommand, ifPartStatements);
-        const elseIfParts: ElseIfConditionPartStatementSyntax[] = [];
+        const ifPart: IfConditionSyntax = {
+            headerCommand: ifCommand,
+            statementsList: ifPartStatements
+        };
+
+        const elseIfParts: ElseIfConditionSyntax[] = [];
 
         while (this.isNext(CommandSyntaxKind.ElseIf)) {
             const elseIfCommand = this.eat(CommandSyntaxKind.ElseIf) as ElseIfCommandSyntax;
@@ -186,10 +185,13 @@ export class StatementsParser {
                 CommandSyntaxKind.Else,
                 CommandSyntaxKind.EndIf);
 
-            elseIfParts.push(StatementSyntaxFactory.ElseIfConditionPart(elseIfCommand, statements));
+            elseIfParts.push({
+                headerCommand: elseIfCommand,
+                statementsList: statements
+            });
         }
 
-        let elsePart: ElseConditionPartStatementSyntax | undefined;
+        let elsePart: ElseConditionSyntax | undefined;
         if (this.isNext(CommandSyntaxKind.Else)) {
             const elseCommand = this.eat(CommandSyntaxKind.Else) as ElseCommandSyntax;
             const statements = this.parseStatementsExcept(
@@ -197,11 +199,14 @@ export class StatementsParser {
                 CommandSyntaxKind.Else,
                 CommandSyntaxKind.EndIf);
 
-            elsePart = StatementSyntaxFactory.ElseConditionPart(elseCommand, statements);
+            elsePart = {
+                headerCommand: elseCommand,
+                statementsList: statements
+            };
         }
 
         let endIfPart = this.eat(CommandSyntaxKind.EndIf) as EndIfCommandSyntax;
-        return StatementSyntaxFactory.If(ifPart, elseIfParts, elsePart, endIfPart);
+        return new IfStatementSyntax(ifPart, elseIfParts, elsePart, endIfPart);
     }
 
     private parseForStatement(): ForStatementSyntax {
@@ -209,7 +214,7 @@ export class StatementsParser {
         const statements = this.parseStatementsExcept(CommandSyntaxKind.EndFor);
         const endForCommand = this.eat(CommandSyntaxKind.EndFor) as EndForCommandSyntax;
 
-        return StatementSyntaxFactory.For(forCommand, statements, endForCommand);
+        return new ForStatementSyntax(forCommand, statements, endForCommand);
     }
 
     private parseWhileStatement(): WhileStatementSyntax {
@@ -217,7 +222,7 @@ export class StatementsParser {
         const statements = this.parseStatementsExcept(CommandSyntaxKind.EndWhile);
         const endWhileCommand = this.eat(CommandSyntaxKind.EndWhile) as EndWhileCommandSyntax;
 
-        return StatementSyntaxFactory.While(whileCommand, statements, endWhileCommand);
+        return new WhileStatementSyntax(whileCommand, statements, endWhileCommand);
     }
 
     private parseStatementsExcept(...kinds: CommandSyntaxKind[]): BaseStatementSyntax[] {
@@ -256,21 +261,20 @@ export class StatementsParser {
                 return current;
             }
             else {
-                const range = getCommandRange(current);
                 this.diagnostics.push(new Diagnostic(
                     ErrorCode.UnexpectedCommand_ExpectingCommand,
-                    range,
-                    CommandSyntaxKindToString(current.kind),
-                    CommandSyntaxKindToString(kind)));
-                return CommandSyntaxFactory.Missing(range, kind);
+                    current.range,
+                    BaseCommandSyntax.toDisplayString(current.kind),
+                    BaseCommandSyntax.toDisplayString(kind)));
+                return new MissingCommandSyntax(kind, current.range);
             }
         } else {
-            const range = getCommandRange(this.commands[this.commands.length - 1]);
+            const range = this.commands[this.commands.length - 1].range;
             this.diagnostics.push(new Diagnostic(
                 ErrorCode.UnexpectedEOF_ExpectingCommand,
                 range,
-                CommandSyntaxKindToString(kind)));
-            return CommandSyntaxFactory.Missing(range, kind);
+                BaseCommandSyntax.toDisplayString(kind)));
+            return new MissingCommandSyntax(kind, range);
         }
     }
 }
