@@ -1,6 +1,6 @@
 {
-  "name": "superbasic",
-  "title": "SuperBasic",
+  "name": "smallbasic-online",
+  "title": "SmallBasic-Online",
   "version": "1.0.0",
   "private": true,
   "description": "An open-source IDE/runtime for the Small Basic programming language.",
@@ -8,7 +8,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/OmarTawfik/SuperBasic.git"
+    "url": "https://github.com/sb/SmallBasic-Online.git"
   },
   "scripts": {
     "gulp": "node node_modules/gulp/bin/gulp.js"

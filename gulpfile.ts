@@ -59,7 +59,7 @@ gulp.task("package", ["release"], () => {
         .then(() => helpers.rimrafToPromise("./out/installers"))
         .then(() => new Promise<void>((resolve, reject) => {
             const config = {
-                productName: "SuperBasic",
+                productName: "SmallBasic-Online",
                 directories: {
                     app: "./out/electron",
                     output: "./out/installers"
