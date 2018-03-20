@@ -11,7 +11,7 @@ import { HashRouter, Route, Switch, Redirect } from "react-router-dom";
 import { Provider } from "react-redux";
 import { Compilation } from "../compiler/compilation";
 
-window.document.title = "SuperBasic";
+window.document.title = "SmallBasic-Online";
 
 const initialState: AppState = {
     compilation: new Compilation([
