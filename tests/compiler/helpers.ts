@@ -1,9 +1,9 @@
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../src/compiler/execution-engine";
-import { NumberValue } from "../../src/compiler/runtime/values/number-value";
-import { StringValue } from "../../src/compiler/runtime/values/string-value";
 import "jasmine";
 import { Compilation } from "../../src/compiler/compilation";
 import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
+import { NumberValue } from "../../src/compiler/runtime/values/number-value";
+import { StringValue } from "../../src/compiler/runtime/values/string-value";
 
 export function verifyRuntimeError(text: string, exception: Diagnostic): void {
     verifyCompilationErrors(text);
@@ -83,6 +83,8 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
     }
 
     expect(engine.state).toBe(ExecutionState.Terminated);
+    expect(engine.evaluationStack.length).toBe(0);
+
     expect(inputIndex).toBe(input.length, "Expected number of input entries to match");
     expect(outputIndex).toBe(output.length, "Expected number of output entries to match");
 

@@ -60,19 +60,23 @@ export class ArrayValue extends BaseValue {
         return false;
     }
 
-    public add(_: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void {
+    public add(_: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): BaseValue {
         engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Plus)));
+        return this;
     }
 
-    public subtract(_: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
+    public subtract(_: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): BaseValue {
         engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
+        return this;
     }
 
-    public multiply(_: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): void {
+    public multiply(_: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): BaseValue {
         engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
+        return this;
     }
 
-    public divide(_: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): void {
+    public divide(_: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): BaseValue {
         engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Divide)));
+        return this;
     }
 }

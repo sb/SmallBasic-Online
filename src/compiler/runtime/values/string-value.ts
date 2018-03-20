@@ -66,54 +66,51 @@ export class StringValue extends BaseValue {
         }
     }
 
-    public add(other: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): void {
+    public add(other: BaseValue, engine: ExecutionEngine, instruction: AddInstruction): BaseValue {
         const thisConverted = this.tryConvertToNumber();
         if (thisConverted.tryConvertToNumber().kind !== ValueKind.String) {
             return thisConverted.add(other, engine, instruction);
         }
 
-        let result: BaseValue | undefined;
         other = other.tryConvertToNumber();
-
         switch (other.kind) {
             case ValueKind.String:
-                result = new StringValue(this.value + (other as StringValue).value);
-                break;
+                return new StringValue(this.value + (other as StringValue).value);
             case ValueKind.Number:
-                result = new StringValue(this.value + (other as NumberValue).value.toString());
-                break;
+                return new StringValue(this.value + (other as NumberValue).value.toString());
             case ValueKind.Array:
                 engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, instruction.sourceRange, Token.toDisplayString(TokenKind.Plus)));
-                return;
+                return this;
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[other.kind]}`);
         }
-
-        engine.pushEvaluationStack(result);
     }
 
-    public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): void {
+    public subtract(other: BaseValue, engine: ExecutionEngine, instruction: SubtractInstruction): BaseValue {
         const thisConverted = this.tryConvertToNumber();
         if (thisConverted.tryConvertToNumber().kind === ValueKind.String) {
             engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Minus)));
+            return this;
         } else {
             return thisConverted.subtract(other, engine, instruction);
         }
     }
 
-    public multiply(other: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): void {
+    public multiply(other: BaseValue, engine: ExecutionEngine, instruction: MultiplyInstruction): BaseValue {
         const thisConverted = this.tryConvertToNumber();
         if (thisConverted.tryConvertToNumber().kind === ValueKind.String) {
             engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Multiply)));
+            return this;
         } else {
             return thisConverted.multiply(other, engine, instruction);
         }
     }
 
-    public divide(other: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): void {
+    public divide(other: BaseValue, engine: ExecutionEngine, instruction: DivideInstruction): BaseValue {
         const thisConverted = this.tryConvertToNumber();
         if (thisConverted.tryConvertToNumber().kind === ValueKind.String) {
             engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, instruction.sourceRange, Token.toDisplayString(TokenKind.Divide)));
+            return this;
         } else {
             return thisConverted.divide(other, engine, instruction);
         }

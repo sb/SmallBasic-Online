@@ -342,12 +342,13 @@ export abstract class BaseBinaryInstruction extends BaseInstruction {
     public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
         const rightHandSide = engine.popEvaluationStack();
         const leftHandSide = engine.popEvaluationStack();
+        const result = this.calculateResult(engine, rightHandSide, leftHandSide);
 
-        this.pushResult(engine, rightHandSide, leftHandSide);
+        engine.pushEvaluationStack(result);
         frame.instructionIndex++;
     }
 
-    protected abstract pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void;
+    protected abstract calculateResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue;
 }
 
 export class EqualInstruction extends BaseBinaryInstruction {
@@ -356,11 +357,11 @@ export class EqualInstruction extends BaseBinaryInstruction {
         super(InstructionKind.Equal, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
+    protected calculateResult(_: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
         if (leftHandSide.isEqualTo(rightHandSide)) {
-            engine.pushEvaluationStack(new StringValue(Constants.True));
+            return new StringValue(Constants.True);
         } else {
-            engine.pushEvaluationStack(new StringValue(Constants.False));
+            return new StringValue(Constants.False);
         }
     }
 }
@@ -371,11 +372,11 @@ export class LessThanInstruction extends BaseBinaryInstruction {
         super(InstructionKind.LessThan, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
+    protected calculateResult(_: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
         if (leftHandSide.isLessThan(rightHandSide)) {
-            engine.pushEvaluationStack(new StringValue(Constants.True));
+            return new StringValue(Constants.True);
         } else {
-            engine.pushEvaluationStack(new StringValue(Constants.False));
+            return new StringValue(Constants.False);
         }
     }
 }
@@ -386,11 +387,11 @@ export class GreaterThanInstruction extends BaseBinaryInstruction {
         super(InstructionKind.GreaterThan, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
+    protected calculateResult(_: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
         if (leftHandSide.isGreaterThan(rightHandSide)) {
-            engine.pushEvaluationStack(new StringValue(Constants.True));
+            return new StringValue(Constants.True);
         } else {
-            engine.pushEvaluationStack(new StringValue(Constants.False));
+            return new StringValue(Constants.False);
         }
     }
 }
@@ -401,11 +402,11 @@ export class LessThanOrEqualInstruction extends BaseBinaryInstruction {
         super(InstructionKind.LessThanOrEqual, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
+    protected calculateResult(_: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
         if (leftHandSide.isLessThan(rightHandSide) || leftHandSide.isEqualTo(rightHandSide)) {
-            engine.pushEvaluationStack(new StringValue(Constants.True));
+            return new StringValue(Constants.True);
         } else {
-            engine.pushEvaluationStack(new StringValue(Constants.False));
+            return new StringValue(Constants.False);
         }
     }
 }
@@ -416,11 +417,11 @@ export class GreaterThanOrEqualInstruction extends BaseBinaryInstruction {
         super(InstructionKind.GreaterThanOrEqual, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
+    protected calculateResult(_: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
         if (leftHandSide.isGreaterThan(rightHandSide) || leftHandSide.isEqualTo(rightHandSide)) {
-            engine.pushEvaluationStack(new StringValue(Constants.True));
+            return new StringValue(Constants.True);
         } else {
-            engine.pushEvaluationStack(new StringValue(Constants.False));
+            return new StringValue(Constants.False);
         }
     }
 }
@@ -431,8 +432,8 @@ export class AddInstruction extends BaseBinaryInstruction {
         super(InstructionKind.Add, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
-        leftHandSide.add(rightHandSide, engine, this);
+    protected calculateResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
+        return leftHandSide.add(rightHandSide, engine, this);
     }
 }
 
@@ -442,8 +443,8 @@ export class SubtractInstruction extends BaseBinaryInstruction {
         super(InstructionKind.Subtract, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
-        leftHandSide.subtract(rightHandSide, engine, this);
+    protected calculateResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
+        return leftHandSide.subtract(rightHandSide, engine, this);
     }
 }
 
@@ -453,8 +454,8 @@ export class MultiplyInstruction extends BaseBinaryInstruction {
         super(InstructionKind.Multiply, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
-        leftHandSide.multiply(rightHandSide, engine, this);
+    protected calculateResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
+        return leftHandSide.multiply(rightHandSide, engine, this);
     }
 }
 
@@ -464,8 +465,8 @@ export class DivideInstruction extends BaseBinaryInstruction {
         super(InstructionKind.Divide, range);
     }
 
-    protected pushResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): void {
-        leftHandSide.divide(rightHandSide, engine, this);
+    protected calculateResult(engine: ExecutionEngine, rightHandSide: BaseValue, leftHandSide: BaseValue): BaseValue {
+        return leftHandSide.divide(rightHandSide, engine, this);
     }
 }
 
