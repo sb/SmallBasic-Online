@@ -39,11 +39,6 @@ gulp.task("watch-tests", () => {
 
 gulp.task("release", ["generate-loc-strings"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: true, watch: false }));
 
-gulp.task("deploy", ["generate-models", "generate-loc-strings"], () =>
-    helpers.rimrafToPromise("./out/app")
-        .then(() => gulp.start("build-source-release"))
-        .then(() => { throw ` azure deploy not implemented yet`; }));
-
 gulp.task("package", ["release"], () => {
     const setupConfigPath = "./out/electron/electron-builder-config.json";
     const electronBuilderPath = path.resolve(__dirname, "./node_modules/.bin/electron-builder.cmd");
@@ -79,6 +74,5 @@ gulp.task("package", ["release"], () => {
                 }
             });
         }))
-        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath]))
-        .then(() => { throw `github release not implemented yet`; });
+        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath]));
 });
