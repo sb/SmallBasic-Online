@@ -5,10 +5,10 @@ import { CustomEditor } from "../common/custom-editor";
 import * as React from "react";
 import { EditorResources } from "../../strings/editor";
 import { DocumentationComponent } from "./documentation";
-import { MasterLayout } from "../common/master-layout";
+import { MasterLayoutComponent } from "../common/master-layout";
 import { Modal } from "../common/modal";
 import { AppState, ActionFactory, SetTextAction } from "../../store";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, withRouter } from "react-router";
 import { Dispatch, connect } from "react-redux";
 
 const NewIcon = require("../../content/buttons/new.png");
@@ -28,18 +28,18 @@ interface PropsFromDispatch {
     setStoreText: (text: string) => SetTextAction;
 }
 
-interface PropsFromReact extends RouteComponentProps<PropsFromReact> {
+interface PropsFromReact {
 }
 
-type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact;
+type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact & RouteComponentProps<PropsFromReact>;
 
 interface PresentationalComponentState {
     compilation: Compilation;
 }
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
-    private newModal: Modal;
-    private editor: CustomEditor;
+    private newModal?: Modal = undefined;
+    private editor?: CustomEditor = undefined;
     private clipboard: string | undefined;
 
     public constructor(props: PresentationalComponentProps) {
@@ -52,13 +52,13 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     public render(): JSX.Element {
         return (
             <div>
-                <MasterLayout
+                <MasterLayoutComponent
                     toolbar={[
                         <ToolbarButton
                             title={EditorResources.ToolbarButton_New_Title}
                             description={EditorResources.ToolbarButton_New_Description}
                             image={NewIcon}
-                            onClick={() => this.newModal.open()} />,
+                            onClick={() => this.newModal!.open()} />,
                         <ToolbarDivider />,
                         <ToolbarButton
                             title={EditorResources.ToolbarButton_Cut_Title}
@@ -80,12 +80,12 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                             title={EditorResources.ToolbarButton_Undo_Title}
                             description={EditorResources.ToolbarButton_Undo_Description}
                             image={UndoIcon}
-                            onClick={() => this.editor.undo()} />,
+                            onClick={() => this.editor!.undo()} />,
                         <ToolbarButton
                             title={EditorResources.ToolbarButton_Redo_Title}
                             description={EditorResources.ToolbarButton_Redo_Description}
                             image={RedoIcon}
-                            onClick={() => this.editor.redo()} />,
+                            onClick={() => this.editor!.redo()} />,
                         <ToolbarDivider />,
                         <ToolbarButton
                             title={EditorResources.ToolbarButton_Run_Title}
@@ -123,23 +123,23 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     }
 
     public componentDidMount(): void {
-        this.editor.setDiagnostics(this.state.compilation.diagnostics);
+        this.editor!.setDiagnostics(this.state.compilation.diagnostics);
 
-        this.editor.editor.onDidChangeModelContent(() => {
-            const code = this.editor.editor.getValue();
+        this.editor!.editor.onDidChangeModelContent(() => {
+            const code = this.editor!.editor.getValue();
             this.props.setStoreText(code);
             this.setState({
                 compilation: new Compilation(code)
             });
 
-            this.editor.setDiagnostics(this.state.compilation.diagnostics);
+            this.editor!.setDiagnostics(this.state.compilation.diagnostics);
         });
     }
 
     private onNewModalButtonClick(button: number): void {
         switch (button) {
             case 0:
-                this.editor.editor.setValue("");
+                this.editor!.editor.setValue("");
                 break;
             case 1:
                 // do nothing
@@ -150,24 +150,24 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     }
 
     private onCut(): void {
-        this.clipboard = this.editor.editor.getModel().getValueInRange(this.editor.editor.getSelection());
+        this.clipboard = this.editor!.editor.getModel().getValueInRange(this.editor!.editor.getSelection());
 
-        this.editor.editor.executeEdits("", [{
+        this.editor!.editor.executeEdits("", [{
             identifier: { major: 1, minor: 1 },
-            range: this.editor.editor.getSelection(),
+            range: this.editor!.editor.getSelection(),
             text: "",
             forceMoveMarkers: true
         }]);
     }
 
     private onCopy(): void {
-        this.clipboard = this.editor.editor.getModel().getValueInRange(this.editor.editor.getSelection());
+        this.clipboard = this.editor!.editor.getModel().getValueInRange(this.editor!.editor.getSelection());
     }
 
     private onPaste(): void {
-        this.editor.editor.executeEdits("", [{
+        this.editor!.editor.executeEdits("", [{
             identifier: { major: 1, minor: 1 },
-            range: this.editor.editor.getSelection(),
+            range: this.editor!.editor.getSelection(),
             text: this.clipboard || "",
             forceMoveMarkers: true
         }]);
@@ -186,4 +186,4 @@ function mapDispatchToProps(dispatch: Dispatch<AppState>): PropsFromDispatch {
     };
 }
 
-export const EditorComponent = connect(mapStateToProps, mapDispatchToProps)(PresentationalComponent as any);
+export const EditorComponent = connect<PropsFromState, PropsFromDispatch, PropsFromReact, AppState>(mapStateToProps, mapDispatchToProps)(withRouter(PresentationalComponent as any));
