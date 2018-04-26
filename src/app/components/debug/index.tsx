@@ -1,8 +1,8 @@
-import { MasterLayout } from "../common/master-layout";
+import { MasterLayoutComponent } from "../common/master-layout";
 import { ToolbarButton } from "../common/toolbar-button";
 import * as React from "react";
 import { EditorResources } from "../../strings/editor";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, withRouter } from "react-router";
 import { Compilation } from "../../../compiler/compilation";
 import { AppState } from "../../store";
 import { Dispatch, connect } from "react-redux";
@@ -25,10 +25,10 @@ interface PropsFromState {
 interface PropsFromDispatch {
 }
 
-interface PropsFromReact extends RouteComponentProps<PropsFromReact> {
+interface PropsFromReact {
 }
 
-type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact;
+type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact & RouteComponentProps<PropsFromReact>;
 
 interface PresentationalComponentState {
     mode?: ExecutionMode;
@@ -63,7 +63,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
     public render(): JSX.Element {
         return (
-            <MasterLayout
+            <MasterLayoutComponent
                 toolbar={[
                     <ToolbarButton
                         title={EditorResources.ToolbarButton_Run_Title}
@@ -149,4 +149,4 @@ function mapDispatchToProps(_: Dispatch<AppState>): PropsFromDispatch {
     };
 }
 
-export const DebugComponent = connect(mapStateToProps, mapDispatchToProps)(PresentationalComponent as any);
+export const DebugComponent = connect<PropsFromState, PropsFromDispatch, PropsFromReact, AppState>(mapStateToProps, mapDispatchToProps)(withRouter(PresentationalComponent as any));

@@ -12,17 +12,31 @@ body {
 
 .toolbar {
     height: auto;
-    display: flex;
-    flex-flow: row wrap;
     margin-bottom: 20px;
     min-width: 200px;
+    display: flex;
+}
+
+.toolbar-buttons {
+    width: 100%;
+    display: flex;
+    flex-flow: row wrap;
+}
+
+.toolbar-logo {
+    float: right;
+    cursor: pointer;
+    min-width: 224px;
+    min-height: 80px;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    background-image: url('../../../content/applogo.png');
 }
 
 .full-container {
     display: flex;
     flex-flow: column;
     position: relative;
-
     height: 600px;
 }
 
@@ -30,7 +44,6 @@ body {
     display: flex;
     flex-flow: column;
     position: relative;
-
     float: left;
     width: calc(60% - 30px);
     height: 600px;
@@ -40,7 +53,6 @@ body {
     display: flex;
     flex-flow: column;
     position: relative;
-
     float: right;
     width: calc(40% - 30px);
     height: 600px;

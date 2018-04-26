@@ -1,8 +1,8 @@
-import { MasterLayout } from "../common/master-layout";
+import { MasterLayoutComponent } from "../common/master-layout";
 import { ToolbarButton } from "../common/toolbar-button";
 import * as React from "react";
 import { EditorResources } from "../../strings/editor";
-import { RouteComponentProps } from "react-router";
+import { RouteComponentProps, withRouter } from "react-router";
 import { Compilation } from "../../../compiler/compilation";
 import { AppState } from "../../store";
 import { Dispatch, connect } from "react-redux";
@@ -18,29 +18,29 @@ interface PropsFromState {
 interface PropsFromDispatch {
 }
 
-interface PropsFromReact extends RouteComponentProps<PropsFromReact> {
+interface PropsFromReact {
 }
 
-type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact;
+type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact & RouteComponentProps<PropsFromReact>;
 
 interface PresentationalComponentState {
     engine: ExecutionEngine;
 }
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
-    private isAlreadyMounted: boolean;
+    private isAlreadyMounted: boolean = false;
 
-    public constructor(props: PresentationalComponentProps) {
-        super(props);
+        public constructor(props: PresentationalComponentProps) {
+            super(props);
 
-        if (!this.props.compilation.isReadyToRun) {
-            this.props.history.push("/editor");
+            if (!this.props.compilation.isReadyToRun) {
+                this.props.history.push("/editor");
+            }
+
+            this.state = {
+                engine: new ExecutionEngine(this.props.compilation)
+            };
         }
-
-        this.state = {
-            engine: new ExecutionEngine(this.props.compilation)
-        };
-    }
 
     public componentDidMount(): void {
         this.isAlreadyMounted = true;
@@ -60,7 +60,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
     public render(): JSX.Element {
         return (
-            <MasterLayout
+            <MasterLayoutComponent
                 toolbar={[
                     <ToolbarButton
                         title={EditorResources.ToolbarButton_Stop_Title}
@@ -87,4 +87,4 @@ function mapDispatchToProps(_: Dispatch<AppState>): PropsFromDispatch {
     };
 }
 
-export const RunComponent = connect(mapStateToProps, mapDispatchToProps)(PresentationalComponent as any);
+export const RunComponent = connect<PropsFromState, PropsFromDispatch, PropsFromReact, AppState>(mapStateToProps, mapDispatchToProps)(withRouter(PresentationalComponent as any));
