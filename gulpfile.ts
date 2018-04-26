@@ -18,7 +18,8 @@ gulp.task("generate-loc-strings", [
     "generate-app-editor-strings",
 ]);
 
-gulp.task("build-source", ["generate-loc-strings"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: false, watch: false }));
+gulp.task("build-source-debug", ["generate-loc-strings"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: false, watch: false }));
+gulp.task("build-source-release", ["generate-loc-strings"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: true, watch: false }));
 
 gulp.task("watch-source", () => {
     gulp.watch("build/**", ["generate-loc-strings"]);
@@ -29,24 +30,25 @@ gulp.task("watch-source", () => {
     });
 });
 
-gulp.task("build-tests", () => helpers.runWebpack({ projectPath: "./tests/webpack.config.ts", release: false, watch: false }));
-gulp.task("run-tests",  ["build-tests"], () => helpers.cmdToPromise("node", ["./node_modules/jasmine/bin/jasmine.js", "./out/tests/tests.js"]));
+gulp.task("build-tests-debug", () => helpers.runWebpack({ projectPath: "./tests/webpack.config.ts", release: false, watch: false }));
+gulp.task("run-tests-debug",  ["build-tests-debug"], () => helpers.cmdToPromise("node", ["./node_modules/jasmine/bin/jasmine.js", "./out/tests/tests.js"]));
+
+gulp.task("build-tests-release", () => helpers.runWebpack({ projectPath: "./tests/webpack.config.ts", release: true, watch: false }));
+gulp.task("run-tests-release",  ["build-tests-release"], () => helpers.cmdToPromise("node", ["./node_modules/jasmine/bin/jasmine.js", "./out/tests/tests.js"]));
 
 gulp.task("watch-tests", () => {
     gulp.watch("build/**", ["generate-loc-strings"]);
-    gulp.watch(["src/**", "tests/**"], ["run-tests"]);
+    gulp.watch(["src/**", "tests/**"], ["run-tests-debug"]);
 });
 
-gulp.task("release", ["generate-loc-strings"], () => helpers.runWebpack({ projectPath: "./src/app/webpack.config.ts", release: true, watch: false }));
-
-gulp.task("package", ["release"], () => {
+function packageFunction(release: boolean): Promise<void> {
     const setupConfigPath = "./out/electron/electron-builder-config.json";
     const electronBuilderPath = path.resolve(__dirname, "./node_modules/.bin/electron-builder.cmd");
 
     return helpers.rimrafToPromise("./out/electron")
         .then(() => helpers.runWebpack({
             projectPath: "./src/electron/webpack.config.ts",
-            release: true,
+            release: release,
             watch: false
         }))
         .then(() => helpers.streamToPromise(gulp.src("./out/app/**").pipe(gulp.dest("./out/electron"))))
@@ -74,5 +76,8 @@ gulp.task("package", ["release"], () => {
                 }
             });
         }))
-        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath]));
-});
+        .then(() => helpers.cmdToPromise(electronBuilderPath, ["build", "--config", setupConfigPath, "--publish", "never"]));
+}
+
+gulp.task("package-debug", ["build-source-debug"], () => packageFunction(false));
+gulp.task("package-release", ["build-source-release"], () => packageFunction(true));

@@ -1,12 +1,19 @@
 environment:
   nodejs_version: "8.4.0"
 
+  matrix:
+    # debug configuration
+    - configuration: debug
+    
+    # release configuration
+    - configuration: release
+
 install:
   - ps: Install-Product node $env:nodejs_version
   - npm install
 
 build_script:
-  - npm run gulp release
+  - npm run gulp package-%configuration%
 
 test_script:
-  - npm run gulp run-tests
+  - npm run gulp run-tests-%configuration%
