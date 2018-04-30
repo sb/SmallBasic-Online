@@ -1,6 +1,6 @@
 import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
 import { StringValue } from "../values/string-value";
-import { DocumentationResources } from "../../strings/documentation";
+import { DocumentationResources } from "../../../strings/documentation";
 
 export class ClockLibrary implements LibraryTypeDefinition {
     private _time: LibraryPropertyDefinition = {

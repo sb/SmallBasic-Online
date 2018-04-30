@@ -17,21 +17,28 @@ EndFor`);
 
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect(engine.libraries.TextWindow.readValueFromBuffer().toDebuggerString()).toBe(`"1"`);
+        let value = engine.libraries.TextWindow.readValueFromBuffer();
+        expect(value.appendNewLine).toBe(true);
+        expect(value.value.toValueString()).toBe("1");
 
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.Paused);
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect(engine.libraries.TextWindow.readValueFromBuffer().toDebuggerString()).toBe(`"2"`);
+        value = engine.libraries.TextWindow.readValueFromBuffer();
+        expect(value.appendNewLine).toBe(true);
+        expect(value.value.toValueString()).toBe("2");
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        expect(engine.libraries.TextWindow.readValueFromBuffer().toDebuggerString()).toBe(`"3"`);
+        value = engine.libraries.TextWindow.readValueFromBuffer();
+        expect(value.appendNewLine).toBe(true);
+        expect(value.value.toValueString()).toBe("3");
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.Terminated);
+        expect(engine.exception).toBeUndefined();
     });
     
     it("ends when asked", () => {

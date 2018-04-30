@@ -30,6 +30,8 @@ export module DocumentationResources {
     export const TextWindow = "The TextWindow provides text-related input and output functionalities. For example using this class, it is possible to write or read some text or number to and from the text-based text window.";
     export const TextWindow_Read = "Reads a line of text from the text window. Returns the string entered by the user.";
     export const TextWindow_ReadNumber = "Reads a number from the text window. Returns the number entered by the user.";
+    export const TextWindow_Write = "Writes a string or a number to the text window on the same line.";
+    export const TextWindow_Write_Data = "The string or number to be written to the text window.";
     export const TextWindow_WriteLine = "Writes a string or a number to the text window on its own line.";
     export const TextWindow_WriteLine_Data = "The string or number to be written to the text window.";
     export const TextWindow_ForegroundColor = "Gets or sets the foreground color of the text to be output in the text window.";

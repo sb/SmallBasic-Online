@@ -1,7 +1,7 @@
 import { MasterLayoutComponent } from "../common/master-layout";
 import { ToolbarButton } from "../common/toolbar-button";
 import * as React from "react";
-import { EditorResources } from "../../strings/editor";
+import { EditorResources } from "../../../strings/editor";
 import { RouteComponentProps, withRouter } from "react-router";
 import { Compilation } from "../../../compiler/compilation";
 import { AppState } from "../../store";

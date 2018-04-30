@@ -1,7 +1,7 @@
 import { BaseSyntaxNode, TextRange } from "./syntax-nodes";
 import { Token, TokenKind } from "./tokens";
 import { BaseExpressionSyntax } from "./expressions";
-import { SyntaxNodesResources } from "../../strings/syntax-nodes";
+import { SyntaxNodesResources } from "../../../strings/syntax-nodes";
 
 export enum CommandSyntaxKind {
     If,

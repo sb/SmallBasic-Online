@@ -2,7 +2,7 @@ import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefiniti
 import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
-import { DocumentationResources } from "../../strings/documentation";
+import { DocumentationResources } from "../../../strings/documentation";
 import { ExecutionState, ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel, PubSubChannel } from "../../notifications";
 
@@ -28,53 +28,81 @@ export enum TextWindowColors {
 const defaultForegroundColor = TextWindowColors.White;
 const defaultBackgroundColor = TextWindowColors.Black;
 
+export interface BufferValue {
+    value: BaseValue;
+    appendNewLine: boolean;
+}
+
 export class TextWindowLibrary implements LibraryTypeDefinition {
-    private bufferValue?: BaseValue;
+    private _buffer?: BufferValue;
     private _foregroundValue: TextWindowColors;
     private _backgroundValue: TextWindowColors;
+
+    public constructor() {
+        this._foregroundValue = defaultForegroundColor;
+        this._backgroundValue = defaultBackgroundColor;
+    }
+
+    public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
+    public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
+
+    public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("backgroundColorChanged");
+    public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("foregroundColorChanged");
+
+    private _executeReadMethod(engine: ExecutionEngine, valueKind: ValueKind, blockedState: ExecutionState): boolean {
+        if (this.bufferHasValue()) {
+            const value = this.readValueFromBuffer();
+            if (value.value.kind !== valueKind) {
+                throw new Error(`Unexpected value kind: ${ValueKind[value.value.kind]}`);
+            }
+
+            engine.pushEvaluationStack(value.value);
+            engine.state = ExecutionState.Running;
+            return true;
+        } else {
+            engine.state = blockedState;
+            this.blockedOnInput.publish(valueKind);
+            return false;
+        }
+    }
+
+    private _executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): boolean {
+        if (engine.state === ExecutionState.BlockedOnOutput) {
+            if (!this.bufferHasValue()) {
+                engine.state = ExecutionState.Running;
+                return true;
+            }
+        } else {
+            const value = new StringValue(engine.popEvaluationStack().toValueString());
+            this.writeValueToBuffer(value, appendNewLine);
+            engine.state = ExecutionState.BlockedOnOutput;
+            this.producedOutput.publish();
+        }
+
+        return false;
+    }
 
     private _read: LibraryMethodDefinition = {
         description: DocumentationResources.TextWindow_Read,
         parameters: {},
         returnsValue: true,
-        execute: (engine: ExecutionEngine) => {
-            if (this.bufferHasValue()) {
-                const value = this.readValueFromBuffer();
-                if (value.kind !== ValueKind.String) {
-                    throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
-                }
-
-                engine.state = ExecutionState.Running;
-                engine.pushEvaluationStack(value);
-                return true;
-            } else {
-                engine.state = ExecutionState.BlockedOnStringInput;
-                this.blockedOnInput.publish(ValueKind.String);
-                return false;
-            }
-        }
+        execute: (engine: ExecutionEngine) => this._executeReadMethod(engine, ValueKind.String, ExecutionState.BlockedOnStringInput)
     };
 
     private _readNumber: LibraryMethodDefinition = {
         description: DocumentationResources.TextWindow_ReadNumber,
         parameters: {},
         returnsValue: true,
-        execute: (engine: ExecutionEngine) => {
-            if (this.bufferHasValue()) {
-                const value = this.readValueFromBuffer();
-                if (value.kind !== ValueKind.Number) {
-                    throw new Error(`Unexpected value kind: ${ValueKind[value.kind]}`);
-                }
+        execute: (engine: ExecutionEngine) => this._executeReadMethod(engine, ValueKind.Number, ExecutionState.BlockedOnNumberInput)
+    };
 
-                engine.pushEvaluationStack(value);
-                engine.state = ExecutionState.Running;
-                return true;
-            } else {
-                engine.state = ExecutionState.BlockedOnNumberInput;
-                this.blockedOnInput.publish(ValueKind.Number);
-                return false;
-            }
-        }
+    private _write: LibraryMethodDefinition = {
+        description: DocumentationResources.TextWindow_Write,
+        parameters: {
+            data: DocumentationResources.TextWindow_Write_Data
+        },
+        returnsValue: false,
+        execute: (engine: ExecutionEngine) => this._executeWriteMethod(engine, false)
     };
 
     private _writeLine: LibraryMethodDefinition = {
@@ -83,20 +111,7 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
             data: DocumentationResources.TextWindow_WriteLine_Data
         },
         returnsValue: false,
-        execute: (engine: ExecutionEngine) => {
-            if (engine.state === ExecutionState.BlockedOnOutput) {
-                if (!this.bufferHasValue()) {
-                    engine.state = ExecutionState.Running;
-                    return true;
-                }
-            } else {
-                this.writeValueToBuffer(new StringValue(engine.popEvaluationStack().toValueString()));
-                engine.state = ExecutionState.BlockedOnOutput;
-                this.producedOutput.publish();
-            }
-
-            return false;
-        }
+        execute: (engine: ExecutionEngine) => this._executeWriteMethod(engine, true)
     };
 
     private _foregroundColor: LibraryPropertyDefinition = {
@@ -163,17 +178,6 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
         }
     };
 
-    public constructor() {
-        this._foregroundValue = defaultForegroundColor;
-        this._backgroundValue = defaultBackgroundColor;
-    }
-
-    public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
-    public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
-
-    public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("backgroundColorChanged");
-    public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("foregroundColorChanged");
-
     public readonly description: string = DocumentationResources.TextWindow;
 
     public get foreground(): TextWindowColors {
@@ -185,30 +189,34 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
     }
 
     public bufferHasValue(): boolean {
-        return !!this.bufferValue;
+        return !!this._buffer;
     }
 
-    public writeValueToBuffer(value: BaseValue): void {
-        if (this.bufferValue) {
+    public writeValueToBuffer(value: BaseValue, appendNewLine: boolean): void {
+        if (this._buffer) {
             throw new Error(`Existing value not read yet`);
         }
 
-        this.bufferValue = value;
+        this._buffer = {
+            value: value,
+            appendNewLine: appendNewLine
+        };
     }
 
-    public readValueFromBuffer(): BaseValue {
-        if (!this.bufferValue) {
+    public readValueFromBuffer(): BufferValue {
+        if (!this._buffer) {
             throw new Error(`No value exists in buffer`);
         }
 
-        const value = this.bufferValue;
-        this.bufferValue = undefined;
+        const value = this._buffer;
+        this._buffer = undefined;
         return value;
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
         Read: this._read,
         ReadNumber: this._readNumber,
+        Write: this._write,
         WriteLine: this._writeLine
     };
 
