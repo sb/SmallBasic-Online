@@ -9,9 +9,10 @@ import { StringValue } from "../../../../compiler/runtime/values/string-value";
 import { EditorResources } from "../../../strings/editor";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
 
-interface OutputLine {
+interface OutputChunk {
     text: string;
     color: TextWindowColors;
+    appendNewLine: boolean;
 }
 
 interface TextWindowComponentProps {
@@ -27,7 +28,7 @@ interface TextWindowComponentState {
     inputBuffer: string;
     inputKind?: ValueKind;
 
-    outputLines: OutputLine[];
+    outputLines: OutputChunk[];
 }
 
 const inputColor: TextWindowColors = TextWindowColors.Gray;
@@ -94,19 +95,23 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 });
             }),
             this.props.engine.libraries.TextWindow.producedOutput.subscribe(() => {
+                const value = this.props.engine.libraries.TextWindow.readValueFromBuffer();
                 this.appendOutput({
-                    text: this.props.engine.libraries.TextWindow.readValueFromBuffer().toValueString(),
-                    color: this.state.foreground
+                    text: value.value.toValueString(),
+                    color: this.state.foreground,
+                    appendNewLine: value.appendNewLine
                 });
             }),
             this.props.engine.programTerminated.subscribe(exception => {
                 this.appendOutput(exception
                     ? {
                         text: exception.toString(),
-                        color: TextWindowColors.Red
+                        color: TextWindowColors.Red,
+                        appendNewLine: true
                     } : {
                         text: EditorResources.TextWindow_TerminationMessage,
-                        color: this.state.foreground
+                        color: this.state.foreground,
+                        appendNewLine: true
                     });
             })
         ];
@@ -128,12 +133,10 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 tabIndex={0}
                 style={{ backgroundColor: textWindowColorToCssColor(this.state.background) }}>
 
-                {this.state.outputLines.map((line, i) =>
-                    <div key={i}>
-                        <span style={{ color: textWindowColorToCssColor(line.color) }}>{line.text}</span>
-                        <br />
-                    </div>
-                )}
+                {this.state.outputLines.map((line, i) => [
+                    <span key={`span_${i}`} style={{ color: textWindowColorToCssColor(line.color) }}>{line.text}</span>,
+                    line.appendNewLine ? <br key={`br_${i}`} /> : null
+                ])}
 
                 <div style={{ color: textWindowColorToCssColor(inputColor) }} ref={inputDiv => this.inputDiv = inputDiv!}>
                     <span>{this.state.inputBuffer}</span>
@@ -167,7 +170,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                     default: return;
                 }
 
-                this.props.engine.libraries.TextWindow.writeValueToBuffer(input);
+                this.props.engine.libraries.TextWindow.writeValueToBuffer(input, true);
                 this.setState({
                     inputBuffer: "",
                     inputKind: undefined
@@ -175,7 +178,8 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
 
                 this.appendOutput({
                     text: this.state.inputBuffer,
-                    color: inputColor
+                    color: inputColor,
+                    appendNewLine: true
                 });
             }
         } else if (e.key.length === 1) {
@@ -204,7 +208,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         }
     }
 
-    private appendOutput(output: OutputLine): void {
+    private appendOutput(output: OutputChunk): void {
         this.setState({
             outputLines: this.state.outputLines.concat([output])
         });

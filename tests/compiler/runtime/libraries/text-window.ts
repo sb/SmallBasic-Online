@@ -1,5 +1,7 @@
 import "jasmine";
 import { verifyRuntimeResult } from "../../helpers";
+import { Compilation } from "../../../../src/compiler/compilation";
+import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../../../src/compiler/execution-engine";
 
 describe("Compiler.Runtime.Libraries.TextWindow", () => {
     it("no input or output", () => {
@@ -145,5 +147,36 @@ TextWindow.WriteLine(TextWindow.ForegroundColor)
                 "Red",
                 "White"
             ]);
+    });
+
+    it("writes partial chunks", () => {
+        const compilation = new Compilation(`
+TextWindow.Write("1")
+TextWindow.WriteLine("2")
+TextWindow.Write("3")`);
+
+        const engine = new ExecutionEngine(compilation);
+
+        engine.execute(ExecutionMode.RunToEnd);
+        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
+        let value = engine.libraries.TextWindow.readValueFromBuffer();
+        expect(value.appendNewLine).toBe(false);
+        expect(value.value.toValueString()).toBe("1");
+        
+        engine.execute(ExecutionMode.RunToEnd);
+        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
+        value = engine.libraries.TextWindow.readValueFromBuffer();
+        expect(value.appendNewLine).toBe(true);
+        expect(value.value.toValueString()).toBe("2");
+        
+        engine.execute(ExecutionMode.RunToEnd);
+        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
+        value = engine.libraries.TextWindow.readValueFromBuffer();
+        expect(value.appendNewLine).toBe(false);
+        expect(value.value.toValueString()).toBe("3");
+
+        engine.execute(ExecutionMode.RunToEnd);
+        expect(engine.state).toBe(ExecutionState.Terminated);
+        expect(engine.exception).toBeUndefined();
     });
 });

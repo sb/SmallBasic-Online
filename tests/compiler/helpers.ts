@@ -44,7 +44,7 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
                 } else if (typeof input[inputIndex] !== "number") {
                     throw new Error(`Expected input entry '${input[inputIndex]} to be a number`);
                 } else {
-                    engine.libraries.TextWindow.writeValueToBuffer(new NumberValue(input[inputIndex++] as number));
+                    engine.libraries.TextWindow.writeValueToBuffer(new NumberValue(input[inputIndex++] as number), true);
                     break;
                 }
             }
@@ -54,7 +54,7 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
                 } else if (typeof input[inputIndex] !== "string") {
                     throw new Error(`Expected input entry '${input[inputIndex]} to be a string`);
                 } else {
-                    engine.libraries.TextWindow.writeValueToBuffer(new StringValue(input[inputIndex++] as string));
+                    engine.libraries.TextWindow.writeValueToBuffer(new StringValue(input[inputIndex++] as string), true);
                     break;
                 }
             }
@@ -64,7 +64,9 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
                 } else if (typeof output[outputIndex] !== "string") {
                     throw new Error(`Expected output entry '${output[outputIndex]} to be a string`);
                 } else {
-                    expect((engine.libraries.TextWindow.readValueFromBuffer() as StringValue).value).toBe(output[outputIndex++]);
+                    const value = engine.libraries.TextWindow.readValueFromBuffer();
+                    expect(value.appendNewLine).toBe(true);
+                    expect((value.value as StringValue).value).toBe(output[outputIndex++]);
                     break;
                 }
             }
