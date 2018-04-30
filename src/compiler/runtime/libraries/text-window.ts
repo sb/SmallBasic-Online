@@ -2,7 +2,7 @@ import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefiniti
 import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
-import { DocumentationResources } from "../../strings/documentation";
+import { DocumentationResources } from "../../../strings/documentation";
 import { ExecutionState, ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel, PubSubChannel } from "../../notifications";
 

@@ -6,7 +6,7 @@ import { TextWindowColors } from "../../../../compiler/runtime/libraries/text-wi
 import { ValueKind, BaseValue } from "../../../../compiler/runtime/values/base-value";
 import { NumberValue } from "../../../../compiler/runtime/values/number-value";
 import { StringValue } from "../../../../compiler/runtime/values/string-value";
-import { EditorResources } from "../../../strings/editor";
+import { EditorResources } from "../../../../strings/editor";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
 
 interface OutputChunk {

@@ -1,5 +1,5 @@
 import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
-import { DocumentationResources } from "../../strings/documentation";
+import { DocumentationResources } from "../../../strings/documentation";
 import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";

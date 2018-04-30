@@ -3,7 +3,7 @@ import { ToolbarButton } from "../common/toolbar-button";
 import { ToolbarDivider } from "../common/toolbar-divider";
 import { CustomEditor } from "../common/custom-editor";
 import * as React from "react";
-import { EditorResources } from "../../strings/editor";
+import { EditorResources } from "../../../strings/editor";
 import { DocumentationComponent } from "./documentation";
 import { MasterLayoutComponent } from "../common/master-layout";
 import { Modal } from "../common/modal";

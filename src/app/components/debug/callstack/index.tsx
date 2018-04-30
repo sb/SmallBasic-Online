@@ -1,6 +1,6 @@
 import * as React from "react";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
-import { EditorResources } from "../../../strings/editor";
+import { EditorResources } from "../../../../strings/editor";
 
 const CallStackIcon = require("./header.png");
 

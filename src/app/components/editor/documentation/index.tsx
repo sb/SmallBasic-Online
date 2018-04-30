@@ -1,6 +1,6 @@
 import { SupportedLibraries } from "../../../../compiler/runtime/supported-libraries";
 import * as React from "react";
-import { EditorResources } from "../../../strings/editor";
+import { EditorResources } from "../../../../strings/editor";
 
 import "./style.css";
 

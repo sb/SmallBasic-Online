@@ -6,10 +6,10 @@ import { generateLocStrings } from "./build/generate-loc-strings";
 
 const userLanguage = "en";
 
-gulp.task("generate-errors-strings", () => generateLocStrings("ErrorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/errors.json`), path.resolve(__dirname, `./src/compiler/strings/errors.ts`)));
-gulp.task("generate-syntax-nodes-strings", () => generateLocStrings("SyntaxNodesResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/syntax-nodes.json`), path.resolve(__dirname, `./src/compiler/strings/syntax-nodes.ts`)));
-gulp.task("generate-documentation-strings", () => generateLocStrings("DocumentationResources", path.resolve(__dirname, `./build/strings/${userLanguage}/compiler/documentation.json`), path.resolve(__dirname, `./src/compiler/strings/documentation.ts`)));
-gulp.task("generate-app-editor-strings", () => generateLocStrings("EditorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/app/editor.json`), path.resolve(__dirname, `./src/app/strings/editor.ts`)));
+gulp.task("generate-errors-strings", () => generateLocStrings("ErrorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/errors.json`), path.resolve(__dirname, `./src/strings/errors.ts`)));
+gulp.task("generate-syntax-nodes-strings", () => generateLocStrings("SyntaxNodesResources", path.resolve(__dirname, `./build/strings/${userLanguage}/syntax-nodes.json`), path.resolve(__dirname, `./src/strings/syntax-nodes.ts`)));
+gulp.task("generate-documentation-strings", () => generateLocStrings("DocumentationResources", path.resolve(__dirname, `./build/strings/${userLanguage}/documentation.json`), path.resolve(__dirname, `./src/strings/documentation.ts`)));
+gulp.task("generate-app-editor-strings", () => generateLocStrings("EditorResources", path.resolve(__dirname, `./build/strings/${userLanguage}/editor.json`), path.resolve(__dirname, `./src/strings/editor.ts`)));
 
 gulp.task("generate-loc-strings", [
     "generate-errors-strings",

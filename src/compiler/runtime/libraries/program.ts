@@ -1,6 +1,6 @@
 import { ExecutionMode, ExecutionState, ExecutionEngine } from "../../execution-engine";
 import { LibraryTypeDefinition, LibraryPropertyDefinition, LibraryMethodDefinition } from "../supported-libraries";
-import { DocumentationResources } from "../../strings/documentation";
+import { DocumentationResources } from "../../../strings/documentation";
 
 export class ProgramLibrary implements LibraryTypeDefinition {
     private _pause: LibraryMethodDefinition = {

@@ -1,5 +1,5 @@
 import { TextRange, BaseSyntaxNode } from "./syntax-nodes";
-import { SyntaxNodesResources } from "../../strings/syntax-nodes";
+import { SyntaxNodesResources } from "../../../strings/syntax-nodes";
 
 export enum TokenKind {
     UnrecognizedToken,

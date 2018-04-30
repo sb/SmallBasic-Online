@@ -1,5 +1,5 @@
 import { LibraryTypeDefinition, LibraryPropertyDefinition, LibraryMethodDefinition } from "../supported-libraries";
-import { DocumentationResources } from "../../strings/documentation";
+import { DocumentationResources } from "../../../strings/documentation";
 import { ValueKind, Constants, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { ArrayValue } from "../values/array-value";
