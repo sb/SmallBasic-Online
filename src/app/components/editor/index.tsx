@@ -38,9 +38,9 @@ interface PresentationalComponentState {
 }
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
-    private newModal?: Modal = undefined;
-    private editor?: CustomEditor = undefined;
-    private clipboard: string | undefined;
+    private newModal?: Modal;
+    private editor?: CustomEditor;
+    private clipboard?: string;
 
     public constructor(props: PresentationalComponentProps) {
         super(props);
@@ -125,8 +125,8 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     public componentDidMount(): void {
         this.editor!.setDiagnostics(this.state.compilation.diagnostics);
 
-        this.editor!.editor.onDidChangeModelContent(() => {
-            const code = this.editor!.editor.getValue();
+        this.editor!.editor!.onDidChangeModelContent(() => {
+            const code = this.editor!.editor!.getValue();
             this.props.setStoreText(code);
             this.setState({
                 compilation: new Compilation(code)
@@ -139,7 +139,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     private onNewModalButtonClick(button: number): void {
         switch (button) {
             case 0:
-                this.editor!.editor.setValue("");
+                this.editor!.editor!.setValue("");
                 break;
             case 1:
                 // do nothing
@@ -150,24 +150,24 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     }
 
     private onCut(): void {
-        this.clipboard = this.editor!.editor.getModel().getValueInRange(this.editor!.editor.getSelection());
+        this.clipboard = this.editor!.editor!.getModel().getValueInRange(this.editor!.editor!.getSelection());
 
-        this.editor!.editor.executeEdits("", [{
+        this.editor!.editor!.executeEdits("", [{
             identifier: { major: 1, minor: 1 },
-            range: this.editor!.editor.getSelection(),
+            range: this.editor!.editor!.getSelection(),
             text: "",
             forceMoveMarkers: true
         }]);
     }
 
     private onCopy(): void {
-        this.clipboard = this.editor!.editor.getModel().getValueInRange(this.editor!.editor.getSelection());
+        this.clipboard = this.editor!.editor!.getModel().getValueInRange(this.editor!.editor!.getSelection());
     }
 
     private onPaste(): void {
-        this.editor!.editor.executeEdits("", [{
+        this.editor!.editor!.executeEdits("", [{
             identifier: { major: 1, minor: 1 },
-            range: this.editor!.editor.getSelection(),
+            range: this.editor!.editor!.getSelection(),
             text: this.clipboard || "",
             forceMoveMarkers: true
         }]);

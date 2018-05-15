@@ -5,18 +5,23 @@ import { BaseExpressionSyntax, BinaryOperatorExpressionSyntax, UnaryOperatorExpr
 import { TextRange } from "./nodes/syntax-nodes";
 
 export class CommandsParser {
-    private index: number = 0;
-    private line: number = 0;
-    private currentLineHasErrors: boolean = false;
+    private _index: number = 0;
+    private _line: number = 0;
+    private _currentLineHasErrors: boolean = false;
 
-    private _commands: BaseCommandSyntax[] = [];
+    private _result: BaseCommandSyntax[] = [];
+    private _diagnostics: Diagnostic[] = [];
 
-    public get commands(): ReadonlyArray<BaseCommandSyntax> {
-        return this._commands;
+    public get result(): ReadonlyArray<BaseCommandSyntax> {
+        return this._result;
     }
 
-    public constructor(private tokens: ReadonlyArray<Token>, private diagnostics: Diagnostic[]) {
-        this.tokens = this.tokens.filter(token => {
+    public get diagnostics(): ReadonlyArray<Diagnostic> {
+        return this._diagnostics;
+    }
+
+    public constructor(private readonly _tokens: ReadonlyArray<Token>) {
+        this._tokens = this._tokens.filter(token => {
             switch (token.kind) {
                 // Ignore tokens that shouldn't be parsed.
                 case TokenKind.Comment:
@@ -27,15 +32,15 @@ export class CommandsParser {
             }
         });
 
-        while (this.index < this.tokens.length) {
-            this.currentLineHasErrors = false;
+        while (this._index < this._tokens.length) {
+            this._currentLineHasErrors = false;
             this.parseNextCommand();
 
-            while (this.index < this.tokens.length && this.line === this.tokens[this.index].range.line) {
-                this.index++;
+            while (this._index < this._tokens.length && this._line === this._tokens[this._index].range.line) {
+                this._index++;
             }
 
-            this.line++;
+            this._line++;
         }
     }
 
@@ -44,34 +49,34 @@ export class CommandsParser {
 
         if (current) {
             switch (current.kind) {
-                case TokenKind.IfKeyword: this._commands.push(this.parseIfCommand()); break;
-                case TokenKind.ElseKeyword: this._commands.push(this.parseElseCommand()); break;
-                case TokenKind.ElseIfKeyword: this._commands.push(this.parseElseIfCommand()); break;
-                case TokenKind.EndIfKeyword: this._commands.push(this.parseEndIfCommand()); break;
+                case TokenKind.IfKeyword: this._result.push(this.parseIfCommand()); break;
+                case TokenKind.ElseKeyword: this._result.push(this.parseElseCommand()); break;
+                case TokenKind.ElseIfKeyword: this._result.push(this.parseElseIfCommand()); break;
+                case TokenKind.EndIfKeyword: this._result.push(this.parseEndIfCommand()); break;
 
-                case TokenKind.ForKeyword: this._commands.push(this.parseForCommand()); break;
-                case TokenKind.EndForKeyword: this._commands.push(this.parseEndForCommand()); break;
+                case TokenKind.ForKeyword: this._result.push(this.parseForCommand()); break;
+                case TokenKind.EndForKeyword: this._result.push(this.parseEndForCommand()); break;
 
-                case TokenKind.WhileKeyword: this._commands.push(this.parseWhileCommand()); break;
-                case TokenKind.EndWhileKeyword: this._commands.push(this.parseEndWhileCommand()); break;
+                case TokenKind.WhileKeyword: this._result.push(this.parseWhileCommand()); break;
+                case TokenKind.EndWhileKeyword: this._result.push(this.parseEndWhileCommand()); break;
 
-                case TokenKind.GoToKeyword: this._commands.push(this.parseGoToCommand()); break;
+                case TokenKind.GoToKeyword: this._result.push(this.parseGoToCommand()); break;
                 case TokenKind.Identifier:
                     if (this.isNext(TokenKind.Colon, 1)) {
-                        this._commands.push(this.parseLabelCommand());
+                        this._result.push(this.parseLabelCommand());
                     } else {
-                        this._commands.push(this.parseExpressionCommand());
+                        this._result.push(this.parseExpressionCommand());
                     }
                     break;
 
-                case TokenKind.SubKeyword: this._commands.push(this.parseSubCommand()); break;
-                case TokenKind.EndSubKeyword: this._commands.push(this.parseEndSubCommand()); break;
+                case TokenKind.SubKeyword: this._result.push(this.parseSubCommand()); break;
+                case TokenKind.EndSubKeyword: this._result.push(this.parseEndSubCommand()); break;
 
                 case TokenKind.Minus:
                 case TokenKind.NumberLiteral:
                 case TokenKind.StringLiteral:
                 case TokenKind.LeftParen:
-                    this._commands.push(this.parseExpressionCommand());
+                    this._result.push(this.parseExpressionCommand());
                     break;
 
                 default:
@@ -300,7 +305,7 @@ export class CommandsParser {
     private parseTerminalExpression(): BaseExpressionSyntax {
         const current = this.peek();
         if (!current) {
-            const range = this.tokens[this.index - 1].range;
+            const range = this._tokens[this._index - 1].range;
             this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingExpression, range));
             return new IdentifierExpressionSyntax(this.createMissingToken(range));
         }
@@ -340,9 +345,9 @@ export class CommandsParser {
 
     private peek(offset?: number): Token | undefined {
         offset || (offset = 0);
-        if (this.index + offset < this.tokens.length) {
-            const current = this.tokens[this.index + offset];
-            if (current.range.line === this.line) {
+        if (this._index + offset < this._tokens.length) {
+            const current = this._tokens[this._index + offset];
+            if (current.range.line === this._line) {
                 return current;
             }
         }
@@ -351,11 +356,11 @@ export class CommandsParser {
     }
 
     private eat(kind: TokenKind): Token {
-        if (this.index < this.tokens.length) {
-            const current = this.tokens[this.index];
-            if (current.range.line === this.line) {
+        if (this._index < this._tokens.length) {
+            const current = this._tokens[this._index];
+            if (current.range.line === this._line) {
                 if (current.kind === kind) {
-                    this.index++;
+                    this._index++;
                     return current;
                 } else {
                     this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingToken, current.range, current.text, Token.toDisplayString(kind)));
@@ -364,7 +369,7 @@ export class CommandsParser {
             }
         }
 
-        const range = this.tokens[this.index - 1].range;
+        const range = this._tokens[this._index - 1].range;
         this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingToken, range, Token.toDisplayString(kind)));
         return this.createMissingToken(range);
     }
@@ -374,9 +379,9 @@ export class CommandsParser {
     }
 
     private reportError(error: Diagnostic): void {
-        if (!this.currentLineHasErrors) {
-            this.diagnostics.push(error);
-            this.currentLineHasErrors = true;
+        if (!this._currentLineHasErrors) {
+            this._diagnostics.push(error);
+            this._currentLineHasErrors = true;
         }
     }
 

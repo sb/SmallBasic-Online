@@ -21,7 +21,7 @@ export abstract class BaseStatementSyntax extends BaseSyntaxNode {
 export class SubModuleStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly subCommand: SubCommandSyntax,
-        readonly statementsList: BaseStatementSyntax[],
+        readonly statementsList: ReadonlyArray<BaseStatementSyntax>,
         readonly endSubCommand: EndSubCommandSyntax) {
         super(StatementSyntaxKind.SubModule);
     }
@@ -29,23 +29,23 @@ export class SubModuleStatementSyntax extends BaseStatementSyntax {
 
 export interface IfConditionSyntax {
     readonly headerCommand: IfCommandSyntax;
-    readonly statementsList: BaseStatementSyntax[];
+    readonly statementsList: ReadonlyArray<BaseStatementSyntax>;
 }
 
 export interface ElseIfConditionSyntax {
     readonly headerCommand: ElseIfCommandSyntax;
-    readonly statementsList: BaseStatementSyntax[];
+    readonly statementsList: ReadonlyArray<BaseStatementSyntax>;
 }
 
 export interface ElseConditionSyntax {
     readonly headerCommand: ElseCommandSyntax;
-    readonly statementsList: BaseStatementSyntax[];
+    readonly statementsList: ReadonlyArray<BaseStatementSyntax>;
 }
 
 export class IfStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly ifPart: IfConditionSyntax,
-        readonly elseIfParts: ElseIfConditionSyntax[],
+        readonly elseIfParts: ReadonlyArray<ElseIfConditionSyntax>,
         readonly elsePart: ElseConditionSyntax | undefined,
         readonly endIfCommand: EndIfCommandSyntax) {
         super(StatementSyntaxKind.If);
@@ -55,7 +55,7 @@ export class IfStatementSyntax extends BaseStatementSyntax {
 export class WhileStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly whileCommand: WhileCommandSyntax,
-        readonly statementsList: BaseStatementSyntax[],
+        readonly statementsList: ReadonlyArray<BaseStatementSyntax>,
         readonly endWhileCommand: EndWhileCommandSyntax) {
         super(StatementSyntaxKind.While);
     }
@@ -64,7 +64,7 @@ export class WhileStatementSyntax extends BaseStatementSyntax {
 export class ForStatementSyntax extends BaseStatementSyntax {
     public constructor(
         readonly forCommand: ForCommandSyntax,
-        readonly statementsList: BaseStatementSyntax[],
+        readonly statementsList: ReadonlyArray<BaseStatementSyntax>,
         readonly endForCommand: EndForCommandSyntax) {
         super(StatementSyntaxKind.For);
     }

@@ -29,19 +29,27 @@ const libraries: SupportedLibraries = new SupportedLibraries();
 export class StatementBinder {
     private _definedLabels: { [name: string]: boolean } = {};
     private _goToStatements: GoToStatementSyntax[] = [];
-    private _module: BaseBoundStatement<BaseStatementSyntax>[];
+    private _diagnostics: Diagnostic[] = [];
+    
+    private _result: BaseBoundStatement<BaseStatementSyntax>[];
 
-    public get module(): ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> {
-        return this._module;
+    public get result(): ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> {
+        return this._result;
     }
 
-    public constructor(statements: ReadonlyArray<BaseStatementSyntax>, private definedSubModules: { readonly [name: string]: boolean }, private diagnostics: Diagnostic[]) {
-        this._module = statements.map(statement => this.bindStatement(statement));
+    public get diagnostics(): ReadonlyArray<Diagnostic> {
+        return this._diagnostics;
+    }
+
+    public constructor(
+        statements: ReadonlyArray<BaseStatementSyntax>,
+        private _definedSubModules: { readonly [name: string]: boolean }) {
+        this._result = statements.map(statement => this.bindStatement(statement));
 
         this._goToStatements.forEach(statement => {
             const identifier = statement.command.labelToken;
             if (!this._definedLabels[identifier.text]) {
-                this.diagnostics.push(new Diagnostic(ErrorCode.LabelDoesNotExist, identifier.range, identifier.text));
+                this._diagnostics.push(new Diagnostic(ErrorCode.LabelDoesNotExist, identifier.range, identifier.text));
             }
         });
     }
@@ -143,14 +151,14 @@ export class StatementBinder {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
                         if (!libraries[property.libraryName].properties[property.propertyName].setter) {
-                            this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, property.syntax.range));
+                            this._diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, property.syntax.range));
                         }
 
                         return new PropertyAssignmentBoundStatement(property.libraryName, property.propertyName, binaryExpression.rightExpression, syntax);
                     }
 
                     default: {
-                        this.diagnostics.push(new Diagnostic(
+                        this._diagnostics.push(new Diagnostic(
                             ErrorCode.ValueIsNotAssignable,
                             binaryExpression.leftExpression.syntax.range));
 
@@ -174,11 +182,13 @@ export class StatementBinder {
             ? ErrorCode.UnassignedExpressionStatement
             : ErrorCode.InvalidExpressionStatement;
 
-        this.diagnostics.push(new Diagnostic(errorCode, syntax.command.expression.range));
+        this._diagnostics.push(new Diagnostic(errorCode, syntax.command.expression.range));
         return new InvalidExpressionBoundStatement(expression, syntax);
     }
 
     private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
-        return new ExpressionBinder(syntax, expectedValue, this.definedSubModules, this.diagnostics).result;
+        const binder = new ExpressionBinder(syntax, expectedValue, this._definedSubModules);
+        this._diagnostics.push.apply(this._diagnostics, binder.diagnostics);
+        return binder.result;
     }
 }

@@ -4,6 +4,21 @@ import { Compilation } from "../../src/compiler/compilation";
 import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
 import { NumberValue } from "../../src/compiler/runtime/values/number-value";
 import { StringValue } from "../../src/compiler/runtime/values/string-value";
+import { TextRange } from "../../src/compiler/syntax/nodes/syntax-nodes";
+import { Scanner } from "../../src/compiler/syntax/scanner";
+import { TokenKind } from "../../src/compiler/syntax/nodes/tokens";
+
+export function getMarkerPosition(text: string, marker: string) : TextRange {
+    const tokens = new Scanner(text).result.filter(token => {
+        return token.kind === TokenKind.UnrecognizedToken && token.text === marker;
+    });
+
+    switch(tokens.length) {
+        case 0: throw new Error(`Cannot position the marker anywhere in source code`);
+        case 1: return tokens[0].range;
+        default: throw new Error(`Multiple markers in source code`);
+    }
+}
 
 export function verifyRuntimeError(text: string, exception: Diagnostic): void {
     verifyCompilationErrors(text);

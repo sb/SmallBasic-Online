@@ -7,7 +7,7 @@ import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
 import { Optimizations } from "./optimizations";
 
 export class ModuleEmitter {
-    private jumpLabelCounter: number = 1;
+    private _jumpLabelCounter: number = 1;
     private _instructions: BaseInstruction[] = [];
 
     public get instructions(): ReadonlyArray<BaseInstruction> {
@@ -50,7 +50,7 @@ export class ModuleEmitter {
         this._instructions.push(new TempLabelInstruction(endOfBlockLabel, statement.syntax.endIfCommand.range));
     }
 
-    private emitIfPart(condition: BaseBoundExpression<BaseExpressionSyntax>, statements: BaseBoundStatement<BaseStatementSyntax>[], endOfBlockLabel: string): void {
+    private emitIfPart(condition: BaseBoundExpression<BaseExpressionSyntax>, statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>, endOfBlockLabel: string): void {
         const endOfPartLabel = this.generateJumpLabel();
 
         this.emitExpression(condition);
@@ -152,9 +152,11 @@ export class ModuleEmitter {
     }
 
     private emitArrayAssignment(statement: ArrayAssignmentBoundStatement): void {
-        statement.indices.reverse().forEach(index => this.emitExpression(index));
-        this.emitExpression(statement.value);
+        for (let i = statement.indices.length - 1; i >= 0; i--) {
+            this.emitExpression(statement.indices[i]);
+        }
 
+        this.emitExpression(statement.value);
         this._instructions.push(new StoreArrayElementInstruction(statement.arrayName, statement.indices.length, statement.syntax.command.range));
     }
 
@@ -327,7 +329,10 @@ export class ModuleEmitter {
     }
 
     private emitArrayAccessExpression(expression: ArrayAccessBoundExpression): void {
-        expression.indices.reverse().forEach(index => this.emitExpression(index));
+        for (let i = expression.indices.length - 1; i >= 0; i--) {
+            this.emitExpression(expression.indices[i]);
+        }
+
         this._instructions.push(new LoadArrayElementInstruction(expression.arrayName, expression.indices.length, expression.syntax.range));
     }
 
@@ -357,6 +362,6 @@ export class ModuleEmitter {
     }
 
     private generateJumpLabel(): string {
-        return `internal_$$_${this.jumpLabelCounter++}`;
+        return `internal_$$_${this._jumpLabelCounter++}`;
     }
 }

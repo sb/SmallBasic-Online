@@ -170,7 +170,7 @@ export class DivisionBoundExpression extends BaseBoundExpression<BinaryOperatorE
 export class ArrayAccessBoundExpression extends BaseBoundExpression<ArrayAccessExpressionSyntax> {
     public constructor(
         public readonly arrayName: string,
-        public readonly indices: BaseBoundExpression<BaseExpressionSyntax>[],
+        public readonly indices: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         hasErrors: boolean,
         syntax: ArrayAccessExpressionSyntax) {
         super(BoundExpressionKind.ArrayAccess, true, hasErrors, syntax);
@@ -212,7 +212,7 @@ export class LibraryMethodCallBoundExpression extends BaseBoundExpression<CallEx
     public constructor(
         public readonly libraryName: string,
         public readonly MethodName: string,
-        public readonly argumentsList: BaseBoundExpression<BaseExpressionSyntax>[],
+        public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         hasValue: boolean,
         hasErrors: boolean,
         syntax: CallExpressionSyntax) {

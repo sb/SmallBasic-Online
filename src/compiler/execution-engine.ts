@@ -5,7 +5,7 @@ import { SupportedLibraries } from "./runtime/supported-libraries";
 import { Diagnostic } from "./diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
 import { PubSubPayloadChannel } from "./notifications";
-import { ModuleBinder } from "./binding/module-binder";
+import { ModulesBinder } from "./binding/modules-binder";
 
 export interface StackFrame {
     moduleName: string;
@@ -84,7 +84,7 @@ export class ExecutionEngine {
         this._modules = compilation.emit();
 
         this._executionStack.push({
-            moduleName: ModuleBinder.MainModuleName,
+            moduleName: ModulesBinder.MainModuleName,
             instructionIndex: 0
         });
     }

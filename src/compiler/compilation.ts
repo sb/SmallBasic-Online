@@ -3,7 +3,7 @@ import { BaseInstruction } from "./runtime/instructions";
 import { StatementsParser, ParseTree } from "./syntax/statements-parser";
 import { CommandsParser } from "./syntax/command-parser";
 import { Diagnostic } from "./diagnostics";
-import { ModuleBinder } from "./binding/module-binder";
+import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/nodes/tokens";
 import { BaseCommandSyntax } from "./syntax/nodes/commands";
@@ -11,37 +11,70 @@ import { BaseBoundStatement } from "./binding/nodes/statements";
 import { BaseStatementSyntax } from "./syntax/nodes/statements";
 
 export class Compilation {
-    public readonly diagnostics: ReadonlyArray<Diagnostic>;
-    public readonly tokens: ReadonlyArray<Token>;
-    public readonly commands: ReadonlyArray<BaseCommandSyntax>;
-    public readonly parseTree: ParseTree;
-    public readonly boundModules: { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> };
+    private _diagnostics: Diagnostic[] = [];
+
+    private _scanner?: Scanner;
+    private _commandsParser?: CommandsParser;
+    private _statementsParser?: StatementsParser;
+    private _modulesBinder?: ModulesBinder;
+
+    public get isReadyToRun(): boolean {
+        return !!this.text.trim() && !this._diagnostics.length;
+    }
+
+    public get diagnostics(): ReadonlyArray<Diagnostic> {
+        this.modules; /* finish compilation */
+
+        return this._diagnostics;
+    }
+
+    public get tokens(): ReadonlyArray<Token> {
+        if (!this._scanner) {
+            this._scanner = new Scanner(this.text);
+            this._diagnostics.push.apply(this._diagnostics, this._scanner.diagnostics);
+        }
+        return this._scanner.result;
+    }
+
+    public get commands(): ReadonlyArray<BaseCommandSyntax> {
+        if (!this._commandsParser) {
+            this._commandsParser = new CommandsParser(this.tokens);
+            this._diagnostics.push.apply(this._diagnostics, this._commandsParser.diagnostics);
+        }
+        return this._commandsParser.result;
+    }
+
+    public get statements(): ParseTree {
+        if (!this._statementsParser) {
+            this._statementsParser = new StatementsParser(this.commands);
+            this._diagnostics.push.apply(this._diagnostics, this._statementsParser.diagnostics);
+        }
+        return this._statementsParser.result;
+    }
+
+    public get modules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> } {
+        if (!this._modulesBinder) {
+            this._modulesBinder = new ModulesBinder(this.statements);
+            this._diagnostics.push.apply(this._diagnostics, this._modulesBinder.diagnostics);
+        }
+        return this._modulesBinder.boundModules;
+    }
 
     public constructor(public readonly text: string) {
-        const diagnostics: Diagnostic[] = [];
-
-        this.tokens = new Scanner(text, diagnostics).tokens;
-        this.commands = new CommandsParser(this.tokens, diagnostics).commands;
-        this.parseTree = new StatementsParser(this.commands, diagnostics).parseTree;
-        this.boundModules = new ModuleBinder(this.parseTree, diagnostics).boundModules;
-
-        this.diagnostics = diagnostics;
     }
 
     public emit(): { readonly [name: string]: ReadonlyArray<BaseInstruction> } {
-        if (this.diagnostics.length) {
-            throw new Error(`Cannot emit a compilation with diagnostics`);
+        const modules = this.modules;
+
+        if (!this.isReadyToRun) {
+            throw new Error(`Cannot emit an empty or errornous compilation`);
         }
 
-        const modules: { [name: string]: ReadonlyArray<BaseInstruction> } = {};
-        for (const name in this.boundModules) {
-            modules[name] = new ModuleEmitter(this.boundModules[name]).instructions;
+        const result: { [name: string]: ReadonlyArray<BaseInstruction> } = {};
+        for (const name in modules) {
+            result[name] = new ModuleEmitter(modules[name]).instructions;
         }
 
-        return modules;
-    }
-
-    public get isReadyToRun(): boolean {
-        return !!this.text.trim() && !this.diagnostics.length;
+        return result;
     }
 }

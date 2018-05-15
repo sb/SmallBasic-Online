@@ -1,5 +1,6 @@
 import { TextRange } from "./syntax/nodes/syntax-nodes";
 import { ErrorResources } from "../strings/errors";
+import { CompilerUtils } from "./compiler-utils";
 
 export enum ErrorCode {
     // Scanner Errors
@@ -59,6 +60,6 @@ export class Diagnostic {
             throw new Error(`Error code ${ErrorCode[this.code]} has no string resource`);
         }
 
-        return template.replace(/{[0-9]+}/g, match => this.args[parseInt(match.replace(/^{/, "").replace(/}$/, ""))]);
+        return CompilerUtils.formatString(template, this.args);
     }
 }

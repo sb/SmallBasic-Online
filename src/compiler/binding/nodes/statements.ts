@@ -27,17 +27,17 @@ export abstract class BaseBoundStatement<TSyntax extends BaseStatementSyntax> ex
 
 export interface IfBoundCondition {
     readonly condition: BaseBoundExpression<BaseExpressionSyntax>;
-    readonly statementsList: BaseBoundStatement<BaseStatementSyntax>[];
+    readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
 }
 
 export interface ElseBoundCondition {
-    readonly statementsList: BaseBoundStatement<BaseStatementSyntax>[];
+    readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
 }
 
 export class IfBoundStatement extends BaseBoundStatement<IfStatementSyntax> {
     public constructor(
         public readonly ifPart: IfBoundCondition,
-        public readonly elseIfParts: IfBoundCondition[],
+        public readonly elseIfParts: ReadonlyArray<IfBoundCondition>,
         public readonly elsePart: ElseBoundCondition | undefined,
         syntax: IfStatementSyntax) {
         super(BoundStatementKind.If, syntax);
@@ -47,7 +47,7 @@ export class IfBoundStatement extends BaseBoundStatement<IfStatementSyntax> {
 export class WhileBoundStatement extends BaseBoundStatement<WhileStatementSyntax> {
     public constructor(
         public readonly condition: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly statementsList: BaseBoundStatement<BaseStatementSyntax>[],
+        public readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>,
         syntax: WhileStatementSyntax) {
         super(BoundStatementKind.While, syntax);
     }
@@ -59,7 +59,7 @@ export class ForBoundStatement extends BaseBoundStatement<ForStatementSyntax> {
         public readonly fromExpression: BaseBoundExpression<BaseExpressionSyntax>,
         public readonly toExpression: BaseBoundExpression<BaseExpressionSyntax>,
         public readonly stepExpression: BaseBoundExpression<BaseExpressionSyntax> | undefined,
-        public readonly statementsList: BaseBoundStatement<BaseStatementSyntax>[],
+        public readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>,
         syntax: ForStatementSyntax) {
         super(BoundStatementKind.For, syntax);
     }
@@ -93,7 +93,7 @@ export class LibraryMethodCallBoundStatement extends BaseBoundStatement<Expressi
     public constructor(
         public readonly libraryName: string,
         public readonly methodName: string,
-        public readonly argumentsList: BaseBoundExpression<BaseExpressionSyntax>[],
+        public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         syntax: ExpressionStatementSyntax) {
         super(BoundStatementKind.LibraryMethodCall, syntax);
     }
@@ -121,7 +121,7 @@ export class PropertyAssignmentBoundStatement extends BaseBoundStatement<Express
 export class ArrayAssignmentBoundStatement extends BaseBoundStatement<ExpressionStatementSyntax>{
     public constructor(
         public readonly arrayName: string,
-        public readonly indices: BaseBoundExpression<BaseExpressionSyntax>[],
+        public readonly indices: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         public readonly value: BaseBoundExpression<BaseExpressionSyntax>,
         syntax: ExpressionStatementSyntax) {
         super(BoundStatementKind.ArrayAssignment, syntax);
