@@ -1,14 +1,13 @@
 import { ModuleEmitter } from "./runtime/module-emitter";
 import { BaseInstruction } from "./runtime/instructions";
-import { StatementsParser, ParseTree } from "./syntax/statements-parser";
 import { CommandsParser } from "./syntax/command-parser";
 import { Diagnostic } from "./diagnostics";
 import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/tokens";
-import { BaseCommandSyntax } from "./syntax/nodes/commands";
 import { BaseBoundStatement } from "./binding/nodes/statements";
-import { BaseStatementSyntax } from "./syntax/nodes/statements";
+import { StatementsParser } from "./syntax/statements-parser";
+import { BaseSyntax, ParseTreeSyntax } from "./syntax/syntax-nodes";
 
 export class Compilation {
     private _diagnostics: Diagnostic[] = [];
@@ -36,7 +35,7 @@ export class Compilation {
         return this._scanner.result;
     }
 
-    public get commands(): ReadonlyArray<BaseCommandSyntax> {
+    public get commands(): ReadonlyArray<BaseSyntax> {
         if (!this._commandsParser) {
             this._commandsParser = new CommandsParser(this.tokens);
             this._diagnostics.push.apply(this._diagnostics, this._commandsParser.diagnostics);
@@ -44,7 +43,7 @@ export class Compilation {
         return this._commandsParser.result;
     }
 
-    public get statements(): ParseTree {
+    public get statements(): ParseTreeSyntax {
         if (!this._statementsParser) {
             this._statementsParser = new StatementsParser(this.commands);
             this._diagnostics.push.apply(this._diagnostics, this._statementsParser.diagnostics);
@@ -52,7 +51,7 @@ export class Compilation {
         return this._statementsParser.result;
     }
 
-    public get modules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> } {
+    public get modules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntax>> } {
         if (!this._modulesBinder) {
             this._modulesBinder = new ModulesBinder(this.statements);
             this._diagnostics.push.apply(this._diagnostics, this._modulesBinder.diagnostics);

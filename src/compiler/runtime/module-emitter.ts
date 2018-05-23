@@ -2,8 +2,7 @@ import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditi
 import { BaseBoundStatement, BoundStatementKind, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement } from "../binding/nodes/statements";
 import { BaseBoundExpression, BoundExpressionKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression } from "../binding/nodes/expressions";
 import { Constants } from "./values/base-value";
-import { BaseStatementSyntax } from "../syntax/nodes/statements";
-import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
+import { BaseSyntax } from "../syntax/syntax-nodes";
 import { Optimizations } from "./optimizations";
 
 export class ModuleEmitter {
@@ -14,13 +13,13 @@ export class ModuleEmitter {
         return this._instructions;
     }
 
-    public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>) {
+    public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseSyntax>>) {
         statements.forEach(statement => this.emitStatement(statement));
 
         Optimizations.removeTempInstructions(this._instructions);
     }
 
-    private emitStatement(statement: BaseBoundStatement<BaseStatementSyntax>): void {
+    private emitStatement(statement: BaseBoundStatement<BaseSyntax>): void {
         switch (statement.kind) {
             case BoundStatementKind.If: this.emitIfStatement(statement as IfBoundStatement); break;
             case BoundStatementKind.While: this.emitWhileStatement(statement as WhileBoundStatement); break;
@@ -50,7 +49,7 @@ export class ModuleEmitter {
         this._instructions.push(new TempLabelInstruction(endOfBlockLabel, statement.syntax.endIfCommand.range));
     }
 
-    private emitIfPart(condition: BaseBoundExpression<BaseExpressionSyntax>, statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>, endOfBlockLabel: string): void {
+    private emitIfPart(condition: BaseBoundExpression<BaseSyntax>, statements: ReadonlyArray<BaseBoundStatement<BaseSyntax>>, endOfBlockLabel: string): void {
         const endOfPartLabel = this.generateJumpLabel();
 
         this.emitExpression(condition);
@@ -130,25 +129,25 @@ export class ModuleEmitter {
     }
 
     private emitLabelStatement(statement: LabelBoundStatement): void {
-        this._instructions.push(new TempLabelInstruction(statement.labelName, statement.syntax.command.range));
+        this._instructions.push(new TempLabelInstruction(statement.labelName, statement.syntax.range));
     }
 
     private emitGoToStatement(statement: GoToBoundStatement): void {
-        this._instructions.push(new TempJumpInstruction(statement.labelName, statement.syntax.command.range));
+        this._instructions.push(new TempJumpInstruction(statement.labelName, statement.syntax.range));
     }
 
     private emitLibraryMethodCall(statement: LibraryMethodCallBoundStatement): void {
         statement.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(new MethodCallInstruction(statement.libraryName, statement.methodName, statement.syntax.command.range));
+        this._instructions.push(new MethodCallInstruction(statement.libraryName, statement.methodName, statement.syntax.range));
     }
 
     private emitSubModuleCall(statement: SubModuleCallBoundStatement): void {
-        this._instructions.push(new CallSubModuleInstruction(statement.subModuleName, statement.syntax.command.range));
+        this._instructions.push(new CallSubModuleInstruction(statement.subModuleName, statement.syntax.range));
     }
 
     private emitVariableAssignment(statement: VariableAssignmentBoundStatement): void {
         this.emitExpression(statement.value);
-        this._instructions.push(new StoreVariableInstruction(statement.variableName, statement.syntax.command.range));
+        this._instructions.push(new StoreVariableInstruction(statement.variableName, statement.syntax.range));
     }
 
     private emitArrayAssignment(statement: ArrayAssignmentBoundStatement): void {
@@ -157,7 +156,7 @@ export class ModuleEmitter {
         }
 
         this.emitExpression(statement.value);
-        this._instructions.push(new StoreArrayElementInstruction(statement.arrayName, statement.indices.length, statement.syntax.command.range));
+        this._instructions.push(new StoreArrayElementInstruction(statement.arrayName, statement.indices.length, statement.syntax.range));
     }
 
     private emitPropertyAssignment(statement: PropertyAssignmentBoundStatement): void {
@@ -165,7 +164,7 @@ export class ModuleEmitter {
         this._instructions.push(new StorePropertyInstruction(statement.libraryName, statement.propertyName, statement.value.syntax.range));
     }
 
-    private emitExpression(expression: BaseBoundExpression<BaseExpressionSyntax>): void {
+    private emitExpression(expression: BaseBoundExpression<BaseSyntax>): void {
         switch (expression.kind) {
             case BoundExpressionKind.Negation: this.emitNegationExpression(expression as NegationBoundExpression); break;
             case BoundExpressionKind.Or: this.emitOrExpression(expression as OrBoundExpression); break;

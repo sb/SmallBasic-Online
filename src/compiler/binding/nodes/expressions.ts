@@ -1,5 +1,5 @@
 import { BaseBoundNode } from "./bound-nodes";
-import { UnaryOperatorExpressionSyntax, BaseExpressionSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, CallExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax } from "../../syntax/nodes/expressions";
+import { UnaryOperatorExpressionSyntax, BaseSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, CallExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax } from "../../syntax/syntax-nodes";
 
 export enum BoundExpressionKind {
     Negation,
@@ -28,7 +28,7 @@ export enum BoundExpressionKind {
     Parenthesis
 }
 
-export abstract class BaseBoundExpression<TSyntax extends BaseExpressionSyntax> extends BaseBoundNode<TSyntax> {
+export abstract class BaseBoundExpression<TSyntax extends BaseSyntax> extends BaseBoundNode<TSyntax> {
     public constructor(
         public readonly kind: BoundExpressionKind,
         public readonly hasValue: boolean,
@@ -40,7 +40,7 @@ export abstract class BaseBoundExpression<TSyntax extends BaseExpressionSyntax> 
 
 export class NegationBoundExpression extends BaseBoundExpression<UnaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly expression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly expression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: UnaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Negation, true, hasErrors, syntax);
@@ -49,8 +49,8 @@ export class NegationBoundExpression extends BaseBoundExpression<UnaryOperatorEx
 
 export class OrBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Or, true, hasErrors, syntax);
@@ -59,8 +59,8 @@ export class OrBoundExpression extends BaseBoundExpression<BinaryOperatorExpress
 
 export class AndBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.And, true, hasErrors, syntax);
@@ -69,8 +69,8 @@ export class AndBoundExpression extends BaseBoundExpression<BinaryOperatorExpres
 
 export class NotEqualBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.NotEqual, true, hasErrors, syntax);
@@ -79,8 +79,8 @@ export class NotEqualBoundExpression extends BaseBoundExpression<BinaryOperatorE
 
 export class EqualBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Equal, true, hasErrors, syntax);
@@ -89,8 +89,8 @@ export class EqualBoundExpression extends BaseBoundExpression<BinaryOperatorExpr
 
 export class LessThanBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.LessThan, true, hasErrors, syntax);
@@ -99,8 +99,8 @@ export class LessThanBoundExpression extends BaseBoundExpression<BinaryOperatorE
 
 export class GreaterThanBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.GreaterThan, true, hasErrors, syntax);
@@ -109,8 +109,8 @@ export class GreaterThanBoundExpression extends BaseBoundExpression<BinaryOperat
 
 export class LessThanOrEqualBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.LessThanOrEqual, true, hasErrors, syntax);
@@ -119,8 +119,8 @@ export class LessThanOrEqualBoundExpression extends BaseBoundExpression<BinaryOp
 
 export class GreaterThanOrEqualBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.GreaterThanOrEqual, true, hasErrors, syntax);
@@ -129,8 +129,8 @@ export class GreaterThanOrEqualBoundExpression extends BaseBoundExpression<Binar
 
 export class AdditionBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Addition, true, hasErrors, syntax);
@@ -139,8 +139,8 @@ export class AdditionBoundExpression extends BaseBoundExpression<BinaryOperatorE
 
 export class SubtractionBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Subtraction, true, hasErrors, syntax);
@@ -149,8 +149,8 @@ export class SubtractionBoundExpression extends BaseBoundExpression<BinaryOperat
 
 export class MultiplicationBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Multiplication, true, hasErrors, syntax);
@@ -159,8 +159,8 @@ export class MultiplicationBoundExpression extends BaseBoundExpression<BinaryOpe
 
 export class DivisionBoundExpression extends BaseBoundExpression<BinaryOperatorExpressionSyntax> {
     public constructor(
-        public readonly leftExpression: BaseBoundExpression<BaseExpressionSyntax>,
-        public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly leftExpression: BaseBoundExpression<BaseSyntax>,
+        public readonly rightExpression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
         super(BoundExpressionKind.Division, true, hasErrors, syntax);
@@ -170,7 +170,7 @@ export class DivisionBoundExpression extends BaseBoundExpression<BinaryOperatorE
 export class ArrayAccessBoundExpression extends BaseBoundExpression<ArrayAccessExpressionSyntax> {
     public constructor(
         public readonly arrayName: string,
-        public readonly indices: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
+        public readonly indices: ReadonlyArray<BaseBoundExpression<BaseSyntax>>,
         hasErrors: boolean,
         syntax: ArrayAccessExpressionSyntax) {
         super(BoundExpressionKind.ArrayAccess, true, hasErrors, syntax);
@@ -212,7 +212,7 @@ export class LibraryMethodCallBoundExpression extends BaseBoundExpression<CallEx
     public constructor(
         public readonly libraryName: string,
         public readonly MethodName: string,
-        public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
+        public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseSyntax>>,
         hasValue: boolean,
         hasErrors: boolean,
         syntax: CallExpressionSyntax) {
@@ -267,7 +267,7 @@ export class NumberLiteralBoundExpression extends BaseBoundExpression<NumberLite
 
 export class ParenthesisBoundExpression extends BaseBoundExpression<ParenthesisExpressionSyntax> {
     public constructor(
-        public readonly expression: BaseBoundExpression<BaseExpressionSyntax>,
+        public readonly expression: BaseBoundExpression<BaseSyntax>,
         hasErrors: boolean,
         syntax: ParenthesisExpressionSyntax) {
         super(BoundExpressionKind.Parenthesis, true, hasErrors, syntax);

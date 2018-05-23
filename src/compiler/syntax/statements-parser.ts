@@ -1,67 +1,49 @@
 import { ErrorCode, Diagnostic } from "../diagnostics";
 import {
-    BaseStatementSyntax,
-    ForStatementSyntax,
-    IfStatementSyntax,
-    SubModuleStatementSyntax,
-    WhileStatementSyntax,
-    LabelStatementSyntax,
-    GoToStatementSyntax,
-    ExpressionStatementSyntax,
-    ElseIfConditionSyntax,
-    IfConditionSyntax,
-    ElseConditionSyntax
-} from "./nodes/statements";
-import {
-    BaseCommandSyntax,
-    CommandSyntaxKind,
+    BaseSyntax,
+    SyntaxKind,
     ElseCommandSyntax,
     ElseIfCommandSyntax,
     EndForCommandSyntax,
     EndIfCommandSyntax,
-    EndSubCommandSyntax,
+    ForStatementSyntax,
+    IfStatementSyntax,
+    WhileStatementSyntax,
     EndWhileCommandSyntax,
-    ExpressionCommandSyntax,
     ForCommandSyntax,
-    GoToCommandSyntax,
     IfCommandSyntax,
-    LabelCommandSyntax,
     SubCommandSyntax,
     WhileCommandSyntax,
-    MissingCommandSyntax
-} from "./nodes/commands";
-
-export interface ParseTree {
-    readonly mainModule: ReadonlyArray<BaseStatementSyntax>;
-    readonly subModules: ReadonlyArray<SubModuleStatementSyntax>;
-}
+    MissingCommandSyntax,
+    SubModuleDeclarationSyntax,
+    ParseTreeSyntax,
+    EndSubCommandSyntax,
+    IfHeaderSyntax
+} from "./syntax-nodes";
 
 export class StatementsParser {
     private _index: number = 0;
 
     private _diagnostics: Diagnostic[] = [];
-    private _mainModule: BaseStatementSyntax[] = [];
-    private _subModules: SubModuleStatementSyntax[] = [];
+    private _mainModule: BaseSyntax[] = [];
+    private _subModules: SubModuleDeclarationSyntax[] = [];
 
-    public get result(): ParseTree {
-        return {
-            mainModule: this._mainModule,
-            subModules: this._subModules
-        };
+    public get result(): ParseTreeSyntax {
+        return new ParseTreeSyntax(this._mainModule, this._subModules);
     }
 
     public get diagnostics(): ReadonlyArray<Diagnostic> {
         return this._diagnostics;
     }
 
-    public constructor(private readonly _commands: ReadonlyArray<BaseCommandSyntax>) {
+    public constructor(private readonly _commands: ReadonlyArray<BaseSyntax>) {
         let startModuleCommand: SubCommandSyntax | undefined;
-        let currentModuleStatements: BaseStatementSyntax[] = [];
+        let currentModuleStatements: BaseSyntax[] = [];
 
         while (this._index < this._commands.length) {
             const current = this._commands[this._index];
             switch (current.kind) {
-                case CommandSyntaxKind.Sub: {
+                case SyntaxKind.SubCommand: {
                     if (startModuleCommand) {
                         this.eat(current.kind);
                         this._diagnostics.push(new Diagnostic(ErrorCode.CannotDefineASubInsideAnotherSub, current.range));
@@ -72,10 +54,10 @@ export class StatementsParser {
                     }
                     break;
                 }
-                case CommandSyntaxKind.EndSub: {
+                case SyntaxKind.EndSubCommand: {
                     if (startModuleCommand) {
                         const endModuleCommand = this.eat(current.kind) as EndSubCommandSyntax;
-                        this._subModules.push(new SubModuleStatementSyntax(startModuleCommand, currentModuleStatements, endModuleCommand));
+                        this._subModules.push(new SubModuleDeclarationSyntax(startModuleCommand, currentModuleStatements, endModuleCommand));
 
                         startModuleCommand = undefined;
                         currentModuleStatements = [];
@@ -84,8 +66,8 @@ export class StatementsParser {
                         this._diagnostics.push(new Diagnostic(
                             ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                             current.range,
-                            BaseCommandSyntax.toDisplayString(CommandSyntaxKind.EndSub),
-                            BaseCommandSyntax.toDisplayString(CommandSyntaxKind.Sub)));
+                            BaseSyntax.toDisplayString(SyntaxKind.EndSubCommand),
+                            BaseSyntax.toDisplayString(SyntaxKind.SubCommand)));
                     }
                     break;
                 }
@@ -100,9 +82,9 @@ export class StatementsParser {
         }
 
         if (startModuleCommand) {
-            const endModuleCommand = this.eat(CommandSyntaxKind.EndSub);
+            const endModuleCommand = this.eat(SyntaxKind.EndSubCommand);
 
-            this._subModules.push(new SubModuleStatementSyntax(
+            this._subModules.push(new SubModuleDeclarationSyntax(
                 startModuleCommand,
                 currentModuleStatements,
                 endModuleCommand as EndSubCommandSyntax));
@@ -111,129 +93,120 @@ export class StatementsParser {
         }
     }
 
-    private parseStatement(current: BaseCommandSyntax): BaseStatementSyntax | undefined {
+    private parseStatement(current: BaseSyntax): BaseSyntax | undefined {
         switch (current.kind) {
-            case CommandSyntaxKind.If: {
+            case SyntaxKind.IfCommand: {
                 return this.parseIfStatement();
             }
-            case CommandSyntaxKind.Else:
-            case CommandSyntaxKind.ElseIf:
-            case CommandSyntaxKind.EndIf: {
+            case SyntaxKind.ElseCommand:
+            case SyntaxKind.ElseIfCommand:
+            case SyntaxKind.EndIfCommand: {
                 this.eat(current.kind);
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     current.range,
-                    BaseCommandSyntax.toDisplayString(current.kind),
-                    BaseCommandSyntax.toDisplayString(CommandSyntaxKind.If)));
+                    BaseSyntax.toDisplayString(current.kind),
+                    BaseSyntax.toDisplayString(SyntaxKind.IfCommand)));
                 return;
             }
-            case CommandSyntaxKind.For: {
+            case SyntaxKind.ForCommand: {
                 return this.parseForStatement();
             }
-            case CommandSyntaxKind.EndFor: {
+            case SyntaxKind.EndForCommand: {
                 this.eat(current.kind);
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     current.range,
-                    BaseCommandSyntax.toDisplayString(current.kind),
-                    BaseCommandSyntax.toDisplayString(CommandSyntaxKind.For)));
+                    BaseSyntax.toDisplayString(current.kind),
+                    BaseSyntax.toDisplayString(SyntaxKind.ForCommand)));
                 return;
             }
-            case CommandSyntaxKind.While: {
+            case SyntaxKind.WhileCommand: {
                 return this.parseWhileStatement();
             }
-            case CommandSyntaxKind.EndWhile: {
+            case SyntaxKind.EndWhileCommand: {
                 this.eat(current.kind);
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     current.range,
-                    BaseCommandSyntax.toDisplayString(current.kind),
-                    BaseCommandSyntax.toDisplayString(CommandSyntaxKind.While)));
+                    BaseSyntax.toDisplayString(current.kind),
+                    BaseSyntax.toDisplayString(SyntaxKind.WhileCommand)));
                 return;
             }
-            case CommandSyntaxKind.Label: {
-                const statement = this.eat(CommandSyntaxKind.Label);
-                return new LabelStatementSyntax(statement as LabelCommandSyntax);
+            case SyntaxKind.LabelCommand: {
+                return this.eat(SyntaxKind.LabelCommand);
             }
-            case CommandSyntaxKind.GoTo: {
-                const statement = this.eat(CommandSyntaxKind.GoTo);
-                return new GoToStatementSyntax(statement as GoToCommandSyntax);
+            case SyntaxKind.GoToCommand: {
+                return this.eat(SyntaxKind.GoToCommand);
             }
-            case CommandSyntaxKind.Expression: {
-                const statement = this.eat(CommandSyntaxKind.Expression);
-                return new ExpressionStatementSyntax(statement as ExpressionCommandSyntax);
+            case SyntaxKind.ExpressionCommand: {
+                return this.eat(SyntaxKind.ExpressionCommand);
+            }
+            case SyntaxKind.CommentCommand: {
+                return this.eat(SyntaxKind.CommentCommand);
             }
             default: {
-                throw new Error(`Unexpected command ${CommandSyntaxKind[current.kind]} here`);
+                throw new Error(`Unexpected command ${SyntaxKind[current.kind]} here`);
             }
         }
     }
 
     private parseIfStatement(): IfStatementSyntax {
-        const ifCommand = this.eat(CommandSyntaxKind.If) as IfCommandSyntax;
+        const ifCommand = this.eat(SyntaxKind.IfCommand) as IfCommandSyntax;
         const ifPartStatements = this.parseStatementsExcept(
-            CommandSyntaxKind.ElseIf,
-            CommandSyntaxKind.Else,
-            CommandSyntaxKind.EndIf);
+            SyntaxKind.ElseIfCommand,
+            SyntaxKind.ElseCommand,
+            SyntaxKind.EndIfCommand);
 
-        const ifPart: IfConditionSyntax = {
-            headerCommand: ifCommand,
-            statementsList: ifPartStatements
-        };
+        const ifPart = new IfHeaderSyntax<IfCommandSyntax>(ifCommand, ifPartStatements);
 
-        const elseIfParts: ElseIfConditionSyntax[] = [];
+        const elseIfParts: IfHeaderSyntax<ElseIfCommandSyntax>[] = [];
 
-        while (this.isNext(CommandSyntaxKind.ElseIf)) {
-            const elseIfCommand = this.eat(CommandSyntaxKind.ElseIf) as ElseIfCommandSyntax;
+        while (this.isNext(SyntaxKind.ElseIfCommand)) {
+            const elseIfCommand = this.eat(SyntaxKind.ElseIfCommand) as ElseIfCommandSyntax;
             const statements = this.parseStatementsExcept(
-                CommandSyntaxKind.ElseIf,
-                CommandSyntaxKind.Else,
-                CommandSyntaxKind.EndIf);
+                SyntaxKind.ElseIfCommand,
+                SyntaxKind.ElseCommand,
+                SyntaxKind.EndIfCommand);
 
-            elseIfParts.push({
-                headerCommand: elseIfCommand,
-                statementsList: statements
-            });
+            elseIfParts.push(new IfHeaderSyntax<ElseIfCommandSyntax>(elseIfCommand, statements));
         }
 
-        let elsePart: ElseConditionSyntax | undefined;
-        if (this.isNext(CommandSyntaxKind.Else)) {
-            const elseCommand = this.eat(CommandSyntaxKind.Else) as ElseCommandSyntax;
+        let elsePart: IfHeaderSyntax<ElseCommandSyntax> | undefined;
+        if (this.isNext(SyntaxKind.ElseCommand)) {
+            const elseCommand = this.eat(SyntaxKind.ElseCommand) as ElseCommandSyntax;
             const statements = this.parseStatementsExcept(
-                CommandSyntaxKind.ElseIf,
-                CommandSyntaxKind.Else,
-                CommandSyntaxKind.EndIf);
+                SyntaxKind.ElseIfCommand,
+                SyntaxKind.ElseCommand,
+                SyntaxKind.EndIfCommand);
 
-            elsePart = {
-                headerCommand: elseCommand,
-                statementsList: statements
-            };
+            elsePart = new IfHeaderSyntax<ElseCommandSyntax>(elseCommand, statements);
         }
 
-        let endIfPart = this.eat(CommandSyntaxKind.EndIf) as EndIfCommandSyntax;
+        let endIfPart = this.eat(SyntaxKind.EndIfCommand) as EndIfCommandSyntax;
         return new IfStatementSyntax(ifPart, elseIfParts, elsePart, endIfPart);
     }
 
     private parseForStatement(): ForStatementSyntax {
-        const forCommand = this.eat(CommandSyntaxKind.For) as ForCommandSyntax;
-        const statements = this.parseStatementsExcept(CommandSyntaxKind.EndFor);
-        const endForCommand = this.eat(CommandSyntaxKind.EndFor) as EndForCommandSyntax;
+        const forCommand = this.eat(SyntaxKind.ForCommand) as ForCommandSyntax;
+        const statements = this.parseStatementsExcept(SyntaxKind.EndForCommand);
+        const endForCommand = this.eat(SyntaxKind.EndForCommand) as EndForCommandSyntax;
 
         return new ForStatementSyntax(forCommand, statements, endForCommand);
     }
 
     private parseWhileStatement(): WhileStatementSyntax {
-        const whileCommand = this.eat(CommandSyntaxKind.While) as WhileCommandSyntax;
-        const statements = this.parseStatementsExcept(CommandSyntaxKind.EndWhile);
-        const endWhileCommand = this.eat(CommandSyntaxKind.EndWhile) as EndWhileCommandSyntax;
+        const whileCommand = this.eat(SyntaxKind.WhileCommand) as WhileCommandSyntax;
+        const statements = this.parseStatementsExcept(SyntaxKind.EndWhileCommand);
+        const endWhileCommand = this.eat(SyntaxKind.EndWhileCommand) as EndWhileCommandSyntax;
 
         return new WhileStatementSyntax(whileCommand, statements, endWhileCommand);
     }
 
-    private parseStatementsExcept(...kinds: CommandSyntaxKind[]): BaseStatementSyntax[] {
-        const statements: BaseStatementSyntax[] = [];
+    private parseStatementsExcept(...kinds: SyntaxKind[]): BaseSyntax[] {
+        const statements: BaseSyntax[] = [];
 
-        let next: BaseCommandSyntax | undefined;
+        let next: BaseSyntax | undefined;
         while ((next = this.peek()) && !kinds.some(kind => kind === next!.kind)) {
             const statement = this.parseStatement(next);
             if (statement) {
@@ -244,21 +217,21 @@ export class StatementsParser {
         return statements;
     }
 
-    private isNext(kind: CommandSyntaxKind): boolean {
+    private isNext(kind: SyntaxKind): boolean {
         if (this._index < this._commands.length) {
             return this._commands[this._index].kind === kind;
         }
         return false;
     }
 
-    private peek(): BaseCommandSyntax | undefined {
+    private peek(): BaseSyntax | undefined {
         if (this._index < this._commands.length) {
             return this._commands[this._index];
         }
         return;
     }
 
-    private eat(kind: CommandSyntaxKind): BaseCommandSyntax {
+    private eat(kind: SyntaxKind): BaseSyntax {
         if (this._index < this._commands.length) {
             const current = this._commands[this._index];
             if (current.kind === kind) {
@@ -269,8 +242,8 @@ export class StatementsParser {
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.UnexpectedCommand_ExpectingCommand,
                     current.range,
-                    BaseCommandSyntax.toDisplayString(current.kind),
-                    BaseCommandSyntax.toDisplayString(kind)));
+                    BaseSyntax.toDisplayString(current.kind),
+                    BaseSyntax.toDisplayString(kind)));
                 return new MissingCommandSyntax(kind, current.range);
             }
         } else {
@@ -278,7 +251,7 @@ export class StatementsParser {
             this._diagnostics.push(new Diagnostic(
                 ErrorCode.UnexpectedEOF_ExpectingCommand,
                 range,
-                BaseCommandSyntax.toDisplayString(kind)));
+                BaseSyntax.toDisplayString(kind)));
             return new MissingCommandSyntax(kind, range);
         }
     }

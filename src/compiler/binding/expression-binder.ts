@@ -30,27 +30,27 @@ import {
 } from "./nodes/expressions";
 import {
     ArrayAccessExpressionSyntax,
-    BaseExpressionSyntax,
+    BaseSyntax,
     BinaryOperatorExpressionSyntax,
     CallExpressionSyntax,
-    ExpressionSyntaxKind,
-    NumberLiteralExpressionSyntax,
+    SyntaxKind,
     ObjectAccessExpressionSyntax,
     ParenthesisExpressionSyntax,
-    StringLiteralExpressionSyntax,
     UnaryOperatorExpressionSyntax,
-    IdentifierExpressionSyntax
-} from "../syntax/nodes/expressions";
+    IdentifierExpressionSyntax,
+    NumberLiteralExpressionSyntax,
+    StringLiteralExpressionSyntax
+} from "../syntax/syntax-nodes";
 import { TokenKind } from "../syntax/tokens";
 
 const libraries: SupportedLibraries = new SupportedLibraries();
 
 export class ExpressionBinder {
-    private readonly _result: BaseBoundExpression<BaseExpressionSyntax>;
+    private readonly _result: BaseBoundExpression<BaseSyntax>;
 
     private _diagnostics: Diagnostic[] = [];
 
-    public get result(): BaseBoundExpression<BaseExpressionSyntax> {
+    public get result(): BaseBoundExpression<BaseSyntax> {
         return this._result;
     }
 
@@ -59,26 +59,26 @@ export class ExpressionBinder {
     }
 
     public constructor(
-        syntax: BaseExpressionSyntax,
+        syntax: BaseSyntax,
         expectedValue: boolean,
         private readonly _definedSubModules: { readonly [name: string]: boolean }) {
         this._result = this.bindExpression(syntax, expectedValue);
     }
 
-    private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
-        let expression: BaseBoundExpression<BaseExpressionSyntax>;
+    private bindExpression(syntax: BaseSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
+        let expression: BaseBoundExpression<BaseSyntax>;
 
         switch (syntax.kind) {
-            case ExpressionSyntaxKind.ArrayAccess: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
-            case ExpressionSyntaxKind.BinaryOperator: expression = this.bindBinaryOperator(syntax as BinaryOperatorExpressionSyntax); break;
-            case ExpressionSyntaxKind.Call: expression = this.bindCall(syntax as CallExpressionSyntax, expectedValue); break;
-            case ExpressionSyntaxKind.ObjectAccess: expression = this.bindObjectAccess(syntax as ObjectAccessExpressionSyntax, expectedValue); break;
-            case ExpressionSyntaxKind.Parenthesis: expression = this.bindParenthesis(syntax as ParenthesisExpressionSyntax); break;
-            case ExpressionSyntaxKind.NumberLiteral: expression = this.bindNumberLiteral(syntax as NumberLiteralExpressionSyntax); break;
-            case ExpressionSyntaxKind.StringLiteral: expression = this.bindStringLiteral(syntax as StringLiteralExpressionSyntax); break;
-            case ExpressionSyntaxKind.Identifier: expression = this.bindIdentifier(syntax as IdentifierExpressionSyntax, expectedValue); break;
-            case ExpressionSyntaxKind.UnaryOperator: expression = this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax); break;
-            default: throw new Error(`Invalid syntax kind: ${ExpressionSyntaxKind[syntax.kind]}`);
+            case SyntaxKind.ArrayAccessExpression: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
+            case SyntaxKind.BinaryOperatorExpression: expression = this.bindBinaryOperator(syntax as BinaryOperatorExpressionSyntax); break;
+            case SyntaxKind.CallExpression: expression = this.bindCall(syntax as CallExpressionSyntax, expectedValue); break;
+            case SyntaxKind.ObjectAccessExpression: expression = this.bindObjectAccess(syntax as ObjectAccessExpressionSyntax, expectedValue); break;
+            case SyntaxKind.ParenthesisExpression: expression = this.bindParenthesis(syntax as ParenthesisExpressionSyntax); break;
+            case SyntaxKind.NumberLiteralExpression: expression = this.bindNumberLiteral(syntax as NumberLiteralExpressionSyntax); break;
+            case SyntaxKind.StringLiteralExpression: expression = this.bindStringLiteral(syntax as StringLiteralExpressionSyntax); break;
+            case SyntaxKind.IdentifierExpression: expression = this.bindIdentifier(syntax as IdentifierExpressionSyntax, expectedValue); break;
+            case SyntaxKind.UnaryOperatorExpression: expression = this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax); break;
+            default: throw new Error(`Invalid syntax kind: ${SyntaxKind[syntax.kind]}`);
         }
 
         return expression;
@@ -89,7 +89,7 @@ export class ExpressionBinder {
         const indexExpression = this.bindExpression(syntax.indexExpression, true);
 
         let arrayName: string;
-        let indices: BaseBoundExpression<BaseExpressionSyntax>[];
+        let indices: BaseBoundExpression<BaseSyntax>[];
         let hasErrors = baseExpression.hasErrors || indexExpression.hasErrors;
 
         switch (baseExpression.kind) {
@@ -119,9 +119,9 @@ export class ExpressionBinder {
         return new ArrayAccessBoundExpression(arrayName, indices, hasErrors, syntax);
     }
 
-    private bindCall(syntax: CallExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindCall(syntax: CallExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
         const baseExpression = this.bindExpression(syntax.baseExpression, false);
-        const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg, true));
+        const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg.expression, true));
 
         let hasErrors = baseExpression.hasErrors || argumentsList.some(arg => arg.hasErrors);
 
@@ -162,9 +162,9 @@ export class ExpressionBinder {
         }
     }
 
-    private bindObjectAccess(syntax: ObjectAccessExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindObjectAccess(syntax: ObjectAccessExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
         const leftHandSide = this.bindExpression(syntax.baseExpression, false);
-        const rightHandSide = syntax.identifierToken.text;
+        const rightHandSide = syntax.identifierToken.token.text;
         let hasErrors = leftHandSide.hasErrors;
 
         if (leftHandSide.kind !== BoundExpressionKind.LibraryType) {
@@ -201,25 +201,25 @@ export class ExpressionBinder {
         return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, true, hasErrors, syntax);
     }
 
-    private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression<BaseSyntax> {
         const expression = this.bindExpression(syntax.expression, true);
         return new ParenthesisBoundExpression(expression, expression.hasErrors, syntax);
     }
 
-    private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
-        const value = parseFloat(syntax.token.text);
+    private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression<BaseSyntax> {
+        const value = parseFloat(syntax.numberToken.token.text);
         const isNotANumber = isNaN(value);
         const expression = new NumberLiteralBoundExpression(value, isNotANumber, syntax);
 
         if (isNotANumber) {
-            this._diagnostics.push(new Diagnostic(ErrorCode.ValueIsNotANumber, expression.syntax.range, syntax.token.text));
+            this._diagnostics.push(new Diagnostic(ErrorCode.ValueIsNotANumber, expression.syntax.range, syntax.numberToken.token.text));
         }
 
         return expression;
     }
 
-    private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
-        let value = syntax.token.text;
+    private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression<BaseSyntax> {
+        let value = syntax.stringToken.token.text;
         if (value.length < 1 || value[0] !== "\"") {
             throw new Error(`String literal '${value}' should have never been parsed without a starting double quotes`);
         }
@@ -232,9 +232,9 @@ export class ExpressionBinder {
         return new StringLiteralBoundExpression(value, false, syntax);
     }
 
-    private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
         let hasErrors = false;
-        const name = syntax.token.text;
+        const name = syntax.identifierToken.token.text;
 
         if (libraries[name]) {
             if (expectedValue) {
@@ -258,13 +258,10 @@ export class ExpressionBinder {
     private bindUnaryOperator(syntax: UnaryOperatorExpressionSyntax): NegationBoundExpression {
         const expression = this.bindExpression(syntax.expression, true);
 
-        switch (syntax.operatorToken.kind) {
-            case TokenKind.Minus: {
-                return new NegationBoundExpression(expression, expression.hasErrors, syntax);
-            }
-            default: {
-                throw new Error(`Unsupported token kind: ${TokenKind[syntax.operatorToken.kind]}`);
-            }
+        if (syntax.operatorToken.token.kind === TokenKind.Minus) {
+            return new NegationBoundExpression(expression, expression.hasErrors, syntax);
+        } else {
+            throw new Error(`Unsupported token kind: ${TokenKind[syntax.operatorToken.kind]}`);
         }
     }
 
@@ -274,7 +271,7 @@ export class ExpressionBinder {
 
         const hasErrors = leftHandSide.hasErrors || rightHandSide.hasErrors;
 
-        switch (syntax.operatorToken.kind) {
+        switch (syntax.operatorToken.token.kind) {
             case TokenKind.Or: return new OrBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
             case TokenKind.And: return new AndBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
             case TokenKind.NotEqual: return new NotEqualBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);

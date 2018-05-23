@@ -3,7 +3,6 @@ import { CompilerRange } from "./ranges";
 
 export enum TokenKind {
     UnrecognizedToken,
-    MissingToken,
 
     IfKeyword,
     ThenKeyword,

@@ -1,6 +1,6 @@
-import { BaseSyntaxNode } from "../../syntax/syntax-nodes";
+import { BaseSyntax } from "../../syntax/syntax-nodes";
 
-export abstract class BaseBoundNode<TSyntax extends BaseSyntaxNode> {
+export abstract class BaseBoundNode<TSyntax extends BaseSyntax> {
     public constructor(
         public readonly syntax: TSyntax) {
     }
