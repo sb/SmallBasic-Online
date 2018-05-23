@@ -1,8 +1,8 @@
 import { ErrorCode, Diagnostic } from "../diagnostics";
 import { BaseCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, ForCommandSyntax, ForStepClause, EndForCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, SubCommandSyntax, EndSubCommandSyntax, ExpressionCommandSyntax } from "./nodes/commands";
-import { Token, TokenKind } from "./nodes/tokens";
 import { BaseExpressionSyntax, BinaryOperatorExpressionSyntax, UnaryOperatorExpressionSyntax, ObjectAccessExpressionSyntax, ArrayAccessExpressionSyntax, CallExpressionSyntax, IdentifierExpressionSyntax, NumberLiteralExpressionSyntax, StringLiteralExpressionSyntax, ParenthesisExpressionSyntax } from "./nodes/expressions";
-import { TextRange } from "./nodes/syntax-nodes";
+import { TokenKind, Token } from "./tokens";
+import { CompilerRange } from "./ranges";
 
 export class CommandsParser {
     private _index: number = 0;
@@ -36,7 +36,7 @@ export class CommandsParser {
             this._currentLineHasErrors = false;
             this.parseNextCommand();
 
-            while (this._index < this._tokens.length && this._line === this._tokens[this._index].range.line) {
+            while (this._index < this._tokens.length && this._line === this._tokens[this._index].range.start.line) {
                 this._index++;
             }
 
@@ -347,7 +347,7 @@ export class CommandsParser {
         offset || (offset = 0);
         if (this._index + offset < this._tokens.length) {
             const current = this._tokens[this._index + offset];
-            if (current.range.line === this._line) {
+            if (current.range.start.line === this._line) {
                 return current;
             }
         }
@@ -358,7 +358,7 @@ export class CommandsParser {
     private eat(kind: TokenKind): Token {
         if (this._index < this._tokens.length) {
             const current = this._tokens[this._index];
-            if (current.range.line === this._line) {
+            if (current.range.start.line === this._line) {
                 if (current.kind === kind) {
                     this._index++;
                     return current;
@@ -374,7 +374,7 @@ export class CommandsParser {
         return this.createMissingToken(range);
     }
 
-    private createMissingToken(range: TextRange): Token {
+    private createMissingToken(range: CompilerRange): Token {
         return new Token("<Missing>", TokenKind.MissingToken, range);
     }
 

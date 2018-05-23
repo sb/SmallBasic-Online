@@ -1,6 +1,6 @@
-import { BaseSyntaxNode, TextRange } from "./syntax-nodes";
-import { Token } from "./tokens";
-import { CompilerUtils } from "../../compiler-utils";
+import { BaseSyntaxNode } from "../syntax-nodes";
+import { Token } from "../tokens";
+import { CompilerRange } from "../ranges";
 
 export enum ExpressionSyntaxKind {
     UnaryOperator,
@@ -17,7 +17,7 @@ export enum ExpressionSyntaxKind {
 export abstract class BaseExpressionSyntax extends BaseSyntaxNode {
     public constructor(
         public readonly kind: ExpressionSyntaxKind,
-        public readonly range: TextRange) {
+        public readonly range: CompilerRange) {
         super();
     }
 }
@@ -26,7 +26,7 @@ export class UnaryOperatorExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly operatorToken: Token,
         public readonly expression: BaseExpressionSyntax) {
-        super(ExpressionSyntaxKind.UnaryOperator, CompilerUtils.combineRanges(operatorToken.range, expression.range));
+        super(ExpressionSyntaxKind.UnaryOperator, CompilerRange.combine(operatorToken.range, expression.range));
     }
 }
 
@@ -35,7 +35,7 @@ export class BinaryOperatorExpressionSyntax extends BaseExpressionSyntax {
         public readonly leftExpression: BaseExpressionSyntax,
         public readonly operatorToken: Token,
         public readonly rightExpression: BaseExpressionSyntax) {
-        super(ExpressionSyntaxKind.BinaryOperator, CompilerUtils.combineRanges(leftExpression.range, rightExpression.range));
+        super(ExpressionSyntaxKind.BinaryOperator, CompilerRange.combine(leftExpression.range, rightExpression.range));
     }
 }
 
@@ -44,7 +44,7 @@ export class ObjectAccessExpressionSyntax extends BaseExpressionSyntax {
         public readonly baseExpression: BaseExpressionSyntax,
         public readonly dotToken: Token,
         public readonly identifierToken: Token) {
-        super(ExpressionSyntaxKind.ObjectAccess, CompilerUtils.combineRanges(baseExpression.range, identifierToken.range));
+        super(ExpressionSyntaxKind.ObjectAccess, CompilerRange.combine(baseExpression.range, identifierToken.range));
     }
 }
 
@@ -54,7 +54,7 @@ export class ArrayAccessExpressionSyntax extends BaseExpressionSyntax {
         public readonly leftBracketToken: Token,
         public readonly indexExpression: BaseExpressionSyntax,
         public readonly rightBracketToken: Token) {
-        super(ExpressionSyntaxKind.ArrayAccess, CompilerUtils.combineRanges(baseExpression.range, rightBracketToken.range));
+        super(ExpressionSyntaxKind.ArrayAccess, CompilerRange.combine(baseExpression.range, rightBracketToken.range));
     }
 }
 
@@ -65,7 +65,7 @@ export class CallExpressionSyntax extends BaseExpressionSyntax {
         public readonly argumentsList: ReadonlyArray<BaseExpressionSyntax>,
         public readonly commasList: ReadonlyArray<Token>,
         public readonly rightParenToken: Token) {
-        super(ExpressionSyntaxKind.Call, CompilerUtils.combineRanges(baseExpression.range, rightParenToken.range));
+        super(ExpressionSyntaxKind.Call, CompilerRange.combine(baseExpression.range, rightParenToken.range));
     }
 }
 
@@ -95,6 +95,6 @@ export class ParenthesisExpressionSyntax extends BaseExpressionSyntax {
         public readonly leftParenToken: Token,
         public readonly expression: BaseExpressionSyntax,
         public readonly rightParenToken: Token) {
-        super(ExpressionSyntaxKind.Parenthesis, CompilerUtils.combineRanges(leftParenToken.range, rightParenToken.range));
+        super(ExpressionSyntaxKind.Parenthesis, CompilerRange.combine(leftParenToken.range, rightParenToken.range));
     }
 }

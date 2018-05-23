@@ -1,11 +1,11 @@
-import { TextRange } from "../syntax/nodes/syntax-nodes";
 import { ExecutionEngine, ExecutionMode, StackFrame } from "../execution-engine";
 import { StringValue } from "./values/string-value";
 import { ValueKind, BaseValue, Constants } from "./values/base-value";
 import { NumberValue } from "./values/number-value";
 import { ErrorCode, Diagnostic } from "../diagnostics";
-import { Token, TokenKind } from "../syntax/nodes/tokens";
+import { Token, TokenKind } from "../syntax/tokens";
 import { ArrayValue } from "./values/array-value";
+import { CompilerRange } from "../syntax/ranges";
 
 export enum InstructionKind {
     TempLabel,
@@ -38,7 +38,7 @@ export enum InstructionKind {
 export abstract class BaseInstruction {
     public constructor(
         public readonly kind: InstructionKind,
-        public readonly sourceRange: TextRange) {
+        public readonly sourceRange: CompilerRange) {
     }
 
     public abstract execute(engine: ExecutionEngine, mode: ExecutionMode, frame: StackFrame): void;
@@ -47,7 +47,7 @@ export abstract class BaseInstruction {
 export class TempLabelInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.TempLabel, range);
     }
 
@@ -59,7 +59,7 @@ export class TempLabelInstruction extends BaseInstruction {
 export class TempJumpInstruction extends BaseInstruction {
     public constructor(
         public readonly target: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.TempJump, range);
     }
 
@@ -72,7 +72,7 @@ export class TempConditionalJumpInstruction extends BaseInstruction {
     public constructor(
         public readonly trueTarget: string | undefined,
         public readonly falseTarget: string | undefined,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.TempConditionalJump, range);
     }
 
@@ -84,7 +84,7 @@ export class TempConditionalJumpInstruction extends BaseInstruction {
 export class JumpInstruction extends BaseInstruction {
     public constructor(
         public readonly target: number,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Jump, range);
     }
 
@@ -97,7 +97,7 @@ export class ConditionalJumpInstruction extends BaseInstruction {
     public constructor(
         public readonly trueTarget: number | undefined,
         public readonly falseTarget: number | undefined,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.ConditionalJump, range);
     }
 
@@ -122,7 +122,7 @@ export class ConditionalJumpInstruction extends BaseInstruction {
 export class CallSubModuleInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.CallSubModule, range);
     }
 
@@ -135,7 +135,7 @@ export class CallSubModuleInstruction extends BaseInstruction {
 export class StoreVariableInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.StoreVariable, range);
     }
 
@@ -150,7 +150,7 @@ export class StoreArrayElementInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
         public readonly indices: number,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.StoreArrayElement, range);
     }
 
@@ -191,7 +191,7 @@ export class StorePropertyInstruction extends BaseInstruction {
     public constructor(
         public readonly library: string,
         public readonly property: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.StoreProperty, range);
     }
 
@@ -211,7 +211,7 @@ export class StorePropertyInstruction extends BaseInstruction {
 export class LoadVariableInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.LoadVariable, range);
     }
 
@@ -231,7 +231,7 @@ export class LoadArrayElementInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
         public readonly indices: number,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.LoadArrayElement, range);
     }
 
@@ -274,7 +274,7 @@ export class LoadPropertyInstruction extends BaseInstruction {
     public constructor(
         public readonly library: string,
         public readonly property: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.LoadProperty, range);
     }
 
@@ -295,7 +295,7 @@ export class MethodCallInstruction extends BaseInstruction {
     public constructor(
         public readonly library: string,
         public readonly method: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.MethodCall, range);
     }
 
@@ -309,7 +309,7 @@ export class MethodCallInstruction extends BaseInstruction {
 
 export class NegateInstruction extends BaseInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Negate, range);
     }
 
@@ -335,7 +335,7 @@ export class NegateInstruction extends BaseInstruction {
 export abstract class BaseBinaryInstruction extends BaseInstruction {
     public constructor(
         public readonly kind: InstructionKind,
-        public readonly sourceRange: TextRange) {
+        public readonly sourceRange: CompilerRange) {
         super(kind, sourceRange);
     }
 
@@ -353,7 +353,7 @@ export abstract class BaseBinaryInstruction extends BaseInstruction {
 
 export class EqualInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Equal, range);
     }
 
@@ -368,7 +368,7 @@ export class EqualInstruction extends BaseBinaryInstruction {
 
 export class LessThanInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.LessThan, range);
     }
 
@@ -383,7 +383,7 @@ export class LessThanInstruction extends BaseBinaryInstruction {
 
 export class GreaterThanInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.GreaterThan, range);
     }
 
@@ -398,7 +398,7 @@ export class GreaterThanInstruction extends BaseBinaryInstruction {
 
 export class LessThanOrEqualInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.LessThanOrEqual, range);
     }
 
@@ -413,7 +413,7 @@ export class LessThanOrEqualInstruction extends BaseBinaryInstruction {
 
 export class GreaterThanOrEqualInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.GreaterThanOrEqual, range);
     }
 
@@ -428,7 +428,7 @@ export class GreaterThanOrEqualInstruction extends BaseBinaryInstruction {
 
 export class AddInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Add, range);
     }
 
@@ -439,7 +439,7 @@ export class AddInstruction extends BaseBinaryInstruction {
 
 export class SubtractInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Subtract, range);
     }
 
@@ -450,7 +450,7 @@ export class SubtractInstruction extends BaseBinaryInstruction {
 
 export class MultiplyInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Multiply, range);
     }
 
@@ -461,7 +461,7 @@ export class MultiplyInstruction extends BaseBinaryInstruction {
 
 export class DivideInstruction extends BaseBinaryInstruction {
     public constructor(
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.Divide, range);
     }
 
@@ -473,7 +473,7 @@ export class DivideInstruction extends BaseBinaryInstruction {
 export class PushNumberInstruction extends BaseInstruction {
     public constructor(
         public readonly value: number,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.PushNumber, range);
     }
 
@@ -486,7 +486,7 @@ export class PushNumberInstruction extends BaseInstruction {
 export class PushStringInstruction extends BaseInstruction {
     public constructor(
         public readonly value: string,
-        range: TextRange) {
+        range: CompilerRange) {
         super(InstructionKind.PushString, range);
     }
 

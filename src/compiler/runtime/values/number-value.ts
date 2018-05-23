@@ -3,7 +3,7 @@ import { StringValue } from "./string-value";
 import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../instructions";
 import { Diagnostic, ErrorCode } from "../../diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
-import { TokenKind, Token } from "../../syntax/nodes/tokens";
+import { TokenKind, Token } from "../../syntax/tokens";
 
 export class NumberValue extends BaseValue {
     public constructor(public readonly value: number) {

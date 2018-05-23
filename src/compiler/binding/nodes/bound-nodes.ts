@@ -1,4 +1,4 @@
-import { BaseSyntaxNode } from "../../syntax/nodes/syntax-nodes";
+import { BaseSyntaxNode } from "../../syntax/syntax-nodes";
 
 export abstract class BaseBoundNode<TSyntax extends BaseSyntaxNode> {
     public constructor(

@@ -1,5 +1,6 @@
 import { ErrorCode, Diagnostic } from "../diagnostics";
-import { Token, TokenKind } from "./nodes/tokens";
+import { Token, TokenKind } from "./tokens";
+import { CompilerRange } from "./ranges";
 
 export class Scanner {
     private _index: number = 0;
@@ -117,7 +118,7 @@ export class Scanner {
                 default:
                     if (!Scanner.isSupportedCharacter(ch)) {
                         const column = this._column + lookAhead - this._index;
-                        const range = { line: this._line, start: column, end: column };
+                        const range = CompilerRange.fromValues(this._line, column, this._line, column);
                         this._diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, range, ch));
                     }
 
@@ -182,12 +183,7 @@ export class Scanner {
     }
 
     private addToken(current: string, kind: TokenKind): Token {
-        const token = new Token(current, kind, {
-            line: this._line,
-            start: this._column,
-            end: this._column + current.length
-        });
-
+        const token = new Token(current, kind, CompilerRange.fromValues(this._line, this._column, this._line, this._column + current.length));
         this._index += current.length;
         this._column += current.length;
 

@@ -1,8 +1,8 @@
-import { BaseSyntaxNode, TextRange } from "./syntax-nodes";
-import { Token, TokenKind } from "./tokens";
 import { BaseExpressionSyntax } from "./expressions";
 import { SyntaxNodesResources } from "../../../strings/syntax-nodes";
-import { CompilerUtils } from "../../compiler-utils";
+import { Token, TokenKind } from "../tokens";
+import { BaseSyntaxNode } from "../syntax-nodes";
+import { CompilerRange } from "../ranges";
 
 export enum CommandSyntaxKind {
     If,
@@ -23,7 +23,7 @@ export enum CommandSyntaxKind {
 export abstract class BaseCommandSyntax extends BaseSyntaxNode {
     public constructor(
         public readonly kind: CommandSyntaxKind,
-        public readonly range: TextRange) {
+        public readonly range: CompilerRange) {
         super();
     }
 
@@ -52,7 +52,7 @@ export class IfCommandSyntax extends BaseCommandSyntax {
         readonly ifToken: Token,
         readonly expression: BaseExpressionSyntax,
         readonly thenToken: Token) {
-        super(CommandSyntaxKind.If, CompilerUtils.combineRanges(ifToken.range, thenToken.range));
+        super(CommandSyntaxKind.If, CompilerRange.combine(ifToken.range, thenToken.range));
     }
 }
 
@@ -68,7 +68,7 @@ export class ElseIfCommandSyntax extends BaseCommandSyntax {
         readonly elseIfToken: Token,
         readonly expression: BaseExpressionSyntax,
         readonly thenToken: Token) {
-        super(CommandSyntaxKind.ElseIf, CompilerUtils.combineRanges(elseIfToken.range, thenToken.range));
+        super(CommandSyntaxKind.ElseIf, CompilerRange.combine(elseIfToken.range, thenToken.range));
     }
 }
 
@@ -93,7 +93,7 @@ export class ForCommandSyntax extends BaseCommandSyntax {
         readonly toToken: Token,
         readonly toExpression: BaseExpressionSyntax,
         readonly stepClause: ForStepClause | undefined) {
-        super(CommandSyntaxKind.For, CompilerUtils.combineRanges(
+        super(CommandSyntaxKind.For, CompilerRange.combine(
             forToken.range,
             stepClause ? stepClause.expression.range : toExpression.range));
     }
@@ -110,7 +110,7 @@ export class WhileCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly whileToken: Token,
         readonly expression: BaseExpressionSyntax) {
-        super(CommandSyntaxKind.While, CompilerUtils.combineRanges(whileToken.range, expression.range));
+        super(CommandSyntaxKind.While, CompilerRange.combine(whileToken.range, expression.range));
     }
 }
 
@@ -125,7 +125,7 @@ export class LabelCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly labelToken: Token,
         readonly colonToken: Token) {
-        super(CommandSyntaxKind.Label, CompilerUtils.combineRanges(labelToken.range, colonToken.range));
+        super(CommandSyntaxKind.Label, CompilerRange.combine(labelToken.range, colonToken.range));
     }
 }
 
@@ -133,7 +133,7 @@ export class GoToCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly goToToken: Token,
         readonly labelToken: Token) {
-        super(CommandSyntaxKind.GoTo, CompilerUtils.combineRanges(goToToken.range, labelToken.range));
+        super(CommandSyntaxKind.GoTo, CompilerRange.combine(goToToken.range, labelToken.range));
     }
 }
 
@@ -141,7 +141,7 @@ export class SubCommandSyntax extends BaseCommandSyntax {
     public constructor(
         readonly subToken: Token,
         readonly nameToken: Token) {
-        super(CommandSyntaxKind.Sub, CompilerUtils.combineRanges(subToken.range, nameToken.range));
+        super(CommandSyntaxKind.Sub, CompilerRange.combine(subToken.range, nameToken.range));
     }
 }
 
@@ -162,7 +162,7 @@ export class ExpressionCommandSyntax extends BaseCommandSyntax {
 export class MissingCommandSyntax extends BaseCommandSyntax {
     public constructor(
         expectedKind: CommandSyntaxKind,
-        expectedRange: TextRange) {
+        expectedRange: CompilerRange) {
         super(expectedKind, expectedRange);
     }
 }

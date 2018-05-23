@@ -5,6 +5,7 @@ import "./style.css";
 import { provideCompletion, CompilerCompletionItemKind } from "../../../../compiler/services/completion-service";
 import { provideHover } from "../../../../compiler/services/hover-service";
 import { EditorUtils } from "../../../editor-utils";
+import { CompilerRange } from "../../../../compiler/syntax/ranges";
 
 interface CustomEditorProps {
     readOnly: boolean;
@@ -63,7 +64,7 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
     public setDiagnostics(diagnostics: ReadonlyArray<Diagnostic>): void {
         this.decorations = this.editor!.deltaDecorations(this.decorations, diagnostics.map(diagnostic => {
             return {
-                range: EditorUtils.textRangeToEditorRange(diagnostic.range),
+                range: EditorUtils.compilerRangeToEditorRange(diagnostic.range),
                 options: {
                     className: "wavy-line",
                     glyphMarginClassName: "error-line-glyph"
@@ -73,16 +74,16 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
     }
 
     public highlightLine(line: number): void {
-        const monacoRange = EditorUtils.textRangeToEditorRange({ line: line, start: 0, end: Number.MAX_VALUE });
+        const range = EditorUtils.compilerRangeToEditorRange(CompilerRange.fromValues(line, 0, line, Number.MAX_VALUE));
 
         this.decorations = this.editor!.deltaDecorations(this.decorations, [{
-            range: monacoRange,
+            range: range,
             options: {
                 className: "debugger-line-highlight"
             }
         }]);
 
-        this.editor!.revealLine(monacoRange.startLineNumber);
+        this.editor!.revealLine(range.startLineNumber);
     }
 }
 
@@ -93,7 +94,7 @@ class CompletionService implements monaco.languages.CompletionItemProvider {
 
     public provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.CompletionItem[] {
         const line = model.getLineContent(position.lineNumber);
-        return provideCompletion(line, EditorUtils.editorPositionToTextRange(position)).map(item => {
+        return provideCompletion(line, EditorUtils.editorPositionToCompilerPosition(position)).map(item => {
             let kind: monaco.languages.CompletionItemKind;
             switch (item.kind) {
                 case CompilerCompletionItemKind.Class: kind = monaco.languages.CompletionItemKind.Class; break;
@@ -114,11 +115,11 @@ class CompletionService implements monaco.languages.CompletionItemProvider {
 
 class HoverService implements monaco.languages.HoverProvider {
     public provideHover(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.Hover {
-        const result = provideHover(model.getValue(), EditorUtils.editorPositionToTextRange(position));
+        const result = provideHover(model.getValue(), EditorUtils.editorPositionToCompilerPosition(position));
         if (result) {
             return {
                 contents: [result.text],
-                range: EditorUtils.textRangeToEditorRange(result.range)
+                range: EditorUtils.compilerRangeToEditorRange(result.range)
             };
         } else {
             return null as any;

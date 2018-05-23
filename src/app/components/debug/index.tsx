@@ -109,7 +109,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                 if (this.state.engine.state !== ExecutionState.Terminated) {
                     const frame = this.state.engine.executionStack[this.state.engine.executionStack.length - 1];
                     const instruction = this.state.engine.modules[frame.moduleName][frame.instructionIndex];
-                    this.editor!.highlightLine(instruction.sourceRange.line);
+                    this.editor!.highlightLine(instruction.sourceRange.start.line);
 
                     if (this.state.engine.state === ExecutionState.Paused) {
                         this.setState({

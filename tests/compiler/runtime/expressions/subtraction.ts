@@ -1,6 +1,7 @@
 import "jasmine";
 import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
 import { Diagnostic, ErrorCode } from "../../../../src/compiler/diagnostics";
+import { CompilerRange } from "../../../../src/compiler/syntax/ranges";
 
 describe("Compiler.Runtime.Expressions.Subtraction", () => {
     it("computes subtraction - number minus number", () => {
@@ -23,7 +24,7 @@ TextWindow.WriteLine(1 - "t")`,
             // TextWindow.WriteLine(1 - "t")
             //                      ^^^^^^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 28 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 28), "-"));
     });
 
     it("computes subtraction - number minus array - error", () => {
@@ -33,7 +34,7 @@ TextWindow.WriteLine(1 - x)`,
             // TextWindow.WriteLine(1 - x)
             //                      ^^^^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 26 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 26), "-"));
     });
     
     it("computes subtraction - numeric string minus number", () => {
@@ -56,7 +57,7 @@ TextWindow.WriteLine("1" - "t")`,
             // TextWindow.WriteLine("1" - "t")
             //                      ^^^^^^^^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 30 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 30), "-"));
     });
 
     it("computes subtraction - numeric string minus array - error", () => {
@@ -66,7 +67,7 @@ TextWindow.WriteLine("1" - x)`,
             // TextWindow.WriteLine("1" - x)
             //                      ^^^^^^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 28 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 28), "-"));
     });
     
     it("computes subtraction - non-numeric string minus number", () => {
@@ -75,7 +76,7 @@ TextWindow.WriteLine("r" - 5)`,
             // TextWindow.WriteLine("r" - 5)
             //                      ^^^^^^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 28 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 28), "-"));
     });
 
     it("computes subtraction - non-numeric string minus numeric string", () => {
@@ -84,7 +85,7 @@ TextWindow.WriteLine("r" - "4")`,
             // TextWindow.WriteLine("r" - "4")
             //                      ^^^^^^^^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 30 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 30), "-"));
     });
 
     it("computes subtraction - non-numeric string minus non-numeric string", () => {
@@ -93,7 +94,7 @@ TextWindow.WriteLine("r" - "t")`,
             // TextWindow.WriteLine("r" - "t")
             //                      ^^^^^^^^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 30 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 30), "-"));
     });
 
     it("computes subtraction - non-numeric string minus array - error", () => {
@@ -103,7 +104,7 @@ TextWindow.WriteLine("r" - x)`,
             // TextWindow.WriteLine("r" - x)
             //                      ^^^^^^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 2, start: 21, end: 28 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(2, 21, 2, 28), "-"));
     });
     
     it("computes subtraction - array minus number", () => {
@@ -113,7 +114,7 @@ TextWindow.WriteLine(x - 5)`,
             // TextWindow.WriteLine(x - 5)
             //                      ^^^^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 26 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 26), "-"));
     });
 
     it("computes subtraction - array minus numeric string", () => {
@@ -123,7 +124,7 @@ TextWindow.WriteLine(x - "4")`,
             // TextWindow.WriteLine(x - "4")
             //                      ^^^^^^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 28 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 28), "-"));
     });
 
     it("computes subtraction - array minus non-numeric string", () => {
@@ -133,7 +134,7 @@ TextWindow.WriteLine(x - "t")`,
             // TextWindow.WriteLine(x - "t")
             //                      ^^^^^^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 28 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 28), "-"));
     });
 
     it("computes subtraction - array minus array - error", () => {
@@ -144,6 +145,6 @@ TextWindow.WriteLine(x - y)`,
             // TextWindow.WriteLine(x - y)
             //                      ^^^^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 3, start: 21, end: 26 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(3, 21, 3, 26), "-"));
     });
 });

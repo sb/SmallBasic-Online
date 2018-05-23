@@ -1,6 +1,7 @@
 import "jasmine";
 import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/diagnostics";
+import { CompilerRange } from "../../../src/compiler/syntax/ranges";
 
 describe("Compiler.Binding.ExpressionBinder", () => {
     it("reports errors on expression without value - indexer base", () => {
@@ -9,7 +10,7 @@ x = TextWindow[5]`,
             // x = TextWindow[5]
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
     
     it("reports errors on expression without value - indexer index - first", () => {
@@ -18,7 +19,7 @@ x = y[TextWindow]`,
             // x = y[TextWindow]
             //       ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 6, end: 16 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 6, 1, 16)));
     });
     
     it("reports errors on expression without value - indexer base - second", () => {
@@ -27,7 +28,7 @@ x = y[5][TextWindow]`,
             // x = y[5][TextWindow]
             //          ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 9, end: 19 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 9, 1, 19)));
     });
     
     it("reports errors on expression without value - method arguments - first", () => {
@@ -36,7 +37,7 @@ TextWindow.WriteLine(TextWindow)`,
             // TextWindow.WriteLine(TextWindow)
             //                      ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 21, end: 31 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 21, 1, 31)));
     });
     
     it("reports errors on expression without value - method arguments - second", () => {
@@ -45,11 +46,11 @@ TextWindow.WriteLine(5, TextWindow)`,
             // TextWindow.WriteLine(5, TextWindow)
             //                         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 24, end: 34 }),
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 24, 1, 34)),
             // TextWindow.WriteLine(5, TextWindow)
             // ^^^^^^^^^^^^^^^^^^^^
             // I was expecting 1 arguments, but found 2 instead.
-            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "2"));
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, CompilerRange.fromValues(1, 0, 1, 20), "1", "2"));
     });
     
     it("reports errors on expression without value - method arguments - multiple", () => {
@@ -58,15 +59,15 @@ TextWindow.WriteLine(TextWindow, TextWindow)`,
             // TextWindow.WriteLine(TextWindow, TextWindow)
             //                      ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 21, end: 31 }),
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 21, 1, 31)),
             // TextWindow.WriteLine(TextWindow, TextWindow)
             //                                  ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 33, end: 43 }),
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 33, 1, 43)),
             // TextWindow.WriteLine(TextWindow, TextWindow)
             // ^^^^^^^^^^^^^^^^^^^^
             // I was expecting 1 arguments, but found 2 instead.
-            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "2"));
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, CompilerRange.fromValues(1, 0, 1, 20), "1", "2"));
     });
     
     it("reports errors on expression without value - method arguments - parenthesis", () => {
@@ -75,7 +76,7 @@ x = (TextWindow)`,
             // x = (TextWindow)
             //      ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 5, end: 15 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 5, 1, 15)));
     });
     
     it("reports errors on expression without value - method arguments - negation", () => {
@@ -84,7 +85,7 @@ x = -TextWindow`,
             // x = -TextWindow
             //      ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 5, end: 15 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 5, 1, 15)));
     });
 
     it("reports errors on expression without value - method arguments - library type", () => {
@@ -93,7 +94,7 @@ x = TextWindow`,
             // x = TextWindow
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - method arguments - library method", () => {
@@ -102,7 +103,7 @@ x = TextWindow.WriteLine`,
             // x = TextWindow.WriteLine
             //     ^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 24 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 24)));
     });
     
     it("reports errors on expression without value - method arguments - submodule", () => {
@@ -113,7 +114,7 @@ y = x`,
             // y = x
             //     ^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 3, start: 4, end: 5 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(3, 4, 3, 5)));
     });
 
     it("reports errors on expression without value - or - left hand side", () => {
@@ -122,7 +123,7 @@ x = TextWindow or "False"`,
             // x = TextWindow or "False"
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - or - right hand side", () => {
@@ -131,7 +132,7 @@ x = "False" or TextWindow`,
             // x = "False" or TextWindow
             //                ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 15, end: 25 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 15, 1, 25)));
     });
 
     it("reports errors on expression without value - and - left hand side", () => {
@@ -140,7 +141,7 @@ x = TextWindow and "False"`,
             // x = TextWindow and "False"
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - and - right hand side", () => {
@@ -149,7 +150,7 @@ x = "False" and TextWindow`,
             // x = "False" and TextWindow
             //                 ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 16, end: 26 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 16, 1, 26)));
     });
 
     it("reports errors on expression without value - not equal - left hand side", () => {
@@ -158,7 +159,7 @@ x = TextWindow <> "False"`,
             // x = TextWindow <> "False"
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - not equal - right hand side", () => {
@@ -167,7 +168,7 @@ x = "False" <> TextWindow`,
             // x = "False" <> TextWindow
             //                ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 15, end: 25 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 15, 1, 25)));
     });
     
     it("reports errors on expression without value - equal - left hand side", () => {
@@ -176,7 +177,7 @@ x = TextWindow = "False"`,
             // x = TextWindow = "False"
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - equal - right hand side", () => {
@@ -185,7 +186,7 @@ x = "False" = TextWindow`,
             // x = "False" = TextWindow
             //               ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 14, end: 24 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 14, 1, 24)));
     });
     
     it("reports errors on expression without value - less than - left hand side", () => {
@@ -194,7 +195,7 @@ x = TextWindow < 5`,
             // x = TextWindow < 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - less than - right hand side", () => {
@@ -203,7 +204,7 @@ x = 5 < TextWindow`,
             // x = 5 < TextWindow
             //         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 18 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 18)));
     });
     
     it("reports errors on expression without value - greater than - left hand side", () => {
@@ -212,7 +213,7 @@ x = TextWindow > 5`,
             // x = TextWindow > 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - greater than - right hand side", () => {
@@ -221,7 +222,7 @@ x = 5 > TextWindow`,
             // x = 5 > TextWindow
             //         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 18 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 18)));
     });
     
     it("reports errors on expression without value - less than or equal- left hand side", () => {
@@ -230,7 +231,7 @@ x = TextWindow <= 5`,
             // x = TextWindow <= 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - less than or equal - right hand side", () => {
@@ -239,7 +240,7 @@ x = 5 <= TextWindow`,
             // x = 5 <= TextWindow
             //          ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 9, end: 19 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 9, 1, 19)));
     });
     
     it("reports errors on expression without value - greater than or equal - left hand side", () => {
@@ -248,7 +249,7 @@ x = TextWindow >= 5`,
             // x = TextWindow >= 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - greater than or equal - right hand side", () => {
@@ -257,7 +258,7 @@ x = 5 >= TextWindow`,
             // x = 5 >= TextWindow
             //          ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 9, end: 19 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 9, 1, 19)));
     });
 
     it("reports errors on expression without value - plus - left hand side", () => {
@@ -266,7 +267,7 @@ x = TextWindow + 5`,
             // x = TextWindow + 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - plus - right hand side", () => {
@@ -275,7 +276,7 @@ x = 5 + TextWindow`,
             // x = 5 + TextWindow
             //         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 18 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 18)));
     });
     
     it("reports errors on expression without value - minus - left hand side", () => {
@@ -284,7 +285,7 @@ x = TextWindow - 5`,
             // x = TextWindow - 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - minus - right hand side", () => {
@@ -293,7 +294,7 @@ x = 5 - TextWindow`,
             // x = 5 - TextWindow
             //         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 18 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 18)));
     });
     
     it("reports errors on expression without value - multiply - left hand side", () => {
@@ -302,7 +303,7 @@ x = TextWindow * 5`,
             // x = TextWindow * 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - multiply - right hand side", () => {
@@ -311,7 +312,7 @@ x = 5 * TextWindow`,
             // x = 5 * TextWindow
             //         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 18 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 18)));
     });
     
     it("reports errors on expression without value - divide - left hand side", () => {
@@ -320,7 +321,7 @@ x = TextWindow / 5`,
             // x = TextWindow / 5
             //     ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 4, 1, 14)));
     });
 
     it("reports errors on expression without value - divide - right hand side", () => {
@@ -329,7 +330,7 @@ x = 5 / TextWindow`,
             // x = 5 / TextWindow
             //         ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 18 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 18)));
     });
     
     it("reports errors on invalid array access base - library property", () => {
@@ -338,7 +339,7 @@ x = Clock.Time[0]`,
             // x = Clock.Time[0]
             //     ^^^^^^^^^^
             // This expression is not a valid array.
-            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, CompilerRange.fromValues(1, 4, 1, 14)));
     });
     
     it("reports errors on invalid array access base - library method call", () => {
@@ -347,7 +348,7 @@ x = TextWindow.Read()[1]`,
             // x = TextWindow.Read()[1]
             //     ^^^^^^^^^^^^^^^^^
             // This expression is not a valid array.
-            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, { line: 1, start: 4, end: 21 }));
+            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, CompilerRange.fromValues(1, 4, 1, 21)));
     });
     
     it("reports errors on invalid array access base - string literal", () => {
@@ -356,7 +357,7 @@ x = "test"[1]`,
             // x = "test"[1]
             //     ^^^^^^
             // This expression is not a valid array.
-            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, { line: 1, start: 4, end: 10 }));
+            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, CompilerRange.fromValues(1, 4, 1, 10)));
     });
     
     it("reports errors on invalid array access base - number literal", () => {
@@ -365,7 +366,7 @@ x = 5[1]`,
             // x = 5[1]
             //     ^
             // This expression is not a valid array.
-            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, { line: 1, start: 4, end: 5 }));
+            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, CompilerRange.fromValues(1, 4, 1, 5)));
     });
     
     it("reports errors on invalid array access base - parenthesis", () => {
@@ -374,7 +375,7 @@ y = (x)[1]`,
             // y = (x)[1]
             //     ^^^
             // This expression is not a valid array.
-            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, { line: 1, start: 4, end: 7 }));
+            new Diagnostic(ErrorCode.UnsupportedArrayBaseExpression, CompilerRange.fromValues(1, 4, 1, 7)));
     });
     
     it("reports errors on invalid argument count for library method calls", () => {
@@ -383,7 +384,7 @@ y = TextWindow.Read(5)`,
             // y = TextWindow.Read(5)
             //     ^^^^^^^^^^^^^^^
             // I was expecting 0 arguments, but found 1 instead.
-            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 4, end: 19 }, "0", "1"));
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, CompilerRange.fromValues(1, 4, 1, 19), "0", "1"));
     });
     
     it("reports errors on arguments for submodule calls", () => {
@@ -394,7 +395,7 @@ x(0)`,
             // x(0)
             // ^
             // I was expecting 0 arguments, but found 1 instead.
-            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 3, start: 0, end: 1 }, "0", "1"));
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, CompilerRange.fromValues(3, 0, 3, 1), "0", "1"));
     });
     
     it("reports errors on invalid base for call expressions - array access", () => {
@@ -403,7 +404,7 @@ x[0](1)`,
             // x[0](1)
             // ^^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 4 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 4)));
     });
     
     it("reports errors on invalid base for call expressions - library type", () => {
@@ -412,7 +413,7 @@ TextWindow(1)`,
             // TextWindow(1)
             // ^^^^^^^^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 10)));
     });
     
     it("reports errors on invalid base for call expressions - library method call", () => {
@@ -421,7 +422,7 @@ TextWindow.Read()(1)`,
             // TextWindow.Read()(1)
             // ^^^^^^^^^^^^^^^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 17 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 17)));
     });
     
     it("reports errors on invalid base for call expressions - library property", () => {
@@ -430,7 +431,7 @@ Clock.Time(1)`,
             // Clock.Time(1)
             // ^^^^^^^^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 10)));
     });
     
     it("reports errors on invalid base for call expressions - submodule call", () => {
@@ -441,7 +442,7 @@ x()(0)`,
             // x()(0)
             // ^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 3, start: 0, end: 3 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(3, 0, 3, 3)));
     });
     
     it("reports errors on invalid base for call expressions - string literal", () => {
@@ -450,7 +451,7 @@ x()(0)`,
             // "test"(0)
             // ^^^^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 6)));
     });
     
     it("reports errors on invalid base for call expressions - number literal", () => {
@@ -459,7 +460,7 @@ x()(0)`,
             // 5(0)
             // ^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 1)));
     });
     
     it("reports errors on invalid base for call expressions - parenthesis", () => {
@@ -468,7 +469,7 @@ x()(0)`,
             // (0)(1)
             // ^^^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 3 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 3)));
     });
     
     it("reports errors on invalid base for call expressions - variable", () => {
@@ -477,7 +478,7 @@ x(1)`,
             // x(1)
             // ^
             // This expression is not a valid submodule or method to be called.
-            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, { line: 1, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, CompilerRange.fromValues(1, 0, 1, 1)));
     });
     
     it("reports errors on non-existent library member", () => {
@@ -486,7 +487,7 @@ x = TextWindow.Nonexistent`,
             // x = TextWindow.Nonexistent
             //     ^^^^^^^^^^
             // The library 'TextWindow' has no member named 'Nonexistent'.
-            new Diagnostic(ErrorCode.LibraryMemberNotFound, { line: 1, start: 4, end: 14 }, "TextWindow", "Nonexistent"));
+            new Diagnostic(ErrorCode.LibraryMemberNotFound, CompilerRange.fromValues(1, 4, 1, 14), "TextWindow", "Nonexistent"));
     });
     
     it("reports errors on invalid base for dot expression - array access", () => {
@@ -495,7 +496,7 @@ x = y[0].Value`,
             // x = y[0].Value
             //     ^^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 8 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 8)));
     });
     
     it("reports errors on invalid base for dot expression - library property", () => {
@@ -504,7 +505,7 @@ x = Clock.Time.Value`,
             // x = Clock.Time.Value
             //     ^^^^^^^^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 14 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 14)));
     });
     
     it("reports errors on invalid base for dot expression - library method", () => {
@@ -513,7 +514,7 @@ x = TextWindow.Read.Value`,
             // x = TextWindow.Read.Value
             //     ^^^^^^^^^^^^^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 19 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 19)));
     });
     
     it("reports errors on invalid base for dot expression - library method call", () => {
@@ -522,7 +523,7 @@ x = TextWindow.Read().Value`,
             // x = TextWindow.Read().Value
             //     ^^^^^^^^^^^^^^^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 21 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 21)));
     });
     
     it("reports errors on invalid base for dot expression - submodule", () => {
@@ -533,7 +534,7 @@ x = y.Value`,
             // x = y.Value
             //     ^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 3, start: 4, end: 5 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(3, 4, 3, 5)));
     });
     
     it("reports errors on invalid base for dot expression - submodule call", () => {
@@ -544,7 +545,7 @@ x = y().Value`,
             // x = y().Value
             //     ^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 3, start: 4, end: 7 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(3, 4, 3, 7)));
     });
     
     it("reports errors on invalid base for dot expression - variable", () => {
@@ -553,7 +554,7 @@ x = y.Value`,
             // x = y.Value
             //     ^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 5 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 5)));
     });
     
     it("reports errors on invalid base for dot expression - string literal", () => {
@@ -562,7 +563,7 @@ x = "test".Value`,
             // x = "test".Value
             //     ^^^^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 10 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 10)));
     });
     
     it("reports errors on invalid base for dot expression - parenthesis", () => {
@@ -571,6 +572,6 @@ x = (5).Value`,
             // x = (5).Value
             //     ^^^
             // You can only use dot access with a library. Did you mean to use an existing library instead?
-            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, { line: 1, start: 4, end: 7 }));
+            new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 7)));
     });
 });

@@ -1,7 +1,7 @@
 import { LibraryTypeDefinition, SupportedLibraries } from "../../compiler/runtime/supported-libraries";
 import { Scanner } from "../../compiler/syntax/scanner";
-import { TokenKind } from "../../compiler/syntax/nodes/tokens";
-import { TextRange } from "../syntax/nodes/syntax-nodes";
+import { TokenKind } from "../../compiler/syntax/tokens";
+import { CompilerPosition } from "../syntax/ranges";
 
 const libraries: SupportedLibraries = new SupportedLibraries();
 
@@ -17,7 +17,7 @@ export interface CompilerCompletionItem {
     description: string;
 }
 
-export function provideCompletion(line: string, position: TextRange): CompilerCompletionItem[] {
+export function provideCompletion(line: string, position: CompilerPosition): CompilerCompletionItem[] {
     const scanner = new Scanner(line);
     if (scanner.result.length === 0) {
         return getTypes();
@@ -25,7 +25,7 @@ export function provideCompletion(line: string, position: TextRange): CompilerCo
 
     let i: number;
     for (i = scanner.result.length - 1; i > 0; i--) {
-        if (scanner.result[i].range.start <= position.start) {
+        if (scanner.result[i].range.containsPosition(position)) {
             break;
         }
     }

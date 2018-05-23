@@ -1,5 +1,5 @@
 import { SubCommandSyntax, EndSubCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, ForCommandSyntax, EndForCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax } from "./commands";
-import { BaseSyntaxNode } from "./syntax-nodes";
+import { BaseSyntaxNode } from "../syntax-nodes";
 
 export enum StatementSyntaxKind {
     SubModule,

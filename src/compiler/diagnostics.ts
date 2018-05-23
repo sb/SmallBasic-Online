@@ -1,4 +1,4 @@
-import { TextRange } from "./syntax/nodes/syntax-nodes";
+import { CompilerRange } from "./syntax/ranges";
 import { ErrorResources } from "../strings/errors";
 import { CompilerUtils } from "./compiler-utils";
 
@@ -48,7 +48,7 @@ export class Diagnostic {
     public readonly args: ReadonlyArray<string>;
     public constructor(
         public readonly code: ErrorCode,
-        public readonly range: TextRange,
+        public readonly range: CompilerRange,
         ...args: string[]) {
         this.args = args;
     }

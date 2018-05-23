@@ -5,7 +5,7 @@ import { CommandsParser } from "./syntax/command-parser";
 import { Diagnostic } from "./diagnostics";
 import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
-import { Token } from "./syntax/nodes/tokens";
+import { Token } from "./syntax/tokens";
 import { BaseCommandSyntax } from "./syntax/nodes/commands";
 import { BaseBoundStatement } from "./binding/nodes/statements";
 import { BaseStatementSyntax } from "./syntax/nodes/statements";

@@ -12,9 +12,7 @@ function testHover(text: string, expectedHover?: string): void {
 
     if(expectedHover) {
         expect(result).toBeDefined();
-        expect(result!.range.line).toBe(position.line);
-        expect(result!.range.start).toBeLessThanOrEqual(position.start);
-        expect(result!.range.end).toBeGreaterThanOrEqual(position.end);
+        expect(result!.range.containsPosition(position)).toBeTruthy();
         expect(result!.text).toBe(expectedHover);
     } else {
         expect(result).toBeUndefined();

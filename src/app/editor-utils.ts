@@ -1,21 +1,23 @@
-import { TextRange } from "../compiler/syntax/nodes/syntax-nodes";
+import { CompilerRange, CompilerPosition } from "../compiler/syntax/ranges";
 
 export module EditorUtils {
-    export function textRangeToEditorRange(range: TextRange): monaco.Range {
-        return new monaco.Range(range.line + 1, range.start + 1, range.line + 1, range.end + 1);
+    export function compilerPositionToEditorPosition(position: CompilerPosition): monaco.Position {
+        return new monaco.Position(position.line + 1, position.column + 1);
     }
 
-    export function editorPositionToTextRange(position: monaco.Position): TextRange {
-        return {
-            line: position.lineNumber,
-            start: position.column,
-            end: position.column
-        };
+    export function editorPositionToCompilerPosition(position: monaco.Position): CompilerPosition {
+        return new CompilerPosition(position.lineNumber - 1, position.column - 1);
     }
 
-    export function isPositionInTextRange(position: monaco.Position, range: TextRange): boolean {
-        return range.line + 1 === position.lineNumber
-            && range.start + 1 <= position.column
-            && position.column <= range.end + 1;
+    export function compilerRangeToEditorRange(range: CompilerRange): monaco.Range {
+        return monaco.Range.fromPositions(
+            EditorUtils.compilerPositionToEditorPosition(range.start),
+            EditorUtils.compilerPositionToEditorPosition(range.end));
+    }
+
+    export function editorRangeToCompilerRange(range: monaco.Range): CompilerRange {
+        return CompilerRange.fromPositions(
+            EditorUtils.editorPositionToCompilerPosition(range.getStartPosition()),
+            EditorUtils.editorPositionToCompilerPosition(range.getEndPosition()));
     }
 }

@@ -1,20 +1,18 @@
 import { Compilation } from "../../compiler/compilation";
-import { TextRange } from "../syntax/nodes/syntax-nodes";
+import { CompilerRange, CompilerPosition } from "../syntax/ranges";
 
 export interface CompilerHoverResult {
     text: string;
-    range: TextRange;
+    range: CompilerRange;
 }
 
-export function provideHover(text: string, position: TextRange): CompilerHoverResult | undefined {
+export function provideHover(text: string, position: CompilerPosition): CompilerHoverResult | undefined {
     const compilation = new Compilation(text);
 
     for (let i = 0; i < compilation.diagnostics.length; i++) {
         const diagnostic = compilation.diagnostics[i];
 
-        if (diagnostic.range.line === position.line
-            && diagnostic.range.start <= position.start
-            && position.end <= diagnostic.range.end) {
+        if (diagnostic.range.containsPosition(position)) {
             return {
                 range: diagnostic.range,
                 text: diagnostic.toString()

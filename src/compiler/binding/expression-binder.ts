@@ -41,7 +41,7 @@ import {
     UnaryOperatorExpressionSyntax,
     IdentifierExpressionSyntax
 } from "../syntax/nodes/expressions";
-import { TokenKind } from "../syntax/nodes/tokens";
+import { TokenKind } from "../syntax/tokens";
 
 const libraries: SupportedLibraries = new SupportedLibraries();
 
