@@ -3,9 +3,10 @@ import { StringValue } from "./values/string-value";
 import { ValueKind, BaseValue, Constants } from "./values/base-value";
 import { NumberValue } from "./values/number-value";
 import { ErrorCode, Diagnostic } from "../diagnostics";
-import { Token, TokenKind } from "../syntax/tokens";
+import { TokenKind } from "../syntax/tokens";
 import { ArrayValue } from "./values/array-value";
 import { CompilerRange } from "../syntax/ranges";
+import { CompilerUtils } from "../compiler-utils";
 
 export enum InstructionKind {
     TempLabel,
@@ -321,10 +322,10 @@ export class NegateInstruction extends BaseInstruction {
                 frame.instructionIndex++;
                 break;
             case ValueKind.String:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, this.sourceRange, Token.toDisplayString(TokenKind.Minus)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAString, this.sourceRange, CompilerUtils.tokenToDisplayString(TokenKind.Minus)));
                 break;
             case ValueKind.Array:
-                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, this.sourceRange, Token.toDisplayString(TokenKind.Minus)));
+                engine.terminate(new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, this.sourceRange, CompilerUtils.tokenToDisplayString(TokenKind.Minus)));
                 break;
             default:
                 throw new Error(`Unexpected value kind ${ValueKind[value.kind]}`);

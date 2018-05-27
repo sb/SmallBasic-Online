@@ -20,6 +20,7 @@ import {
     EndSubCommandSyntax,
     IfHeaderSyntax
 } from "./syntax-nodes";
+import { CompilerUtils } from "../compiler-utils";
 
 export class StatementsParser {
     private _index: number = 0;
@@ -66,8 +67,8 @@ export class StatementsParser {
                         this._diagnostics.push(new Diagnostic(
                             ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                             current.range,
-                            BaseSyntax.toDisplayString(SyntaxKind.EndSubCommand),
-                            BaseSyntax.toDisplayString(SyntaxKind.SubCommand)));
+                            CompilerUtils.commandToDisplayString(SyntaxKind.EndSubCommand),
+                            CompilerUtils.commandToDisplayString(SyntaxKind.SubCommand)));
                     }
                     break;
                 }
@@ -105,8 +106,8 @@ export class StatementsParser {
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     current.range,
-                    BaseSyntax.toDisplayString(current.kind),
-                    BaseSyntax.toDisplayString(SyntaxKind.IfCommand)));
+                    CompilerUtils.commandToDisplayString(current.kind),
+                    CompilerUtils.commandToDisplayString(SyntaxKind.IfCommand)));
                 return;
             }
             case SyntaxKind.ForCommand: {
@@ -117,8 +118,8 @@ export class StatementsParser {
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     current.range,
-                    BaseSyntax.toDisplayString(current.kind),
-                    BaseSyntax.toDisplayString(SyntaxKind.ForCommand)));
+                    CompilerUtils.commandToDisplayString(current.kind),
+                    CompilerUtils.commandToDisplayString(SyntaxKind.ForCommand)));
                 return;
             }
             case SyntaxKind.WhileCommand: {
@@ -129,8 +130,8 @@ export class StatementsParser {
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.CannotHaveCommandWithoutPreviousCommand,
                     current.range,
-                    BaseSyntax.toDisplayString(current.kind),
-                    BaseSyntax.toDisplayString(SyntaxKind.WhileCommand)));
+                    CompilerUtils.commandToDisplayString(current.kind),
+                    CompilerUtils.commandToDisplayString(SyntaxKind.WhileCommand)));
                 return;
             }
             case SyntaxKind.LabelCommand: {
@@ -242,8 +243,8 @@ export class StatementsParser {
                 this._diagnostics.push(new Diagnostic(
                     ErrorCode.UnexpectedCommand_ExpectingCommand,
                     current.range,
-                    BaseSyntax.toDisplayString(current.kind),
-                    BaseSyntax.toDisplayString(kind)));
+                    CompilerUtils.commandToDisplayString(current.kind),
+                    CompilerUtils.commandToDisplayString(kind)));
                 return new MissingCommandSyntax(kind, current.range);
             }
         } else {
@@ -251,7 +252,7 @@ export class StatementsParser {
             this._diagnostics.push(new Diagnostic(
                 ErrorCode.UnexpectedEOF_ExpectingCommand,
                 range,
-                BaseSyntax.toDisplayString(kind)));
+                CompilerUtils.commandToDisplayString(kind)));
             return new MissingCommandSyntax(kind, range);
         }
     }

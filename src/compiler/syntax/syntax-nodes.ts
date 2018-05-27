@@ -1,6 +1,5 @@
 import { CompilerRange, CompilerPosition } from "./ranges";
-import { Token, TokenKind } from "./tokens";
-import { SyntaxNodesResources } from "../../strings/syntax-nodes";
+import { Token } from "./tokens";
 
 export enum SyntaxKind {
     ParseTree,
@@ -51,31 +50,12 @@ export abstract class BaseSyntax {
     }
 
     public abstract children(): ReadonlyArray<BaseSyntax>;
-
-    public static toDisplayString(kind: SyntaxKind): string {
-        switch (kind) {
-            case SyntaxKind.IfCommand: return Token.toDisplayString(TokenKind.IfKeyword);
-            case SyntaxKind.ElseCommand: return Token.toDisplayString(TokenKind.ElseKeyword);
-            case SyntaxKind.ElseIfCommand: return Token.toDisplayString(TokenKind.ElseIfKeyword);
-            case SyntaxKind.EndIfCommand: return Token.toDisplayString(TokenKind.EndIfKeyword);
-            case SyntaxKind.ForCommand: return Token.toDisplayString(TokenKind.ForKeyword);
-            case SyntaxKind.EndForCommand: return Token.toDisplayString(TokenKind.EndForKeyword);
-            case SyntaxKind.WhileCommand: return Token.toDisplayString(TokenKind.WhileKeyword);
-            case SyntaxKind.EndWhileCommand: return Token.toDisplayString(TokenKind.EndWhileKeyword);
-            case SyntaxKind.LabelCommand: return SyntaxNodesResources.Label;
-            case SyntaxKind.GoToCommand: return Token.toDisplayString(TokenKind.GoToKeyword);
-            case SyntaxKind.SubCommand: return Token.toDisplayString(TokenKind.SubKeyword);
-            case SyntaxKind.EndSubCommand: return Token.toDisplayString(TokenKind.EndSubKeyword);
-            case SyntaxKind.ExpressionCommand: return SyntaxNodesResources.Expression;
-            default: throw new Error(`Unexpected syntax kind: ${SyntaxKind[kind]}`);
-        }
-    }
 }
 
 export class ParseTreeSyntax extends BaseSyntax {
     public constructor(
-        readonly mainModule: ReadonlyArray<BaseSyntax>,
-        readonly subModules: ReadonlyArray<SubModuleDeclarationSyntax>) {
+        public readonly mainModule: ReadonlyArray<BaseStatementSyntax>,
+        public readonly subModules: ReadonlyArray<SubModuleDeclarationSyntax>) {
         super(SyntaxKind.ParseTree, CompilerRange.fromPositions(
             mainModule.length ? mainModule[0].range.start : subModules.length ? subModules[0].range.start : new CompilerPosition(0, 0),
             subModules.length ? subModules[subModules.length - 1].range.end : mainModule.length ? mainModule[mainModule.length - 1].range.end : new CompilerPosition(0, 0)));
@@ -88,9 +68,9 @@ export class ParseTreeSyntax extends BaseSyntax {
 
 export class SubModuleDeclarationSyntax extends BaseSyntax {
     public constructor(
-        readonly subCommand: SubCommandSyntax,
-        readonly statementsList: ReadonlyArray<BaseSyntax>,
-        readonly endSubCommand: EndSubCommandSyntax) {
+        public readonly subCommand: SubCommandSyntax,
+        public readonly statementsList: ReadonlyArray<BaseStatementSyntax>,
+        public readonly endSubCommand: EndSubCommandSyntax) {
         super(SyntaxKind.SubModuleDeclaration, CompilerRange.combine(subCommand.range, endSubCommand.range));
     }
 
@@ -99,10 +79,18 @@ export class SubModuleDeclarationSyntax extends BaseSyntax {
     }
 }
 
+export abstract class BaseStatementSyntax extends BaseSyntax {
+    protected constructor(
+        public readonly kind: SyntaxKind,
+        public readonly range: CompilerRange) {
+        super(kind, range);
+    }
+}
+
 export class IfHeaderSyntax<THeaderCommand extends IfCommandSyntax | ElseIfCommandSyntax | ElseCommandSyntax> extends BaseSyntax {
     public constructor(
-        readonly headerCommand: THeaderCommand,
-        readonly statementsList: ReadonlyArray<BaseSyntax>) {
+        public readonly headerCommand: THeaderCommand,
+        public readonly statementsList: ReadonlyArray<BaseStatementSyntax>) {
         super(SyntaxKind.IfHeader, statementsList.length
             ? CompilerRange.combine(headerCommand.range, statementsList[statementsList.length - 1].range)
             : headerCommand.range);
@@ -113,12 +101,12 @@ export class IfHeaderSyntax<THeaderCommand extends IfCommandSyntax | ElseIfComma
     }
 }
 
-export class IfStatementSyntax extends BaseSyntax {
+export class IfStatementSyntax extends BaseStatementSyntax {
     public constructor(
-        readonly ifPart: IfHeaderSyntax<IfCommandSyntax>,
-        readonly elseIfParts: ReadonlyArray<IfHeaderSyntax<ElseIfCommandSyntax>>,
-        readonly elsePartOpt: IfHeaderSyntax<ElseCommandSyntax> | undefined,
-        readonly endIfCommand: EndIfCommandSyntax) {
+        public readonly ifPart: IfHeaderSyntax<IfCommandSyntax>,
+        public readonly elseIfParts: ReadonlyArray<IfHeaderSyntax<ElseIfCommandSyntax>>,
+        public readonly elsePartOpt: IfHeaderSyntax<ElseCommandSyntax> | undefined,
+        public readonly endIfCommand: EndIfCommandSyntax) {
         super(SyntaxKind.IfStatement, CompilerRange.combine(ifPart.range, endIfCommand.range));
     }
 
@@ -129,11 +117,11 @@ export class IfStatementSyntax extends BaseSyntax {
     }
 }
 
-export class WhileStatementSyntax extends BaseSyntax {
+export class WhileStatementSyntax extends BaseStatementSyntax {
     public constructor(
-        readonly whileCommand: WhileCommandSyntax,
-        readonly statementsList: ReadonlyArray<BaseSyntax>,
-        readonly endWhileCommand: EndWhileCommandSyntax) {
+        public readonly whileCommand: WhileCommandSyntax,
+        public readonly statementsList: ReadonlyArray<BaseStatementSyntax>,
+        public readonly endWhileCommand: EndWhileCommandSyntax) {
         super(SyntaxKind.WhileStatement, CompilerRange.combine(whileCommand.range, endWhileCommand.range));
     }
 
@@ -142,11 +130,11 @@ export class WhileStatementSyntax extends BaseSyntax {
     }
 }
 
-export class ForStatementSyntax extends BaseSyntax {
+export class ForStatementSyntax extends BaseStatementSyntax {
     public constructor(
-        readonly forCommand: ForCommandSyntax,
-        readonly statementsList: ReadonlyArray<BaseSyntax>,
-        readonly endForCommand: EndForCommandSyntax) {
+        public readonly forCommand: ForCommandSyntax,
+        public readonly statementsList: ReadonlyArray<BaseStatementSyntax>,
+        public readonly endForCommand: EndForCommandSyntax) {
         super(SyntaxKind.ForStatement, CompilerRange.combine(forCommand.range, endForCommand.range));
     }
 
@@ -155,11 +143,19 @@ export class ForStatementSyntax extends BaseSyntax {
     }
 }
 
-export class IfCommandSyntax extends BaseSyntax {
+export abstract class BaseCommandSyntax extends BaseSyntax {
+    protected constructor(
+        public readonly kind: SyntaxKind,
+        public readonly range: CompilerRange) {
+        super(kind, range);
+    }
+}
+
+export class IfCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly ifToken: TokenSyntax,
-        readonly expression: BaseSyntax,
-        readonly thenToken: TokenSyntax) {
+        public readonly ifToken: TokenSyntax,
+        public readonly expression: BaseExpressionSyntax,
+        public readonly thenToken: TokenSyntax) {
         super(SyntaxKind.IfCommand, CompilerRange.combine(ifToken.range, thenToken.range));
     }
 
@@ -168,9 +164,9 @@ export class IfCommandSyntax extends BaseSyntax {
     }
 }
 
-export class ElseCommandSyntax extends BaseSyntax {
+export class ElseCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly elseToken: TokenSyntax) {
+        public readonly elseToken: TokenSyntax) {
         super(SyntaxKind.ElseCommand, elseToken.range);
     }
 
@@ -179,11 +175,11 @@ export class ElseCommandSyntax extends BaseSyntax {
     }
 }
 
-export class ElseIfCommandSyntax extends BaseSyntax {
+export class ElseIfCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly elseIfToken: TokenSyntax,
-        readonly expression: BaseSyntax,
-        readonly thenToken: TokenSyntax) {
+        public readonly elseIfToken: TokenSyntax,
+        public readonly expression: BaseExpressionSyntax,
+        public readonly thenToken: TokenSyntax) {
         super(SyntaxKind.ElseIfCommand, CompilerRange.combine(elseIfToken.range, thenToken.range));
     }
 
@@ -192,9 +188,9 @@ export class ElseIfCommandSyntax extends BaseSyntax {
     }
 }
 
-export class EndIfCommandSyntax extends BaseSyntax {
+export class EndIfCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly endIfToken: TokenSyntax) {
+        public readonly endIfToken: TokenSyntax) {
         super(SyntaxKind.EndIfCommand, endIfToken.range);
     }
 
@@ -203,10 +199,10 @@ export class EndIfCommandSyntax extends BaseSyntax {
     }
 }
 
-export class ForStepClause extends BaseSyntax {
+export class ForStepClause extends BaseCommandSyntax {
     public constructor(
-        readonly stepToken: TokenSyntax,
-        readonly expression: BaseSyntax) {
+        public readonly stepToken: TokenSyntax,
+        public readonly expression: BaseExpressionSyntax) {
         super(SyntaxKind.ForStepClause, CompilerRange.combine(stepToken.range, expression.range));
     }
 
@@ -215,15 +211,15 @@ export class ForStepClause extends BaseSyntax {
     }
 }
 
-export class ForCommandSyntax extends BaseSyntax {
+export class ForCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly forToken: TokenSyntax,
-        readonly identifierToken: TokenSyntax,
-        readonly equalToken: TokenSyntax,
-        readonly fromExpression: BaseSyntax,
-        readonly toToken: TokenSyntax,
-        readonly toExpression: BaseSyntax,
-        readonly stepClauseOpt?: ForStepClause) {
+        public readonly forToken: TokenSyntax,
+        public readonly identifierToken: TokenSyntax,
+        public readonly equalToken: TokenSyntax,
+        public readonly fromExpression: BaseExpressionSyntax,
+        public readonly toToken: TokenSyntax,
+        public readonly toExpression: BaseExpressionSyntax,
+        public readonly stepClauseOpt?: ForStepClause) {
         super(SyntaxKind.ForCommand, CompilerRange.combine(
             forToken.range,
             stepClauseOpt ? stepClauseOpt.expression.range : toExpression.range));
@@ -238,9 +234,9 @@ export class ForCommandSyntax extends BaseSyntax {
     }
 }
 
-export class EndForCommandSyntax extends BaseSyntax {
+export class EndForCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly endForToken: TokenSyntax) {
+        public readonly endForToken: TokenSyntax) {
         super(SyntaxKind.EndForCommand, endForToken.range);
     }
 
@@ -249,10 +245,10 @@ export class EndForCommandSyntax extends BaseSyntax {
     }
 }
 
-export class WhileCommandSyntax extends BaseSyntax {
+export class WhileCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly whileToken: TokenSyntax,
-        readonly expression: BaseSyntax) {
+        public readonly whileToken: TokenSyntax,
+        public readonly expression: BaseExpressionSyntax) {
         super(SyntaxKind.WhileCommand, CompilerRange.combine(whileToken.range, expression.range));
     }
 
@@ -261,9 +257,9 @@ export class WhileCommandSyntax extends BaseSyntax {
     }
 }
 
-export class EndWhileCommandSyntax extends BaseSyntax {
+export class EndWhileCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly endWhileToken: TokenSyntax) {
+        public readonly endWhileToken: TokenSyntax) {
         super(SyntaxKind.EndWhileCommand, endWhileToken.range);
     }
 
@@ -272,10 +268,10 @@ export class EndWhileCommandSyntax extends BaseSyntax {
     }
 }
 
-export class LabelCommandSyntax extends BaseSyntax {
+export class LabelCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly labelToken: TokenSyntax,
-        readonly colonToken: TokenSyntax) {
+        public readonly labelToken: TokenSyntax,
+        public readonly colonToken: TokenSyntax) {
         super(SyntaxKind.LabelCommand, CompilerRange.combine(labelToken.range, colonToken.range));
     }
 
@@ -284,10 +280,10 @@ export class LabelCommandSyntax extends BaseSyntax {
     }
 }
 
-export class GoToCommandSyntax extends BaseSyntax {
+export class GoToCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly goToToken: TokenSyntax,
-        readonly labelToken: TokenSyntax) {
+        public readonly goToToken: TokenSyntax,
+        public readonly labelToken: TokenSyntax) {
         super(SyntaxKind.GoToCommand, CompilerRange.combine(goToToken.range, labelToken.range));
     }
 
@@ -296,10 +292,10 @@ export class GoToCommandSyntax extends BaseSyntax {
     }
 }
 
-export class SubCommandSyntax extends BaseSyntax {
+export class SubCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly subToken: TokenSyntax,
-        readonly nameToken: TokenSyntax) {
+        public readonly subToken: TokenSyntax,
+        public readonly nameToken: TokenSyntax) {
         super(SyntaxKind.SubCommand, CompilerRange.combine(subToken.range, nameToken.range));
     }
 
@@ -308,9 +304,9 @@ export class SubCommandSyntax extends BaseSyntax {
     }
 }
 
-export class EndSubCommandSyntax extends BaseSyntax {
+export class EndSubCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly endSubToken: TokenSyntax) {
+        public readonly endSubToken: TokenSyntax) {
         super(SyntaxKind.EndSubCommand, endSubToken.range);
     }
 
@@ -319,9 +315,9 @@ export class EndSubCommandSyntax extends BaseSyntax {
     }
 }
 
-export class ExpressionCommandSyntax extends BaseSyntax {
+export class ExpressionCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly expression: BaseSyntax) {
+        public readonly expression: BaseExpressionSyntax) {
         super(SyntaxKind.ExpressionCommand, expression.range);
     }
 
@@ -330,9 +326,9 @@ export class ExpressionCommandSyntax extends BaseSyntax {
     }
 }
 
-export class CommentCommandSyntax extends BaseSyntax {
+export class CommentCommandSyntax extends BaseCommandSyntax {
     public constructor(
-        readonly commentToken: TokenSyntax) {
+        public readonly commentToken: TokenSyntax) {
         super(SyntaxKind.CommentCommand, commentToken.range);
     }
 
@@ -341,7 +337,7 @@ export class CommentCommandSyntax extends BaseSyntax {
     }
 }
 
-export class MissingCommandSyntax extends BaseSyntax {
+export class MissingCommandSyntax extends BaseCommandSyntax {
     public constructor(
         expectedKind: SyntaxKind,
         expectedRange: CompilerRange) {
@@ -353,10 +349,18 @@ export class MissingCommandSyntax extends BaseSyntax {
     }
 }
 
-export class UnaryOperatorExpressionSyntax extends BaseSyntax {
+export abstract class BaseExpressionSyntax extends BaseSyntax {
+    protected constructor(
+        public readonly kind: SyntaxKind,
+        public readonly range: CompilerRange) {
+        super(kind, range);
+    }
+}
+
+export class UnaryOperatorExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly operatorToken: TokenSyntax,
-        public readonly expression: BaseSyntax) {
+        public readonly expression: BaseExpressionSyntax) {
         super(SyntaxKind.UnaryOperatorExpression, CompilerRange.combine(operatorToken.range, expression.range));
     }
 
@@ -365,11 +369,11 @@ export class UnaryOperatorExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class BinaryOperatorExpressionSyntax extends BaseSyntax {
+export class BinaryOperatorExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
-        public readonly leftExpression: BaseSyntax,
+        public readonly leftExpression: BaseExpressionSyntax,
         public readonly operatorToken: TokenSyntax,
-        public readonly rightExpression: BaseSyntax) {
+        public readonly rightExpression: BaseExpressionSyntax) {
         super(SyntaxKind.BinaryOperatorExpression, CompilerRange.combine(leftExpression.range, rightExpression.range));
     }
 
@@ -378,9 +382,9 @@ export class BinaryOperatorExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class ObjectAccessExpressionSyntax extends BaseSyntax {
+export class ObjectAccessExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
-        public readonly baseExpression: BaseSyntax,
+        public readonly baseExpression: BaseExpressionSyntax,
         public readonly dotToken: TokenSyntax,
         public readonly identifierToken: TokenSyntax) {
         super(SyntaxKind.ObjectAccessExpression, CompilerRange.combine(baseExpression.range, identifierToken.range));
@@ -391,11 +395,11 @@ export class ObjectAccessExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class ArrayAccessExpressionSyntax extends BaseSyntax {
+export class ArrayAccessExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
-        public readonly baseExpression: BaseSyntax,
+        public readonly baseExpression: BaseExpressionSyntax,
         public readonly leftBracketToken: TokenSyntax,
-        public readonly indexExpression: BaseSyntax,
+        public readonly indexExpression: BaseExpressionSyntax,
         public readonly rightBracketToken: TokenSyntax) {
         super(SyntaxKind.ArrayAccessExpression, CompilerRange.combine(baseExpression.range, rightBracketToken.range));
     }
@@ -407,7 +411,7 @@ export class ArrayAccessExpressionSyntax extends BaseSyntax {
 
 export class ArgumentSyntax extends BaseSyntax {
     public constructor(
-        public readonly expression: BaseSyntax,
+        public readonly expression: BaseExpressionSyntax,
         public readonly commaOpt?: TokenSyntax) {
         super(SyntaxKind.Argument, commaOpt ? CompilerRange.combine(expression.range, commaOpt.range) : expression.range);
     }
@@ -417,9 +421,9 @@ export class ArgumentSyntax extends BaseSyntax {
     }
 }
 
-export class CallExpressionSyntax extends BaseSyntax {
+export class CallExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
-        public readonly baseExpression: BaseSyntax,
+        public readonly baseExpression: BaseExpressionSyntax,
         public readonly leftParenToken: TokenSyntax,
         public readonly argumentsList: ReadonlyArray<ArgumentSyntax>,
         public readonly rightParenToken: TokenSyntax) {
@@ -431,10 +435,10 @@ export class CallExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class ParenthesisExpressionSyntax extends BaseSyntax {
+export class ParenthesisExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly leftParenToken: TokenSyntax,
-        public readonly expression: BaseSyntax,
+        public readonly expression: BaseExpressionSyntax,
         public readonly rightParenToken: TokenSyntax) {
         super(SyntaxKind.ParenthesisExpression, CompilerRange.combine(leftParenToken.range, rightParenToken.range));
     }
@@ -444,7 +448,7 @@ export class ParenthesisExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class IdentifierExpressionSyntax extends BaseSyntax {
+export class IdentifierExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly identifierToken: TokenSyntax) {
         super(SyntaxKind.IdentifierExpression, identifierToken.range);
@@ -455,7 +459,7 @@ export class IdentifierExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class StringLiteralExpressionSyntax extends BaseSyntax {
+export class StringLiteralExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly stringToken: TokenSyntax) {
         super(SyntaxKind.StringLiteralExpression, stringToken.range);
@@ -466,7 +470,7 @@ export class StringLiteralExpressionSyntax extends BaseSyntax {
     }
 }
 
-export class NumberLiteralExpressionSyntax extends BaseSyntax {
+export class NumberLiteralExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly numberToken: TokenSyntax) {
         super(SyntaxKind.NumberLiteralExpression, numberToken.range);

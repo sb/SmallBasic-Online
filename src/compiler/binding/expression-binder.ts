@@ -3,7 +3,7 @@ import { Diagnostic, ErrorCode } from "../diagnostics";
 import {
     ArrayAccessBoundExpression,
     BaseBoundExpression,
-    BoundExpressionKind,
+    BoundNodeKind,
     LibraryMethodBoundExpression,
     LibraryTypeBoundExpression,
     NegationBoundExpression,
@@ -27,7 +27,7 @@ import {
     SubtractionBoundExpression,
     MultiplicationBoundExpression,
     DivisionBoundExpression
-} from "./nodes/expressions";
+} from "./bound-nodes";
 import {
     ArrayAccessExpressionSyntax,
     BaseSyntax,
@@ -93,13 +93,13 @@ export class ExpressionBinder {
         let hasErrors = baseExpression.hasErrors || indexExpression.hasErrors;
 
         switch (baseExpression.kind) {
-            case BoundExpressionKind.ArrayAccess: {
+            case BoundNodeKind.ArrayAccessExpression: {
                 const arrayAccess = baseExpression as ArrayAccessBoundExpression;
                 arrayName = arrayAccess.arrayName;
                 indices = [...(arrayAccess).indices, indexExpression];
                 break;
             }
-            case BoundExpressionKind.Variable: {
+            case BoundNodeKind.VariableExpression: {
                 arrayName = (baseExpression as VariableBoundExpression).variableName;
                 indices = [indexExpression];
                 break;
@@ -126,7 +126,7 @@ export class ExpressionBinder {
         let hasErrors = baseExpression.hasErrors || argumentsList.some(arg => arg.hasErrors);
 
         switch (baseExpression.kind) {
-            case BoundExpressionKind.LibraryMethod: {
+            case BoundNodeKind.LibraryMethodExpression: {
                 const method = baseExpression as LibraryMethodBoundExpression;
                 const definition = libraries[method.libraryName].methods[method.methodName];
                 const parametersCount = Object.keys(definition.parameters).length;
@@ -142,7 +142,7 @@ export class ExpressionBinder {
 
                 return new LibraryMethodCallBoundExpression(method.libraryName, method.methodName, argumentsList, definition.returnsValue, hasErrors, syntax);
             }
-            case BoundExpressionKind.SubModule: {
+            case BoundNodeKind.SubModuleExpression: {
                 if (argumentsList.length !== 0) {
                     hasErrors = true;
                     this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedArgumentsCount, baseExpression.syntax.range, "0", argumentsList.length.toString()));
@@ -167,7 +167,7 @@ export class ExpressionBinder {
         const rightHandSide = syntax.identifierToken.token.text;
         let hasErrors = leftHandSide.hasErrors;
 
-        if (leftHandSide.kind !== BoundExpressionKind.LibraryType) {
+        if (leftHandSide.kind !== BoundNodeKind.LibraryTypeExpression) {
             hasErrors = true;
             this._diagnostics.push(new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, leftHandSide.syntax.range));
             return new LibraryPropertyBoundExpression("<library>", rightHandSide, true, hasErrors, syntax);

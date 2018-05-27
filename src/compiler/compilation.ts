@@ -5,9 +5,9 @@ import { Diagnostic } from "./diagnostics";
 import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/tokens";
-import { BaseBoundStatement } from "./binding/nodes/statements";
 import { StatementsParser } from "./syntax/statements-parser";
 import { BaseSyntax, ParseTreeSyntax } from "./syntax/syntax-nodes";
+import { BaseBoundStatement } from "./binding/bound-nodes";
 
 export class Compilation {
     private _diagnostics: Diagnostic[] = [];

@@ -4,6 +4,7 @@ import { } from "./nodes/expressions";
 import { TokenKind, Token } from "./tokens";
 import { CompilerRange } from "./ranges";
 import { CommentCommandSyntax, TokenSyntax } from "./syntax-nodes";
+import { CompilerUtils } from "../compiler-utils";
 
 export class CommandsParser {
     private _index: number = 0;
@@ -302,7 +303,7 @@ export class CommandsParser {
                             ErrorCode.UnexpectedToken_ExpectingToken,
                             currentToken.range,
                             currentToken.text,
-                            Token.toDisplayString(TokenKind.Comma)));
+                            CompilerUtils.tokenToDisplayString(TokenKind.Comma)));
 
                         argumentsList.push(new ArgumentSyntax(currentArgument, undefined));
                         currentArgument = undefined;
@@ -388,14 +389,14 @@ export class CommandsParser {
                     this._index++;
                     return new TokenSyntax(current);
                 } else {
-                    this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingToken, current.range, current.text, Token.toDisplayString(kind)));
+                    this.reportError(new Diagnostic(ErrorCode.UnexpectedToken_ExpectingToken, current.range, current.text, CompilerUtils.tokenToDisplayString(kind)));
                     return this.createMissingToken(current.range, kind);
                 }
             }
         }
 
         const range = this._tokens[this._index - 1].range;
-        this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingToken, range, Token.toDisplayString(kind)));
+        this.reportError(new Diagnostic(ErrorCode.UnexpectedEOL_ExpectingToken, range, CompilerUtils.tokenToDisplayString(kind)));
         return this.createMissingToken(range, kind);
     }
 

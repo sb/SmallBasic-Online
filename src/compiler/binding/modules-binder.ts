@@ -1,7 +1,7 @@
 import { StatementBinder } from "./statement-binder";
 import { Diagnostic, ErrorCode } from "../diagnostics";
-import { BaseBoundStatement } from "./nodes/statements";
 import { BaseSyntax, ParseTreeSyntax } from "../syntax/syntax-nodes";
+import { BaseBoundStatement } from "./bound-nodes";
 
 export class ModulesBinder {
     public static readonly MainModuleName: string = "<Main>";
