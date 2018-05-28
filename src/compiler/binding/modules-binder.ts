@@ -1,24 +1,19 @@
 import { StatementBinder } from "./statement-binder";
 import { Diagnostic, ErrorCode } from "../diagnostics";
-import { BaseSyntax, ParseTreeSyntax } from "../syntax/syntax-nodes";
+import { BaseSyntaxNode, ParseTreeSyntax } from "../syntax/syntax-nodes";
 import { BaseBoundStatement } from "./bound-nodes";
 
 export class ModulesBinder {
     public static readonly MainModuleName: string = "<Main>";
 
-    private _diagnostics: Diagnostic[] = [];
     private _definedSubModules: { [name: string]: boolean } = {};
-    private _boundModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntax>> } = {};
+    private _boundModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntaxNode>> } = {};
 
-    public get boundModules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntax>> } {
+    public get boundModules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntaxNode>> } {
         return this._boundModules;
     }
 
-    public get diagnostics(): ReadonlyArray<Diagnostic> {
-        return this._diagnostics;
-    }
-
-    public constructor(parseTree: ParseTreeSyntax) {
+    public constructor(parseTree: ParseTreeSyntax, private readonly _diagnostics: Diagnostic[]) {
         this.constructSubModulesMap(parseTree);
 
         this._boundModules[ModulesBinder.MainModuleName] = this.bindModule(parseTree.mainModule);
@@ -42,9 +37,7 @@ export class ModulesBinder {
         });
     }
 
-    private bindModule(statements: ReadonlyArray<BaseSyntax>): ReadonlyArray<BaseBoundStatement<BaseSyntax>> {
-        const binder = new StatementBinder(statements, this._definedSubModules);
-        this._diagnostics.push.apply(this._diagnostics, binder.diagnostics);
-        return binder.result;
+    private bindModule(statements: ReadonlyArray<BaseSyntaxNode>): ReadonlyArray<BaseBoundStatement<BaseSyntaxNode>> {
+        return new StatementBinder(statements, this._definedSubModules, this._diagnostics).result;
     }
 }

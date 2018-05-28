@@ -1,5 +1,5 @@
 import { ErrorCode, Diagnostic } from "../diagnostics";
-import { IfCommandSyntax, BaseSyntax, BinaryOperatorExpressionSyntax, UnaryOperatorExpressionSyntax, ObjectAccessExpressionSyntax, ArrayAccessExpressionSyntax, CallExpressionSyntax, IdentifierExpressionSyntax, ParenthesisExpressionSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, ForCommandSyntax, ForStepClause, EndForCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, SubCommandSyntax, EndSubCommandSyntax, ExpressionCommandSyntax, ArgumentSyntax, NumberLiteralExpressionSyntax, StringLiteralExpressionSyntax } from "./syntax-nodes";
+import { IfCommandSyntax, BaseSyntaxNode, BinaryOperatorExpressionSyntax, UnaryOperatorExpressionSyntax, ObjectAccessExpressionSyntax, ArrayAccessExpressionSyntax, CallExpressionSyntax, IdentifierExpressionSyntax, ParenthesisExpressionSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, ForCommandSyntax, ForStepClauseSyntax, EndForCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, SubCommandSyntax, EndSubCommandSyntax, ExpressionCommandSyntax, ArgumentSyntax, NumberLiteralExpressionSyntax, StringLiteralExpressionSyntax } from "./syntax-nodes";
 import { } from "./nodes/expressions";
 import { TokenKind, Token } from "./tokens";
 import { CompilerRange } from "./ranges";
@@ -11,18 +11,13 @@ export class CommandsParser {
     private _line: number = 0;
     private _currentLineHasErrors: boolean = false;
 
-    private _result: BaseSyntax[] = [];
-    private _diagnostics: Diagnostic[] = [];
+    private _result: BaseSyntaxNode[] = [];
 
-    public get result(): ReadonlyArray<BaseSyntax> {
+    public get result(): ReadonlyArray<BaseSyntaxNode> {
         return this._result;
     }
 
-    public get diagnostics(): ReadonlyArray<Diagnostic> {
-        return this._diagnostics;
-    }
-
-    public constructor(private readonly _tokens: ReadonlyArray<Token>) {
+    public constructor(private readonly _tokens: ReadonlyArray<Token>, private readonly _diagnostics: Diagnostic[]) {
         this._tokens = this._tokens.filter(token => {
             switch (token.kind) {
                 // Ignore tokens that shouldn't be parsed.
@@ -140,13 +135,13 @@ export class CommandsParser {
         const toToken = this.eat(TokenKind.ToKeyword);
         const toExpression = this.parseBaseExpression();
 
-        let stepClauseSyntax: ForStepClause | undefined;
+        let stepClauseSyntax: ForStepClauseSyntax | undefined;
 
         if (this.isNext(TokenKind.StepKeyword)) {
             const stepToken = this.eat(TokenKind.StepKeyword);
             const stepExpression = this.parseBaseExpression();
 
-            stepClauseSyntax = new ForStepClause(stepToken, stepExpression);
+            stepClauseSyntax = new ForStepClauseSyntax(stepToken, stepExpression);
         }
 
         return new ForCommandSyntax(forKeyword, identifierToken, equalToken, fromExpression, toToken, toExpression, stepClauseSyntax);
@@ -204,11 +199,11 @@ export class CommandsParser {
         return new ExpressionCommandSyntax(expression);
     }
 
-    private parseBaseExpression(): BaseSyntax {
+    private parseBaseExpression(): BaseSyntaxNode {
         return this.parseBinaryOperator(0);
     }
 
-    private parseBinaryOperator(precedence: number): BaseSyntax {
+    private parseBinaryOperator(precedence: number): BaseSyntaxNode {
         if (precedence >= CommandsParser.BinaryOperatorPrecedence.length) {
             return this.parseUnaryOperator();
         }
@@ -226,7 +221,7 @@ export class CommandsParser {
         return expression;
     }
 
-    private parseUnaryOperator(): BaseSyntax {
+    private parseUnaryOperator(): BaseSyntaxNode {
         if (this.isNext(TokenKind.Minus)) {
             const minusToken = this.eat(TokenKind.Minus);
             const expression = this.parseBaseExpression();
@@ -237,7 +232,7 @@ export class CommandsParser {
         return this.parseCoreExpression();
     }
 
-    private parseCoreExpression(): BaseSyntax {
+    private parseCoreExpression(): BaseSyntaxNode {
         let expression = this.parseTerminalExpression();
 
         while (true) {
@@ -262,14 +257,14 @@ export class CommandsParser {
         }
     }
 
-    private parseObjectAccessExpression(leftHandSide: BaseSyntax): BaseSyntax {
+    private parseObjectAccessExpression(leftHandSide: BaseSyntaxNode): BaseSyntaxNode {
         const dotToken = this.eat(TokenKind.Dot);
         const identifierToken = this.eat(TokenKind.Identifier);
 
         return new ObjectAccessExpressionSyntax(leftHandSide, dotToken, identifierToken);
     }
 
-    private parseArrayAccessExpressoin(leftHandSide: BaseSyntax): BaseSyntax {
+    private parseArrayAccessExpressoin(leftHandSide: BaseSyntaxNode): BaseSyntaxNode {
         const leftSquareBracket = this.eat(TokenKind.LeftSquareBracket);
         const indexExpression = this.parseBaseExpression();
         const rightSquareBracket = this.eat(TokenKind.RightSquareBracket);
@@ -277,12 +272,12 @@ export class CommandsParser {
         return new ArrayAccessExpressionSyntax(leftHandSide, leftSquareBracket, indexExpression, rightSquareBracket);
     }
 
-    private parseCallExpression(leftHandSide: BaseSyntax): BaseSyntax {
+    private parseCallExpression(leftHandSide: BaseSyntaxNode): BaseSyntaxNode {
         const leftParen = this.eat(TokenKind.LeftParen);
         const argumentsList: ArgumentSyntax[] = [];
 
         let currentToken = this.peek();
-        let currentArgument: BaseSyntax | undefined;
+        let currentArgument: BaseSyntaxNode | undefined;
 
         loop: while (currentToken) {
             if (currentArgument) {
@@ -328,7 +323,7 @@ export class CommandsParser {
         return new CallExpressionSyntax(leftHandSide, leftParen, argumentsList, rightParen);
     }
 
-    private parseTerminalExpression(): BaseSyntax {
+    private parseTerminalExpression(): BaseSyntaxNode {
         const current = this.peek();
         if (!current) {
             const range = this._tokens[this._index - 1].range;

@@ -1,6 +1,8 @@
-import { BaseSyntax, UnaryOperatorExpressionSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, CallExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax, IfHeaderSyntax, IfStatementSyntax, WhileStatementSyntax, ForStatementSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
+import { BaseSyntaxNode, UnaryOperatorExpressionSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, CallExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax, IfHeaderSyntax, IfStatementSyntax, WhileStatementSyntax, ForStatementSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
 
-export enum BoundNodeKind {
+export enum BoundKind {
+    SuBModuleDeclaration,
+
     // Statements
     IfHeaderStatement,
     IfStatement,
@@ -42,16 +44,16 @@ export enum BoundNodeKind {
     ParenthesisExpression
 }
 
-export abstract class BaseBoundNode<TSyntax extends BaseSyntax> {
+export abstract class BaseBoundNode<TSyntax extends BaseSyntaxNode> {
     public constructor(
-        public readonly kind: BoundNodeKind,
+        public readonly kind: BoundKind,
         public readonly syntax: TSyntax) {
     }
 
-    public abstract children(): ReadonlyArray<BaseBoundNode<BaseSyntax>>;
+    public abstract children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>>;
 }
 
-export abstract class BaseBoundStatement<TSyntax extends BaseSyntax> extends BaseBoundNode<TSyntax> {
+export abstract class BaseBoundStatement<TSyntax extends BaseSyntaxNode> extends BaseBoundNode<TSyntax> {
 }
 
 export class IfHeaderBoundNode<THeaderCommand extends IfCommandSyntax | ElseIfCommandSyntax> extends BaseBoundNode<IfHeaderSyntax<THeaderCommand>> {
@@ -59,10 +61,10 @@ export class IfHeaderBoundNode<THeaderCommand extends IfCommandSyntax | ElseIfCo
         public readonly condition: BaseBoundExpression<BaseExpressionSyntax>,
         public readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>,
         syntax: IfHeaderSyntax<THeaderCommand>) {
-        super(BoundNodeKind.IfHeaderStatement, syntax);
+        super(BoundKind.IfHeaderStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.condition, ...this.statementsList];
     }
 }
@@ -73,10 +75,10 @@ export class IfBoundStatement extends BaseBoundStatement<IfStatementSyntax> {
         public readonly elseIfParts: ReadonlyArray<IfHeaderBoundNode<ElseIfCommandSyntax>>,
         public readonly elsePart: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> | undefined,
         syntax: IfStatementSyntax) {
-        super(BoundNodeKind.IfStatement, syntax);
+        super(BoundKind.IfStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return this.elsePart
             ? [this.ifPart, ...this.elseIfParts, ...this.elsePart]
             : [this.ifPart, ...this.elseIfParts];
@@ -88,10 +90,10 @@ export class WhileBoundStatement extends BaseBoundStatement<WhileStatementSyntax
         public readonly condition: BaseBoundExpression<BaseExpressionSyntax>,
         public readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>,
         syntax: WhileStatementSyntax) {
-        super(BoundNodeKind.WhileStatement, syntax);
+        super(BoundKind.WhileStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.condition, ...this.statementsList];
     }
 }
@@ -104,10 +106,10 @@ export class ForBoundStatement extends BaseBoundStatement<ForStatementSyntax> {
         public readonly stepExpression: BaseBoundExpression<BaseExpressionSyntax> | undefined,
         public readonly statementsList: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>,
         syntax: ForStatementSyntax) {
-        super(BoundNodeKind.ForStatement, syntax);
+        super(BoundKind.ForStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         const children = [this.fromExpression, this.toExpression];
         if (this.stepExpression) {
             children.push(this.stepExpression);
@@ -121,10 +123,10 @@ export class LabelBoundStatement extends BaseBoundStatement<LabelCommandSyntax> 
     public constructor(
         public readonly labelName: string,
         syntax: LabelCommandSyntax) {
-        super(BoundNodeKind.LabelStatement, syntax);
+        super(BoundKind.LabelStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -133,10 +135,10 @@ export class GoToBoundStatement extends BaseBoundStatement<GoToCommandSyntax> {
     public constructor(
         public readonly labelName: string,
         syntax: GoToCommandSyntax) {
-        super(BoundNodeKind.GoToStatement, syntax);
+        super(BoundKind.GoToStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -145,10 +147,10 @@ export class SubModuleCallBoundStatement extends BaseBoundStatement<ExpressionCo
     public constructor(
         public readonly subModuleName: string,
         syntax: ExpressionCommandSyntax) {
-        super(BoundNodeKind.SubModuleCallStatement, syntax);
+        super(BoundKind.SubModuleCallStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -159,10 +161,10 @@ export class LibraryMethodCallBoundStatement extends BaseBoundStatement<Expressi
         public readonly methodName: string,
         public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         syntax: ExpressionCommandSyntax) {
-        super(BoundNodeKind.LibraryMethodCallStatement, syntax);
+        super(BoundKind.LibraryMethodCallStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return this.argumentsList;
     }
 }
@@ -172,11 +174,11 @@ export class VariableAssignmentBoundStatement extends BaseBoundStatement<Express
         public readonly variableName: string,
         public readonly value: BaseBoundExpression<BaseExpressionSyntax>,
         syntax: ExpressionCommandSyntax) {
-        super(BoundNodeKind.VariableAssignmentStatement, syntax);
+        super(BoundKind.VariableAssignmentStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
-        return [];
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
+        return [this.value];
     }
 }
 
@@ -186,10 +188,10 @@ export class PropertyAssignmentBoundStatement extends BaseBoundStatement<Express
         public readonly propertyName: string,
         public readonly value: BaseBoundExpression<BaseExpressionSyntax>,
         syntax: ExpressionCommandSyntax) {
-        super(BoundNodeKind.PropertyAssignmentStatement, syntax);
+        super(BoundKind.PropertyAssignmentStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.value];
     }
 }
@@ -200,10 +202,10 @@ export class ArrayAssignmentBoundStatement extends BaseBoundStatement<Expression
         public readonly indices: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         public readonly value: BaseBoundExpression<BaseExpressionSyntax>,
         syntax: ExpressionCommandSyntax) {
-        super(BoundNodeKind.ArrayAssignmentStatement, syntax);
+        super(BoundKind.ArrayAssignmentStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.value];
     }
 }
@@ -212,17 +214,17 @@ export class InvalidExpressionBoundStatement extends BaseBoundStatement<Expressi
     public constructor(
         public readonly expression: BaseBoundExpression<BaseExpressionSyntax>,
         syntax: ExpressionCommandSyntax) {
-        super(BoundNodeKind.InvalidExpressionStatement, syntax);
+        super(BoundKind.InvalidExpressionStatement, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.expression];
     }
 }
 
-export abstract class BaseBoundExpression<TSyntax extends BaseSyntax> extends BaseBoundNode<TSyntax> {
+export abstract class BaseBoundExpression<TSyntax extends BaseSyntaxNode> extends BaseBoundNode<TSyntax> {
     public constructor(
-        public readonly kind: BoundNodeKind,
+        public readonly kind: BoundKind,
         public readonly hasValue: boolean,
         public readonly hasErrors: boolean,
         syntax: TSyntax) {
@@ -235,10 +237,10 @@ export class NegationBoundExpression extends BaseBoundExpression<UnaryOperatorEx
         public readonly expression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: UnaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.NegationExpression, true, hasErrors, syntax);
+        super(BoundKind.NegationExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.expression];
     }
 }
@@ -249,10 +251,10 @@ export class OrBoundExpression extends BaseBoundExpression<BinaryOperatorExpress
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.OrExpression, true, hasErrors, syntax);
+        super(BoundKind.OrExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -263,10 +265,10 @@ export class AndBoundExpression extends BaseBoundExpression<BinaryOperatorExpres
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.AndExpression, true, hasErrors, syntax);
+        super(BoundKind.AndExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -277,10 +279,10 @@ export class NotEqualBoundExpression extends BaseBoundExpression<BinaryOperatorE
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.NotEqualExpression, true, hasErrors, syntax);
+        super(BoundKind.NotEqualExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -291,10 +293,10 @@ export class EqualBoundExpression extends BaseBoundExpression<BinaryOperatorExpr
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.EqualExpression, true, hasErrors, syntax);
+        super(BoundKind.EqualExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -305,10 +307,10 @@ export class LessThanBoundExpression extends BaseBoundExpression<BinaryOperatorE
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.LessThanExpression, true, hasErrors, syntax);
+        super(BoundKind.LessThanExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -319,10 +321,10 @@ export class GreaterThanBoundExpression extends BaseBoundExpression<BinaryOperat
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.GreaterThanExpression, true, hasErrors, syntax);
+        super(BoundKind.GreaterThanExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -333,10 +335,10 @@ export class LessThanOrEqualBoundExpression extends BaseBoundExpression<BinaryOp
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.LessThanOrEqualExpression, true, hasErrors, syntax);
+        super(BoundKind.LessThanOrEqualExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -347,10 +349,10 @@ export class GreaterThanOrEqualBoundExpression extends BaseBoundExpression<Binar
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.GreaterThanOrEqualExpression, true, hasErrors, syntax);
+        super(BoundKind.GreaterThanOrEqualExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -361,10 +363,10 @@ export class AdditionBoundExpression extends BaseBoundExpression<BinaryOperatorE
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.AdditionExpression, true, hasErrors, syntax);
+        super(BoundKind.AdditionExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -375,10 +377,10 @@ export class SubtractionBoundExpression extends BaseBoundExpression<BinaryOperat
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.SubtractionExpression, true, hasErrors, syntax);
+        super(BoundKind.SubtractionExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -389,10 +391,10 @@ export class MultiplicationBoundExpression extends BaseBoundExpression<BinaryOpe
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.MultiplicationExpression, true, hasErrors, syntax);
+        super(BoundKind.MultiplicationExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -403,10 +405,10 @@ export class DivisionBoundExpression extends BaseBoundExpression<BinaryOperatorE
         public readonly rightExpression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: BinaryOperatorExpressionSyntax) {
-        super(BoundNodeKind.DivisionExpression, true, hasErrors, syntax);
+        super(BoundKind.DivisionExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.leftExpression, this.rightExpression];
     }
 }
@@ -417,10 +419,10 @@ export class ArrayAccessBoundExpression extends BaseBoundExpression<ArrayAccessE
         public readonly indices: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         hasErrors: boolean,
         syntax: ArrayAccessExpressionSyntax) {
-        super(BoundNodeKind.ArrayAccessExpression, true, hasErrors, syntax);
+        super(BoundKind.ArrayAccessExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return this.indices;
     }
 }
@@ -430,10 +432,10 @@ export class LibraryTypeBoundExpression extends BaseBoundExpression<IdentifierEx
         public readonly libraryName: string,
         hasErrors: boolean,
         syntax: IdentifierExpressionSyntax) {
-        super(BoundNodeKind.LibraryTypeExpression, false, hasErrors, syntax);
+        super(BoundKind.LibraryTypeExpression, false, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -445,10 +447,10 @@ export class LibraryPropertyBoundExpression extends BaseBoundExpression<ObjectAc
         hasValue: boolean,
         hasErrors: boolean,
         syntax: ObjectAccessExpressionSyntax) {
-        super(BoundNodeKind.LibraryPropertyExpression, hasValue, hasErrors, syntax);
+        super(BoundKind.LibraryPropertyExpression, hasValue, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -460,10 +462,10 @@ export class LibraryMethodBoundExpression extends BaseBoundExpression<ObjectAcce
         hasValue: boolean,
         hasErrors: boolean,
         syntax: ObjectAccessExpressionSyntax) {
-        super(BoundNodeKind.LibraryMethodExpression, hasValue, hasErrors, syntax);
+        super(BoundKind.LibraryMethodExpression, hasValue, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -471,15 +473,15 @@ export class LibraryMethodBoundExpression extends BaseBoundExpression<ObjectAcce
 export class LibraryMethodCallBoundExpression extends BaseBoundExpression<CallExpressionSyntax> {
     public constructor(
         public readonly libraryName: string,
-        public readonly MethodName: string,
+        public readonly methodName: string,
         public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         hasValue: boolean,
         hasErrors: boolean,
         syntax: CallExpressionSyntax) {
-        super(BoundNodeKind.LibraryMethodCallExpression, hasValue, hasErrors, syntax);
+        super(BoundKind.LibraryMethodCallExpression, hasValue, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return this.argumentsList;
     }
 }
@@ -489,10 +491,10 @@ export class SubModuleBoundExpression extends BaseBoundExpression<IdentifierExpr
         public readonly subModuleName: string,
         hasErrors: boolean,
         syntax: IdentifierExpressionSyntax) {
-        super(BoundNodeKind.SubModuleExpression, false, hasErrors, syntax);
+        super(BoundKind.SubModuleExpression, false, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -502,10 +504,10 @@ export class SubModuleCallBoundExpression extends BaseBoundExpression<CallExpres
         public readonly subModuleName: string,
         hasErrors: boolean,
         syntax: CallExpressionSyntax) {
-        super(BoundNodeKind.SubModuleCallExpression, false, hasErrors, syntax);
+        super(BoundKind.SubModuleCallExpression, false, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -515,10 +517,10 @@ export class VariableBoundExpression extends BaseBoundExpression<IdentifierExpre
         public readonly variableName: string,
         hasErrors: boolean,
         syntax: IdentifierExpressionSyntax) {
-        super(BoundNodeKind.VariableExpression, true, hasErrors, syntax);
+        super(BoundKind.VariableExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -528,10 +530,10 @@ export class StringLiteralBoundExpression extends BaseBoundExpression<StringLite
         public readonly value: string,
         hasErrors: boolean,
         syntax: StringLiteralExpressionSyntax) {
-        super(BoundNodeKind.StringLiteralExpression, true, hasErrors, syntax);
+        super(BoundKind.StringLiteralExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -541,10 +543,10 @@ export class NumberLiteralBoundExpression extends BaseBoundExpression<NumberLite
         public readonly value: number,
         hasErrors: boolean,
         syntax: NumberLiteralExpressionSyntax) {
-        super(BoundNodeKind.NumberLiteralExpression, true, hasErrors, syntax);
+        super(BoundKind.NumberLiteralExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [];
     }
 }
@@ -554,10 +556,10 @@ export class ParenthesisBoundExpression extends BaseBoundExpression<ParenthesisE
         public readonly expression: BaseBoundExpression<BaseExpressionSyntax>,
         hasErrors: boolean,
         syntax: ParenthesisExpressionSyntax) {
-        super(BoundNodeKind.ParenthesisExpression, true, hasErrors, syntax);
+        super(BoundKind.ParenthesisExpression, true, hasErrors, syntax);
     }
 
-    public children(): ReadonlyArray<BaseBoundNode<BaseSyntax>> {
+    public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
         return [this.expression];
     }
 }

@@ -8,17 +8,12 @@ export class Scanner {
     private _column: number = 0;
 
     private _result: Token[] = [];
-    private _diagnostics: Diagnostic[] = [];
 
     public get result(): ReadonlyArray<Token> {
         return this._result;
     }
 
-    public get diagnostics(): ReadonlyArray<Diagnostic> {
-        return this._diagnostics;
-    }
-
-    public constructor(private readonly _text: string) {
+    public constructor(private readonly _text: string, private readonly _diagnostics: Diagnostic[]) {
         while (this.scanNextToken());
     }
 

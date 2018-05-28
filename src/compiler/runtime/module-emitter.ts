@@ -1,8 +1,8 @@
 import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction, StoreVariableInstruction, PushNumberInstruction, LessThanInstruction, LoadVariableInstruction, AddInstruction, MethodCallInstruction, CallSubModuleInstruction, StoreArrayElementInstruction, StorePropertyInstruction, NegateInstruction, GreaterThanInstruction, LessThanOrEqualInstruction, GreaterThanOrEqualInstruction, PushStringInstruction, EqualInstruction, SubtractInstruction, MultiplyInstruction, DivideInstruction, LoadPropertyInstruction, LoadArrayElementInstruction } from "./instructions";
-import { BaseBoundStatement, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement, BaseBoundExpression, BoundNodeKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression } from "../binding/bound-nodes";
+import { BaseBoundStatement, LibraryMethodCallBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, SubModuleCallBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement, BaseBoundExpression, BoundKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression } from "../binding/bound-nodes";
 import { Constants } from "./values/base-value";
 import { Optimizations } from "./optimizations";
-import { BaseSyntax } from "../syntax/syntax-nodes";
+import { BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
 
 export class ModuleEmitter {
     private _jumpLabelCounter: number = 1;
@@ -12,25 +12,25 @@ export class ModuleEmitter {
         return this._instructions;
     }
 
-    public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseSyntax>>) {
+    public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>) {
         statements.forEach(statement => this.emitStatement(statement));
 
         Optimizations.removeTempInstructions(this._instructions);
     }
 
-    private emitStatement(statement: BaseBoundStatement<BaseSyntax>): void {
+    private emitStatement(statement: BaseBoundStatement<BaseStatementSyntax>): void {
         switch (statement.kind) {
-            case BoundNodeKind.IfStatement: this.emitIfStatement(statement as IfBoundStatement); break;
-            case BoundNodeKind.WhileStatement: this.emitWhileStatement(statement as WhileBoundStatement); break;
-            case BoundNodeKind.ForStatement: this.emitForStatement(statement as ForBoundStatement); break;
-            case BoundNodeKind.LabelStatement: this.emitLabelStatement(statement as LabelBoundStatement); break;
-            case BoundNodeKind.GoToStatement: this.emitGoToStatement(statement as GoToBoundStatement); break;
-            case BoundNodeKind.SubModuleCallStatement: this.emitSubModuleCall(statement as SubModuleCallBoundStatement); break;
-            case BoundNodeKind.LibraryMethodCallStatement: this.emitLibraryMethodCall(statement as LibraryMethodCallBoundStatement); break;
-            case BoundNodeKind.VariableAssignmentStatement: this.emitVariableAssignment(statement as VariableAssignmentBoundStatement); break;
-            case BoundNodeKind.PropertyAssignmentStatement: this.emitPropertyAssignment(statement as PropertyAssignmentBoundStatement); break;
-            case BoundNodeKind.ArrayAssignmentStatement: this.emitArrayAssignment(statement as ArrayAssignmentBoundStatement); break;
-            default: throw new Error(`Unexpected statement kind: ${BoundNodeKind[statement.kind]}`);
+            case BoundKind.IfStatement: this.emitIfStatement(statement as IfBoundStatement); break;
+            case BoundKind.WhileStatement: this.emitWhileStatement(statement as WhileBoundStatement); break;
+            case BoundKind.ForStatement: this.emitForStatement(statement as ForBoundStatement); break;
+            case BoundKind.LabelStatement: this.emitLabelStatement(statement as LabelBoundStatement); break;
+            case BoundKind.GoToStatement: this.emitGoToStatement(statement as GoToBoundStatement); break;
+            case BoundKind.SubModuleCallStatement: this.emitSubModuleCall(statement as SubModuleCallBoundStatement); break;
+            case BoundKind.LibraryMethodCallStatement: this.emitLibraryMethodCall(statement as LibraryMethodCallBoundStatement); break;
+            case BoundKind.VariableAssignmentStatement: this.emitVariableAssignment(statement as VariableAssignmentBoundStatement); break;
+            case BoundKind.PropertyAssignmentStatement: this.emitPropertyAssignment(statement as PropertyAssignmentBoundStatement); break;
+            case BoundKind.ArrayAssignmentStatement: this.emitArrayAssignment(statement as ArrayAssignmentBoundStatement); break;
+            default: throw new Error(`Unexpected statement kind: ${BoundKind[statement.kind]}`);
         }
     }
 
@@ -48,7 +48,7 @@ export class ModuleEmitter {
         this._instructions.push(new TempLabelInstruction(endOfBlockLabel, statement.syntax.endIfCommand.range));
     }
 
-    private emitIfPart(condition: BaseBoundExpression<BaseSyntax>, statements: ReadonlyArray<BaseBoundStatement<BaseSyntax>>, endOfBlockLabel: string): void {
+    private emitIfPart(condition: BaseBoundExpression<BaseExpressionSyntax>, statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>, endOfBlockLabel: string): void {
         const endOfPartLabel = this.generateJumpLabel();
 
         this.emitExpression(condition);
@@ -163,29 +163,29 @@ export class ModuleEmitter {
         this._instructions.push(new StorePropertyInstruction(statement.libraryName, statement.propertyName, statement.value.syntax.range));
     }
 
-    private emitExpression(expression: BaseBoundExpression<BaseSyntax>): void {
+    private emitExpression(expression: BaseBoundExpression<BaseExpressionSyntax>): void {
         switch (expression.kind) {
-            case BoundNodeKind.NegationExpression: this.emitNegationExpression(expression as NegationBoundExpression); break;
-            case BoundNodeKind.OrExpression: this.emitOrExpression(expression as OrBoundExpression); break;
-            case BoundNodeKind.AndExpression: this.emitAndExpression(expression as AndBoundExpression); break;
-            case BoundNodeKind.NotEqualExpression: this.emitNotEqualExpression(expression as NotEqualBoundExpression); break;
-            case BoundNodeKind.EqualExpression: this.emitEqualExpression(expression as EqualBoundExpression); break;
-            case BoundNodeKind.LessThanExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new LessThanInstruction(expression.syntax.range)); break;
-            case BoundNodeKind.GreaterThanExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new GreaterThanInstruction(expression.syntax.range)); break;
-            case BoundNodeKind.LessThanOrEqualExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new LessThanOrEqualInstruction(expression.syntax.range)); break;
-            case BoundNodeKind.GreaterThanOrEqualExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new GreaterThanOrEqualInstruction(expression.syntax.range)); break;
-            case BoundNodeKind.AdditionExpression: this.emitAdditionExpression(expression as AdditionBoundExpression); break;
-            case BoundNodeKind.SubtractionExpression: this.emitSubtractionExpression(expression as SubtractionBoundExpression); break;
-            case BoundNodeKind.MultiplicationExpression: this.emitMultiplicationExpression(expression as MultiplicationBoundExpression); break;
-            case BoundNodeKind.DivisionExpression: this.emitDivisionExpression(expression as DivisionBoundExpression); break;
-            case BoundNodeKind.ArrayAccessExpression: this.emitArrayAccessExpression(expression as ArrayAccessBoundExpression); break;
-            case BoundNodeKind.LibraryPropertyExpression: this.emitLibraryPropertyExpression(expression as LibraryPropertyBoundExpression); break;
-            case BoundNodeKind.LibraryMethodCallExpression: this.emitLibraryMethodCallExpression(expression as LibraryMethodCallBoundExpression); break;
-            case BoundNodeKind.VariableExpression: this.emitVariableExpression(expression as VariableBoundExpression); break;
-            case BoundNodeKind.StringLiteralExpression: this.emitStringLiteralExpression(expression as StringLiteralBoundExpression); break;
-            case BoundNodeKind.NumberLiteralExpression: this.emitNumberLiteralExpression(expression as NumberLiteralBoundExpression); break;
-            case BoundNodeKind.ParenthesisExpression: this.emitParenthesisExpression(expression as ParenthesisBoundExpression); break;
-            default: throw new Error(`Unexpected bound expression kind: ${BoundNodeKind[expression.kind]}`);
+            case BoundKind.NegationExpression: this.emitNegationExpression(expression as NegationBoundExpression); break;
+            case BoundKind.OrExpression: this.emitOrExpression(expression as OrBoundExpression); break;
+            case BoundKind.AndExpression: this.emitAndExpression(expression as AndBoundExpression); break;
+            case BoundKind.NotEqualExpression: this.emitNotEqualExpression(expression as NotEqualBoundExpression); break;
+            case BoundKind.EqualExpression: this.emitEqualExpression(expression as EqualBoundExpression); break;
+            case BoundKind.LessThanExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new LessThanInstruction(expression.syntax.range)); break;
+            case BoundKind.GreaterThanExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new GreaterThanInstruction(expression.syntax.range)); break;
+            case BoundKind.LessThanOrEqualExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new LessThanOrEqualInstruction(expression.syntax.range)); break;
+            case BoundKind.GreaterThanOrEqualExpression: this.emitComparisonExpression(expression as LessThanBoundExpression, new GreaterThanOrEqualInstruction(expression.syntax.range)); break;
+            case BoundKind.AdditionExpression: this.emitAdditionExpression(expression as AdditionBoundExpression); break;
+            case BoundKind.SubtractionExpression: this.emitSubtractionExpression(expression as SubtractionBoundExpression); break;
+            case BoundKind.MultiplicationExpression: this.emitMultiplicationExpression(expression as MultiplicationBoundExpression); break;
+            case BoundKind.DivisionExpression: this.emitDivisionExpression(expression as DivisionBoundExpression); break;
+            case BoundKind.ArrayAccessExpression: this.emitArrayAccessExpression(expression as ArrayAccessBoundExpression); break;
+            case BoundKind.LibraryPropertyExpression: this.emitLibraryPropertyExpression(expression as LibraryPropertyBoundExpression); break;
+            case BoundKind.LibraryMethodCallExpression: this.emitLibraryMethodCallExpression(expression as LibraryMethodCallBoundExpression); break;
+            case BoundKind.VariableExpression: this.emitVariableExpression(expression as VariableBoundExpression); break;
+            case BoundKind.StringLiteralExpression: this.emitStringLiteralExpression(expression as StringLiteralBoundExpression); break;
+            case BoundKind.NumberLiteralExpression: this.emitNumberLiteralExpression(expression as NumberLiteralBoundExpression); break;
+            case BoundKind.ParenthesisExpression: this.emitParenthesisExpression(expression as ParenthesisBoundExpression); break;
+            default: throw new Error(`Unexpected bound expression kind: ${BoundKind[expression.kind]}`);
         }
     }
 
@@ -340,7 +340,7 @@ export class ModuleEmitter {
 
     private emitLibraryMethodCallExpression(expression: LibraryMethodCallBoundExpression): void {
         expression.argumentsList.forEach(argument => this.emitExpression(argument));
-        this._instructions.push(new MethodCallInstruction(expression.libraryName, expression.MethodName, expression.syntax.range));
+        this._instructions.push(new MethodCallInstruction(expression.libraryName, expression.methodName, expression.syntax.range));
     }
 
     private emitVariableExpression(expression: VariableBoundExpression): void {

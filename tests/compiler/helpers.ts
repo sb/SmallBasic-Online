@@ -5,13 +5,12 @@ import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
 import { NumberValue } from "../../src/compiler/runtime/values/number-value";
 import { StringValue } from "../../src/compiler/runtime/values/string-value";
 import { CompilerPosition, CompilerRange } from "../../src/compiler/syntax/ranges";
-import { Scanner } from "../../src/compiler/syntax/scanner";
 import { TokenKind } from "../../src/compiler/syntax/tokens";
 
 export function getMarkerPosition(text: string, marker: string): CompilerPosition {
     expect(marker.length).toBe(1);
 
-    const tokens = new Scanner(text).result.filter(token => {
+    const tokens = new Compilation(text).tokens.filter(token => {
         return token.kind === TokenKind.UnrecognizedToken && token.text === marker;
     });
 

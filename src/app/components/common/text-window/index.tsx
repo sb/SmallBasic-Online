@@ -51,7 +51,6 @@ function textWindowColorToCssColor(color: TextWindowColors): string {
         case TextWindowColors.Magenta: return "rgb(255, 0, 255)";
         case TextWindowColors.Yellow: return "rgb(255, 255, 0)";
         case TextWindowColors.White: return "rgb(255, 255, 255)";
-        default: throw new Error("Unsupported color: " + TextWindowColors[color]);
     }
 }
 

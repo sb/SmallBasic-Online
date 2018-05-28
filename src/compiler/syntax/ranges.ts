@@ -10,12 +10,14 @@ export class CompilerPosition {
 
     public before(position: CompilerPosition): boolean {
         if (this.line > position.line) return false;
-        if (this.line < position.line) return false;
+        if (this.line < position.line) return true;
         return this.column < position.column;
     }
 
-    public beforeOrEqual(other: CompilerPosition): boolean {
-        return this.equals(other) || this.before(other);
+    public after(position: CompilerPosition): boolean {
+        if (this.line < position.line) return false;
+        if (this.line > position.line) return true;
+        return this.column > position.column;
     }
 }
 
@@ -40,7 +42,8 @@ export class CompilerRange {
     }
 
     public containsPosition(position: CompilerPosition): boolean {
-        return this.start.beforeOrEqual(position) && position.beforeOrEqual(this.end);
+        return (this.start.before(position) || this.start.equals(position))
+            && (position.before(this.end) || position.equals(this.end));
     }
 
     public containsRange(range: CompilerRange): boolean {

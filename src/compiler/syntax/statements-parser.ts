@@ -1,6 +1,6 @@
 import { ErrorCode, Diagnostic } from "../diagnostics";
 import {
-    BaseSyntax,
+    BaseSyntaxNode,
     SyntaxKind,
     ElseCommandSyntax,
     ElseIfCommandSyntax,
@@ -18,28 +18,24 @@ import {
     SubModuleDeclarationSyntax,
     ParseTreeSyntax,
     EndSubCommandSyntax,
-    IfHeaderSyntax
+    IfHeaderSyntax,
+    BaseStatementSyntax
 } from "./syntax-nodes";
 import { CompilerUtils } from "../compiler-utils";
 
 export class StatementsParser {
     private _index: number = 0;
 
-    private _diagnostics: Diagnostic[] = [];
-    private _mainModule: BaseSyntax[] = [];
+    private _mainModule: BaseStatementSyntax[] = [];
     private _subModules: SubModuleDeclarationSyntax[] = [];
 
     public get result(): ParseTreeSyntax {
         return new ParseTreeSyntax(this._mainModule, this._subModules);
     }
 
-    public get diagnostics(): ReadonlyArray<Diagnostic> {
-        return this._diagnostics;
-    }
-
-    public constructor(private readonly _commands: ReadonlyArray<BaseSyntax>) {
+    public constructor(private readonly _commands: ReadonlyArray<BaseStatementSyntax>, private readonly _diagnostics: Diagnostic[]) {
         let startModuleCommand: SubCommandSyntax | undefined;
-        let currentModuleStatements: BaseSyntax[] = [];
+        let currentModuleStatements: BaseStatementSyntax[] = [];
 
         while (this._index < this._commands.length) {
             const current = this._commands[this._index];
@@ -94,7 +90,7 @@ export class StatementsParser {
         }
     }
 
-    private parseStatement(current: BaseSyntax): BaseSyntax | undefined {
+    private parseStatement(current: BaseSyntaxNode): BaseSyntaxNode | undefined {
         switch (current.kind) {
             case SyntaxKind.IfCommand: {
                 return this.parseIfStatement();
@@ -170,7 +166,7 @@ export class StatementsParser {
                 SyntaxKind.ElseCommand,
                 SyntaxKind.EndIfCommand);
 
-            elseIfParts.push(new IfHeaderSyntax<ElseIfCommandSyntax>(elseIfCommand, statements));
+            elseIfParts.push(new IfHeaderSyntax(elseIfCommand, statements));
         }
 
         let elsePart: IfHeaderSyntax<ElseCommandSyntax> | undefined;
@@ -181,7 +177,7 @@ export class StatementsParser {
                 SyntaxKind.ElseCommand,
                 SyntaxKind.EndIfCommand);
 
-            elsePart = new IfHeaderSyntax<ElseCommandSyntax>(elseCommand, statements);
+            elsePart = new IfHeaderSyntax(elseCommand, statements);
         }
 
         let endIfPart = this.eat(SyntaxKind.EndIfCommand) as EndIfCommandSyntax;
@@ -204,10 +200,10 @@ export class StatementsParser {
         return new WhileStatementSyntax(whileCommand, statements, endWhileCommand);
     }
 
-    private parseStatementsExcept(...kinds: SyntaxKind[]): BaseSyntax[] {
-        const statements: BaseSyntax[] = [];
+    private parseStatementsExcept(...kinds: SyntaxKind[]): BaseSyntaxNode[] {
+        const statements: BaseSyntaxNode[] = [];
 
-        let next: BaseSyntax | undefined;
+        let next: BaseSyntaxNode | undefined;
         while ((next = this.peek()) && !kinds.some(kind => kind === next!.kind)) {
             const statement = this.parseStatement(next);
             if (statement) {
@@ -225,14 +221,14 @@ export class StatementsParser {
         return false;
     }
 
-    private peek(): BaseSyntax | undefined {
+    private peek(): BaseSyntaxNode | undefined {
         if (this._index < this._commands.length) {
             return this._commands[this._index];
         }
         return;
     }
 
-    private eat(kind: SyntaxKind): BaseSyntax {
+    private eat(kind: SyntaxKind): BaseSyntaxNode {
         if (this._index < this._commands.length) {
             const current = this._commands[this._index];
             if (current.kind === kind) {

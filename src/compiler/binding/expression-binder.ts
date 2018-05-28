@@ -3,7 +3,7 @@ import { Diagnostic, ErrorCode } from "../diagnostics";
 import {
     ArrayAccessBoundExpression,
     BaseBoundExpression,
-    BoundNodeKind,
+    BoundKind,
     LibraryMethodBoundExpression,
     LibraryTypeBoundExpression,
     NegationBoundExpression,
@@ -30,7 +30,7 @@ import {
 } from "./bound-nodes";
 import {
     ArrayAccessExpressionSyntax,
-    BaseSyntax,
+    BaseSyntaxNode,
     BinaryOperatorExpressionSyntax,
     CallExpressionSyntax,
     SyntaxKind,
@@ -39,34 +39,30 @@ import {
     UnaryOperatorExpressionSyntax,
     IdentifierExpressionSyntax,
     NumberLiteralExpressionSyntax,
-    StringLiteralExpressionSyntax
+    StringLiteralExpressionSyntax,
+    BaseExpressionSyntax
 } from "../syntax/syntax-nodes";
 import { TokenKind } from "../syntax/tokens";
 
 const libraries: SupportedLibraries = new SupportedLibraries();
 
 export class ExpressionBinder {
-    private readonly _result: BaseBoundExpression<BaseSyntax>;
+    private readonly _result: BaseBoundExpression<BaseExpressionSyntax>;
 
-    private _diagnostics: Diagnostic[] = [];
-
-    public get result(): BaseBoundExpression<BaseSyntax> {
+    public get result(): BaseBoundExpression<BaseExpressionSyntax> {
         return this._result;
     }
 
-    public get diagnostics(): ReadonlyArray<Diagnostic> {
-        return this._diagnostics;
-    }
-
     public constructor(
-        syntax: BaseSyntax,
+        syntax: BaseSyntaxNode,
         expectedValue: boolean,
-        private readonly _definedSubModules: { readonly [name: string]: boolean }) {
+        private readonly _definedSubModules: { readonly [name: string]: boolean },
+        private readonly _diagnostics: Diagnostic[]) {
         this._result = this.bindExpression(syntax, expectedValue);
     }
 
-    private bindExpression(syntax: BaseSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
-        let expression: BaseBoundExpression<BaseSyntax>;
+    private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+        let expression: BaseBoundExpression<BaseExpressionSyntax>;
 
         switch (syntax.kind) {
             case SyntaxKind.ArrayAccessExpression: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
@@ -78,7 +74,7 @@ export class ExpressionBinder {
             case SyntaxKind.StringLiteralExpression: expression = this.bindStringLiteral(syntax as StringLiteralExpressionSyntax); break;
             case SyntaxKind.IdentifierExpression: expression = this.bindIdentifier(syntax as IdentifierExpressionSyntax, expectedValue); break;
             case SyntaxKind.UnaryOperatorExpression: expression = this.bindUnaryOperator(syntax as UnaryOperatorExpressionSyntax); break;
-            default: throw new Error(`Invalid syntax kind: ${SyntaxKind[syntax.kind]}`);
+            default: throw new Error(`Unexpected syntax kind: ${SyntaxKind[syntax.kind]}`);
         }
 
         return expression;
@@ -89,17 +85,17 @@ export class ExpressionBinder {
         const indexExpression = this.bindExpression(syntax.indexExpression, true);
 
         let arrayName: string;
-        let indices: BaseBoundExpression<BaseSyntax>[];
+        let indices: BaseBoundExpression<BaseExpressionSyntax>[];
         let hasErrors = baseExpression.hasErrors || indexExpression.hasErrors;
 
         switch (baseExpression.kind) {
-            case BoundNodeKind.ArrayAccessExpression: {
+            case BoundKind.ArrayAccessExpression: {
                 const arrayAccess = baseExpression as ArrayAccessBoundExpression;
                 arrayName = arrayAccess.arrayName;
                 indices = [...(arrayAccess).indices, indexExpression];
                 break;
             }
-            case BoundNodeKind.VariableExpression: {
+            case BoundKind.VariableExpression: {
                 arrayName = (baseExpression as VariableBoundExpression).variableName;
                 indices = [indexExpression];
                 break;
@@ -119,14 +115,14 @@ export class ExpressionBinder {
         return new ArrayAccessBoundExpression(arrayName, indices, hasErrors, syntax);
     }
 
-    private bindCall(syntax: CallExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
+    private bindCall(syntax: CallExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         const baseExpression = this.bindExpression(syntax.baseExpression, false);
         const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg.expression, true));
 
         let hasErrors = baseExpression.hasErrors || argumentsList.some(arg => arg.hasErrors);
 
         switch (baseExpression.kind) {
-            case BoundNodeKind.LibraryMethodExpression: {
+            case BoundKind.LibraryMethodExpression: {
                 const method = baseExpression as LibraryMethodBoundExpression;
                 const definition = libraries[method.libraryName].methods[method.methodName];
                 const parametersCount = Object.keys(definition.parameters).length;
@@ -142,7 +138,7 @@ export class ExpressionBinder {
 
                 return new LibraryMethodCallBoundExpression(method.libraryName, method.methodName, argumentsList, definition.returnsValue, hasErrors, syntax);
             }
-            case BoundNodeKind.SubModuleExpression: {
+            case BoundKind.SubModuleExpression: {
                 if (argumentsList.length !== 0) {
                     hasErrors = true;
                     this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedArgumentsCount, baseExpression.syntax.range, "0", argumentsList.length.toString()));
@@ -162,12 +158,12 @@ export class ExpressionBinder {
         }
     }
 
-    private bindObjectAccess(syntax: ObjectAccessExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
+    private bindObjectAccess(syntax: ObjectAccessExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         const leftHandSide = this.bindExpression(syntax.baseExpression, false);
         const rightHandSide = syntax.identifierToken.token.text;
         let hasErrors = leftHandSide.hasErrors;
 
-        if (leftHandSide.kind !== BoundNodeKind.LibraryTypeExpression) {
+        if (leftHandSide.kind !== BoundKind.LibraryTypeExpression) {
             hasErrors = true;
             this._diagnostics.push(new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, leftHandSide.syntax.range));
             return new LibraryPropertyBoundExpression("<library>", rightHandSide, true, hasErrors, syntax);
@@ -201,12 +197,12 @@ export class ExpressionBinder {
         return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, true, hasErrors, syntax);
     }
 
-    private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression<BaseSyntax> {
+    private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
         const expression = this.bindExpression(syntax.expression, true);
         return new ParenthesisBoundExpression(expression, expression.hasErrors, syntax);
     }
 
-    private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression<BaseSyntax> {
+    private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
         const value = parseFloat(syntax.numberToken.token.text);
         const isNotANumber = isNaN(value);
         const expression = new NumberLiteralBoundExpression(value, isNotANumber, syntax);
@@ -218,7 +214,7 @@ export class ExpressionBinder {
         return expression;
     }
 
-    private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression<BaseSyntax> {
+    private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
         let value = syntax.stringToken.token.text;
         if (value.length < 1 || value[0] !== "\"") {
             throw new Error(`String literal '${value}' should have never been parsed without a starting double quotes`);
@@ -232,7 +228,7 @@ export class ExpressionBinder {
         return new StringLiteralBoundExpression(value, false, syntax);
     }
 
-    private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseSyntax> {
+    private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         let hasErrors = false;
         const name = syntax.identifierToken.token.text;
 
