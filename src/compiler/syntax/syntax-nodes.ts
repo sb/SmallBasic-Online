@@ -44,6 +44,16 @@ export enum SyntaxKind {
 }
 
 export abstract class BaseSyntaxNode {
+    private _parentOpt?: BaseSyntaxNode;
+
+    public get parentOpt(): BaseSyntaxNode | undefined {
+        return this._parentOpt;
+    }
+
+    public set parentOpt(parentOpt: BaseSyntaxNode | undefined) {
+        this._parentOpt = parentOpt;
+    }
+
     protected constructor(
         public readonly kind: SyntaxKind,
         public readonly range: CompilerRange) {
@@ -490,5 +500,183 @@ export class TokenSyntax extends BaseSyntaxNode {
 
     public children(): ReadonlyArray<BaseSyntaxNode> {
         return [];
+    }
+}
+
+export class SyntaxNodeVisitor<TResult> {
+    public visit(node: BaseSyntaxNode): TResult | undefined {
+        switch (node.kind) {
+            case SyntaxKind.ParseTree: return this.visitParseTree(node as ParseTreeSyntax);
+            case SyntaxKind.SubModuleDeclaration: return this.visitSubModuleDeclaration(node as SubModuleDeclarationSyntax);
+            case SyntaxKind.IfHeader: return this.visitIfHeader(node as IfHeaderSyntax<IfCommandSyntax | ElseIfCommandSyntax | ElseCommandSyntax>);
+            case SyntaxKind.IfStatement: return this.visitIfStatement(node as IfStatementSyntax);
+            case SyntaxKind.WhileStatement: return this.visitWhileStatement(node as WhileStatementSyntax);
+            case SyntaxKind.ForStatement: return this.visitForStatement(node as ForStatementSyntax);
+            case SyntaxKind.IfCommand: return this.visitIfCommand(node as IfCommandSyntax);
+            case SyntaxKind.ElseCommand: return this.visitElseCommand(node as ElseCommandSyntax);
+            case SyntaxKind.ElseIfCommand: return this.visitElseIfCommand(node as ElseIfCommandSyntax);
+            case SyntaxKind.EndIfCommand: return this.visitEndIfCommand(node as EndIfCommandSyntax);
+            case SyntaxKind.ForStepClause: return this.visitForStepClause(node as ForStepClauseSyntax);
+            case SyntaxKind.ForCommand: return this.visitForCommand(node as ForCommandSyntax);
+            case SyntaxKind.EndForCommand: return this.visitEndForCommand(node as EndForCommandSyntax);
+            case SyntaxKind.WhileCommand: return this.visitWhileCommand(node as WhileCommandSyntax);
+            case SyntaxKind.EndWhileCommand: return this.visitEndWhileCommand(node as EndWhileCommandSyntax);
+            case SyntaxKind.LabelCommand: return this.visitLabelCommand(node as LabelCommandSyntax);
+            case SyntaxKind.GoToCommand: return this.visitGoToCommand(node as GoToCommandSyntax);
+            case SyntaxKind.SubCommand: return this.visitSubCommand(node as SubCommandSyntax);
+            case SyntaxKind.EndSubCommand: return this.visitEndSubCommand(node as EndSubCommandSyntax);
+            case SyntaxKind.ExpressionCommand: return this.visitExpressionCommand(node as ExpressionCommandSyntax);
+            case SyntaxKind.CommentCommand: return this.visitCommentCommand(node as CommentCommandSyntax);
+            case SyntaxKind.UnaryOperatorExpression: return this.visitUnaryOperatorExpression(node as UnaryOperatorExpressionSyntax);
+            case SyntaxKind.BinaryOperatorExpression: return this.visitBinaryOperatorExpression(node as BinaryOperatorExpressionSyntax);
+            case SyntaxKind.ObjectAccessExpression: return this.visitObjectAccessExpression(node as ObjectAccessExpressionSyntax);
+            case SyntaxKind.ArrayAccessExpression: return this.visitArrayAccessExpression(node as ArrayAccessExpressionSyntax);
+            case SyntaxKind.Argument: return this.visitArgument(node as ArgumentSyntax);
+            case SyntaxKind.CallExpression: return this.visitCallExpression(node as CallExpressionSyntax);
+            case SyntaxKind.ParenthesisExpression: return this.visitParenthesisExpression(node as ParenthesisExpressionSyntax);
+            case SyntaxKind.IdentifierExpression: return this.visitIdentifierExpression(node as IdentifierExpressionSyntax);
+            case SyntaxKind.NumberLiteralExpression: return this.visitNumberLiteralExpression(node as NumberLiteralExpressionSyntax);
+            case SyntaxKind.StringLiteralExpression: return this.visitStringLiteralExpression(node as StringLiteralExpressionSyntax);
+            case SyntaxKind.Token: return this.visitToken(node as TokenSyntax);
+        }
+    }
+
+    public visitParseTree(node: ParseTreeSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitSubModuleDeclaration(node: SubModuleDeclarationSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitIfHeader(node: IfHeaderSyntax<IfCommandSyntax | ElseIfCommandSyntax | ElseCommandSyntax>): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitIfStatement(node: IfStatementSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitWhileStatement(node: WhileStatementSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitForStatement(node: ForStatementSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitIfCommand(node: IfCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitElseCommand(node: ElseCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitElseIfCommand(node: ElseIfCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitEndIfCommand(node: EndIfCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitForStepClause(node: ForStepClauseSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitForCommand(node: ForCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitEndForCommand(node: EndForCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitWhileCommand(node: WhileCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitEndWhileCommand(node: EndWhileCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitLabelCommand(node: LabelCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitGoToCommand(node: GoToCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitSubCommand(node: SubCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitEndSubCommand(node: EndSubCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitExpressionCommand(node: ExpressionCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitCommentCommand(node: CommentCommandSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitUnaryOperatorExpression(node: UnaryOperatorExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitBinaryOperatorExpression(node: BinaryOperatorExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitArrayAccessExpression(node: ArrayAccessExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitArgument(node: ArgumentSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitCallExpression(node: CallExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitParenthesisExpression(node: ParenthesisExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitIdentifierExpression(node: IdentifierExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitNumberLiteralExpression(node: NumberLiteralExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitStringLiteralExpression(node: StringLiteralExpressionSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    public visitToken(node: TokenSyntax): TResult | undefined {
+        return this.defaultVisit(node);
+    }
+
+    private defaultVisit(node: BaseSyntaxNode): TResult | undefined {
+        const children = node.children();
+        for (let i = 0; i < children.length; i++) {
+            const result = this.visit(children[i]);
+            if (result) {
+                return result;
+            }
+        }
+        return undefined;
     }
 }

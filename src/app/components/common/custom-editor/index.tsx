@@ -93,8 +93,7 @@ class EditorCompletionService implements monaco.languages.CompletionItemProvider
     ];
 
     public provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.CompletionItem[] {
-        const line = model.getLineContent(position.lineNumber);
-        return CompletionService.provideCompletion(line, EditorUtils.editorPositionToCompilerPosition(position)).map(item => {
+        return CompletionService.provideCompletion(model.getValue(), EditorUtils.editorPositionToCompilerPosition(position)).map(item => {
             let kind: monaco.languages.CompletionItemKind;
             switch (item.kind) {
                 case CompletionService.ResultKind.Class: kind = monaco.languages.CompletionItemKind.Class; break;

@@ -1,7 +1,9 @@
-import { LibraryTypeDefinition, SupportedLibraries } from "../../compiler/runtime/supported-libraries";
-import { TokenKind } from "../../compiler/syntax/tokens";
+import { SupportedLibraries } from "../../compiler/runtime/supported-libraries";
 import { CompilerPosition } from "../syntax/ranges";
 import { Compilation } from "../compilation";
+import { CompilerUtils } from "../compiler-utils";
+import { SyntaxNodeVisitor, ObjectAccessExpressionSyntax, SyntaxKind, IdentifierExpressionSyntax } from "../syntax/syntax-nodes";
+import { CommandsParser } from "../syntax/command-parser";
 
 const libraries: SupportedLibraries = new SupportedLibraries();
 
@@ -18,90 +20,80 @@ export module CompletionService {
         description: string;
     }
 
-    export function provideCompletion(line: string, position: CompilerPosition): Result[] {
-        const tokens = new Compilation(line).tokens;
-        if (tokens.length === 0) {
-            return getTypes();
-        }
+    export function provideCompletion(text: string, position: CompilerPosition): Result[] {
+        const compilation = new Compilation(text);
 
-        let i: number;
-        for (i = tokens.length - 1; i > 0; i--) {
-            if (tokens[i].range.containsPosition(position)) {
-                break;
+        const objectAccessExpression = compilation.getSyntaxNode(position, SyntaxKind.ObjectAccessExpression);
+        if (objectAccessExpression) {
+            const result = new CompletionVisitor().visit(objectAccessExpression);
+            if (result) {
+                return result;
             }
         }
 
-        if (tokens[i].kind === TokenKind.Dot) {
-            if (i > 0 && tokens[i - 1].kind === TokenKind.Identifier) {
-                const type = libraries[tokens[i - 1].text];
-                if (type) {
-                    return getMembers(type);
-                } else {
-                    return [];
-                }
-            } else {
-                return [];
+        const identifierExpression = compilation.getSyntaxNode(position, SyntaxKind.IdentifierExpression);
+        if (identifierExpression) {
+            const result = new CompletionVisitor().visit(identifierExpression);
+            if (result) {
+                return result;
             }
-        } else if (tokens[i].kind === TokenKind.Identifier) {
-            if (i > 1 && tokens[i - 1].kind === TokenKind.Dot && tokens[i - 2].kind === TokenKind.Identifier) {
-                const type = libraries[tokens[i - 2].text];
-                if (type) {
-                    return getMembers(type, tokens[i].text);
-                } else {
-                    return [];
-                }
-            } else {
-                return getTypes(tokens[i].text);
-            }
-        } else {
-            return [];
         }
+
+        return [];
     }
 
-    function getTypes(prefix?: string): Result[] {
-        return Object.keys(libraries).filter(name => startsWith(name, prefix)).map(name => {
-            const type = libraries[name];
-            return {
-                title: name,
-                kind: ResultKind.Class,
-                description: type.description
-            };
-        });
-    }
+    class CompletionVisitor extends SyntaxNodeVisitor<Result[]> {
+        public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): Result[] | undefined {
+            if (node.baseExpression.kind !== SyntaxKind.IdentifierExpression) {
+                return undefined;
+            }
 
-    function getMembers(type: LibraryTypeDefinition, prefix?: string): Result[] {
-        return [
-            ...Object.keys(type.methods).filter(name => startsWith(name, prefix)).map(name => {
-                const method = type.methods[name];
+            const libraryName = (node.baseExpression as IdentifierExpressionSyntax).identifierToken.token.text;
+            const library = libraries[libraryName];
+            if (!library) {
+                return undefined;
+            }
+
+            const results: Result[] = [];
+            let memberName = node.identifierToken.token.text;
+            if (memberName === CommandsParser.MissingTokenText) {
+                memberName = "";
+            }
+
+            Object.keys(library.methods).forEach(method => {
+                if (CompilerUtils.stringStartsWith(method, memberName)) {
+                    results.push({
+                        title: method,
+                        description: library.methods[method].description,
+                        kind: ResultKind.Method
+                    });
+                }
+            });
+
+            Object.keys(library.properties).forEach(property => {
+                if (CompilerUtils.stringStartsWith(property, memberName)) {
+                    results.push({
+                        title: property,
+                        description: library.properties[property].description,
+                        kind: ResultKind.Property
+                    });
+                }
+            });
+
+            return results;
+        }
+
+        public visitIdentifierExpression(node: IdentifierExpressionSyntax): Result[] | undefined {
+            const libraryName = node.identifierToken.token.text;
+            return Object.keys(libraries).filter(name => {
+                return CompilerUtils.stringStartsWith(name, libraryName);
+            }).map(name => {
                 return {
                     title: name,
-                    kind: ResultKind.Method,
-                    description: method.description
+                    description: libraries[name].description,
+                    kind: ResultKind.Class
                 };
-            }),
-            ...Object.keys(type.properties).filter(name => startsWith(name, prefix)).map(name => {
-                const property = type.properties[name];
-                return {
-                    title: name,
-                    kind: ResultKind.Property,
-                    description: property.description
-                };
-            })
-        ];
-    }
-
-    function startsWith(name: string, prefix?: string): boolean {
-        if (!prefix) {
-            return true;
-        }
-
-        name = name.toLowerCase();
-        prefix = prefix.toLocaleLowerCase();
-
-        if (name.length <= prefix.length) {
-            return false;
-        } else {
-            return prefix === name.substr(0, prefix.length);
+            });
         }
     }
 }

@@ -6,6 +6,21 @@ export module CompilerUtils {
     export function formatString(template: string, args: ReadonlyArray<string>): string {
         return template.replace(/{[0-9]+}/g, match => args[parseInt(match.replace(/^{/, "").replace(/}$/, ""))]);
     }
+    
+    export function stringStartsWith(value: string, prefix?: string): boolean {
+        if (!prefix || !prefix.length) {
+            return true;
+        }
+
+        value = value.toLowerCase();
+        prefix = prefix.toLocaleLowerCase();
+
+        if (value.length <= prefix.length) {
+            return false;
+        } else {
+            return prefix === value.substr(0, prefix.length);
+        }
+    }
 
     export function commandToDisplayString(kind: SyntaxKind): string {
         switch (kind) {

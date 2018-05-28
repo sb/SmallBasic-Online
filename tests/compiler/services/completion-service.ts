@@ -35,6 +35,10 @@ describe("Compiler.Services.CompletionService", () => {
         testItemExists(`x = TextWindow.WriteL${marker}`, "WriteLine");
     });
 
+    it("provides completion for a specific method - after dot", () => {
+        testItemExists(`x = TextWindow.${marker}`, "WriteLine");
+    });
+
     it("does not provide completion for methods not starting with the same prefix", () => {
         testItemDoesNotExist(`x = TextWindow.Wri${marker}`, "ForegroundColor");
     });

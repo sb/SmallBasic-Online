@@ -7,6 +7,8 @@ import { CommentCommandSyntax, TokenSyntax } from "./syntax-nodes";
 import { CompilerUtils } from "../compiler-utils";
 
 export class CommandsParser {
+    public static readonly MissingTokenText: string = "?";
+
     private _index: number = 0;
     private _line: number = 0;
     private _currentLineHasErrors: boolean = false;
@@ -396,7 +398,7 @@ export class CommandsParser {
     }
 
     private createMissingToken(range: CompilerRange, kind: TokenKind): TokenSyntax {
-        return new TokenSyntax(new Token("?", kind, range));
+        return new TokenSyntax(new Token(CommandsParser.MissingTokenText, kind, range));
     }
 
     private reportError(error: Diagnostic): void {
