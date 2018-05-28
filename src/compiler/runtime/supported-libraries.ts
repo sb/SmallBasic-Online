@@ -4,14 +4,14 @@ import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
 import { ArrayLibrary } from "./libraries/array";
 import { StackLibrary } from "./libraries/stack";
-import { TextRange } from "../syntax/nodes/syntax-nodes";
 import { BaseValue } from "./values/base-value";
+import { CompilerRange } from "../syntax/ranges";
 
 export interface LibraryMethodDefinition {
     readonly description: string;
     readonly parameters: { [name: string]: string };
     readonly returnsValue: boolean;
-    readonly execute: (engine: ExecutionEngine, mode: ExecutionMode, range: TextRange) => boolean;
+    readonly execute: (engine: ExecutionEngine, mode: ExecutionMode, range: CompilerRange) => boolean;
 }
 
 export interface LibraryPropertyDefinition {

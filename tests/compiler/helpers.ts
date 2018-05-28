@@ -4,6 +4,29 @@ import { Compilation } from "../../src/compiler/compilation";
 import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
 import { NumberValue } from "../../src/compiler/runtime/values/number-value";
 import { StringValue } from "../../src/compiler/runtime/values/string-value";
+import { CompilerPosition, CompilerRange } from "../../src/compiler/syntax/ranges";
+import { TokenKind } from "../../src/compiler/syntax/tokens";
+
+export function getMarkerPosition(text: string, marker: string): CompilerPosition {
+    expect(marker.length).toBe(1);
+
+    const tokens = new Compilation(text).tokens.filter(token => {
+        return token.kind === TokenKind.UnrecognizedToken && token.text === marker;
+    });
+
+    let range: CompilerRange;
+
+    switch (tokens.length) {
+        case 0: throw new Error(`Cannot position the marker anywhere in source code`);
+        case 1: range = tokens[0].range; break;
+        default: throw new Error(`Multiple markers in source code`);
+    }
+
+    expect(range.start.line).toBe(range.end.line);
+    expect(range.start.column).toBe(range.end.column - 1);
+
+    return range.start;
+}
 
 export function verifyRuntimeError(text: string, exception: Diagnostic): void {
     verifyCompilationErrors(text);
@@ -103,13 +126,14 @@ export function verifyCompilationErrors(text: string, ...expected: Diagnostic[])
 export function verifyErrors(text: string, actual: ReadonlyArray<Diagnostic>, expected: Diagnostic[]): void {
     const textLines = text.split(/\r?\n/);
     const serializeErrors = (errors: ReadonlyArray<Diagnostic>) => errors.map(error => {
+        expect(error.range.start.line).toBe(error.range.end.line);
         return `
-        // ${textLines[error.range.line]}
-        // ${Array(error.range.start + 1).join(" ")}${Array(error.range.end - error.range.start + 1).join("^")}
+        // ${textLines[error.range.start.line]}
+        // ${Array(error.range.start.column + 1).join(" ")}${Array(error.range.end.column - error.range.start.column + 1).join("^")}
         // ${error.toString()}
         new Diagnostic(${[
                 `ErrorCode.${ErrorCode[error.code]}`,
-                `{ line: ${error.range.line}, start: ${error.range.start}, end: ${error.range.end} }`,
+                `CompilerRange.fromValues(${error.range.start.line}, ${error.range.start.column}, ${error.range.end.line}, ${error.range.end.column})`,
                 ...error.args.map(a => `${JSON.stringify(a)}`)
             ].join(", ")})`;
     }).join(",") + "\n";

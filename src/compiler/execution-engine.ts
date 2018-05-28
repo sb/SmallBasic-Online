@@ -5,7 +5,7 @@ import { SupportedLibraries } from "./runtime/supported-libraries";
 import { Diagnostic } from "./diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
 import { PubSubPayloadChannel } from "./notifications";
-import { ModuleBinder } from "./binding/module-binder";
+import { ModulesBinder } from "./binding/modules-binder";
 
 export interface StackFrame {
     moduleName: string;
@@ -64,10 +64,6 @@ export class ExecutionEngine {
         return this._exception;
     }
 
-    public get currentLine(): number {
-        return this._currentLine;
-    }
-
     public get state(): ExecutionState {
         return this._state;
     }
@@ -84,7 +80,7 @@ export class ExecutionEngine {
         this._modules = compilation.emit();
 
         this._executionStack.push({
-            moduleName: ModuleBinder.MainModuleName,
+            moduleName: ModulesBinder.MainModuleName,
             instructionIndex: 0
         });
     }
@@ -111,8 +107,8 @@ export class ExecutionEngine {
             }
 
             const instruction = this._modules[frame.moduleName][frame.instructionIndex];
-            if (instruction.sourceRange.line !== this._currentLine && mode === ExecutionMode.NextStatement) {
-                this._currentLine = instruction.sourceRange.line;
+            if (instruction.sourceRange.start.line !== this._currentLine && mode === ExecutionMode.NextStatement) {
+                this._currentLine = instruction.sourceRange.start.line;
                 this._state = ExecutionState.Paused;
                 return;
             }

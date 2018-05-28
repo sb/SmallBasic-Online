@@ -1,97 +1,85 @@
 import { SupportedLibraries } from "../runtime/supported-libraries";
 import { ExpressionBinder } from "./expression-binder";
 import { ErrorCode, Diagnostic } from "../diagnostics";
-import { BaseExpressionSyntax } from "../syntax/nodes/expressions";
-import {
-    BaseStatementSyntax,
-    ExpressionStatementSyntax,
-    ForStatementSyntax,
-    GoToStatementSyntax,
-    IfStatementSyntax,
-    LabelStatementSyntax,
-    StatementSyntaxKind,
-    WhileStatementSyntax
-} from "../syntax/nodes/statements";
-import {
-    ArrayAccessBoundExpression,
-    BaseBoundExpression,
-    BoundExpressionKind,
-    EqualBoundExpression,
-    LibraryMethodCallBoundExpression,
-    LibraryPropertyBoundExpression,
-    SubModuleCallBoundExpression,
-    VariableBoundExpression
-} from "./nodes/expressions";
-import { BaseBoundStatement, ForBoundStatement, IfBoundStatement, ElseBoundCondition, WhileBoundStatement, LabelBoundStatement, GoToBoundStatement, InvalidExpressionBoundStatement, VariableAssignmentBoundStatement, ArrayAssignmentBoundStatement, PropertyAssignmentBoundStatement, LibraryMethodCallBoundStatement, SubModuleCallBoundStatement } from "./nodes/statements";
+import { BaseBoundStatement, ArrayAccessBoundExpression, BaseBoundExpression, BoundKind, EqualBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, SubModuleCallBoundExpression, VariableBoundExpression, ForBoundStatement, IfBoundStatement, WhileBoundStatement, LabelBoundStatement, GoToBoundStatement, InvalidExpressionBoundStatement, VariableAssignmentBoundStatement, ArrayAssignmentBoundStatement, PropertyAssignmentBoundStatement, LibraryMethodCallBoundStatement, SubModuleCallBoundStatement, IfHeaderBoundNode } from "./bound-nodes";
+import { GoToCommandSyntax, BaseSyntaxNode, SyntaxKind, ForStatementSyntax, IfStatementSyntax, WhileStatementSyntax, LabelCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax } from "../syntax/syntax-nodes";
 
 const libraries: SupportedLibraries = new SupportedLibraries();
 
 export class StatementBinder {
     private _definedLabels: { [name: string]: boolean } = {};
-    private _goToStatements: GoToStatementSyntax[] = [];
-    private _module: BaseBoundStatement<BaseStatementSyntax>[];
+    private _goToStatements: GoToCommandSyntax[] = [];
 
-    public get module(): ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> {
-        return this._module;
-    }
+    public readonly result: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>;
 
-    public constructor(statements: ReadonlyArray<BaseStatementSyntax>, private definedSubModules: { readonly [name: string]: boolean }, private diagnostics: Diagnostic[]) {
-        this._module = statements.map(statement => this.bindStatement(statement));
+    public constructor(
+        statements: ReadonlyArray<BaseSyntaxNode>,
+        private _definedSubModules: { readonly [name: string]: boolean },
+        private readonly _diagnostics: Diagnostic[]) {
+        this.result = this.bindStatementsList(statements);
 
         this._goToStatements.forEach(statement => {
-            const identifier = statement.command.labelToken;
-            if (!this._definedLabels[identifier.text]) {
-                this.diagnostics.push(new Diagnostic(ErrorCode.LabelDoesNotExist, identifier.range, identifier.text));
+            const identifier = statement.labelToken;
+            if (!this._definedLabels[identifier.token.text]) {
+                this._diagnostics.push(new Diagnostic(ErrorCode.LabelDoesNotExist, identifier.range, identifier.token.text));
             }
         });
     }
 
+    private bindStatementsList(list: ReadonlyArray<BaseSyntaxNode>): ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> {
+        const boundList: BaseBoundStatement<BaseStatementSyntax>[] = [];
+        list.forEach(statement => {
+            if (statement.kind !== SyntaxKind.CommentCommand) {
+                boundList.push(this.bindStatement(statement));
+            }
+        });
+        return boundList;
+    }
+
     private bindStatement(syntax: BaseStatementSyntax): BaseBoundStatement<BaseStatementSyntax> {
         switch (syntax.kind) {
-            case StatementSyntaxKind.For: return this.bindForStatement(syntax as ForStatementSyntax);
-            case StatementSyntaxKind.If: return this.bindIfStatement(syntax as IfStatementSyntax);
-            case StatementSyntaxKind.While: return this.bindWhileStatement(syntax as WhileStatementSyntax);
-            case StatementSyntaxKind.Label: return this.bindLabelStatement(syntax as LabelStatementSyntax);
-            case StatementSyntaxKind.GoTo: return this.bindGoToStatement(syntax as GoToStatementSyntax);
-            case StatementSyntaxKind.Expression: return this.bindExpressionStatement(syntax as ExpressionStatementSyntax);
-            default: throw new Error(`Unexpected statement of kind ${StatementSyntaxKind[syntax.kind]} here`);
+            case SyntaxKind.ForStatement: return this.bindForStatement(syntax as ForStatementSyntax);
+            case SyntaxKind.IfStatement: return this.bindIfStatement(syntax as IfStatementSyntax);
+            case SyntaxKind.WhileStatement: return this.bindWhileStatement(syntax as WhileStatementSyntax);
+            case SyntaxKind.LabelCommand: return this.bindLabelStatement(syntax as LabelCommandSyntax);
+            case SyntaxKind.GoToCommand: return this.bindGoToStatement(syntax as GoToCommandSyntax);
+            case SyntaxKind.ExpressionCommand: return this.bindExpressionStatement(syntax as ExpressionCommandSyntax);
+            default: throw new Error(`Unexpected statement of kind ${SyntaxKind[syntax.kind]} here`);
         }
     }
 
     private bindForStatement(syntax: ForStatementSyntax): ForBoundStatement {
-        const identifier = syntax.forCommand.identifierToken.text;
+        const identifier = syntax.forCommand.identifierToken.token.text;
 
         const fromExpression = this.bindExpression(syntax.forCommand.fromExpression, true);
         const toExpression = this.bindExpression(syntax.forCommand.toExpression, true);
 
-        let stepExpression: BaseBoundExpression<BaseExpressionSyntax> | undefined;
-        if (syntax.forCommand.stepClause) {
-            stepExpression = this.bindExpression(syntax.forCommand.stepClause.expression, true);
+        let stepExpression: BaseBoundExpression<BaseSyntaxNode> | undefined;
+        if (syntax.forCommand.stepClauseOpt) {
+            stepExpression = this.bindExpression(syntax.forCommand.stepClauseOpt.expression, true);
         }
 
-        const statementsList = syntax.statementsList.map(statement => this.bindStatement(statement));
+        const statementsList = this.bindStatementsList(syntax.statementsList);
 
         return new ForBoundStatement(identifier, fromExpression, toExpression, stepExpression, statementsList, syntax);
     }
 
     private bindIfStatement(syntax: IfStatementSyntax): IfBoundStatement {
-        const ifPart = {
-            condition: this.bindExpression(syntax.ifPart.headerCommand.expression, true),
-            statementsList: syntax.ifPart.statementsList.map(statement => this.bindStatement(statement))
-        };
+        const ifPart = new IfHeaderBoundNode<IfCommandSyntax>(
+            this.bindExpression(syntax.ifPart.headerCommand.expression, true),
+            this.bindStatementsList(syntax.ifPart.statementsList),
+            syntax.ifPart);
 
         const elseIfParts = syntax.elseIfParts.map(elseIfPart => {
-            return {
-                condition: this.bindExpression(elseIfPart.headerCommand.expression, true),
-                statementsList: elseIfPart.statementsList.map(statement => this.bindStatement(statement))
-            };
+            return new IfHeaderBoundNode<ElseIfCommandSyntax>(
+                this.bindExpression(elseIfPart.headerCommand.expression, true),
+                this.bindStatementsList(elseIfPart.statementsList),
+                elseIfPart);
         });
 
-        let elsePart: ElseBoundCondition | undefined;
-        if (syntax.elsePart) {
-            elsePart = {
-                statementsList: syntax.elsePart.statementsList.map(statement => this.bindStatement(statement))
-            };
+        let elsePart: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> | undefined;
+        if (syntax.elsePartOpt) {
+            elsePart = this.bindStatementsList(syntax.elsePartOpt.statementsList);
         }
 
         return new IfBoundStatement(ifPart, elseIfParts, elsePart, syntax);
@@ -99,58 +87,58 @@ export class StatementBinder {
 
     private bindWhileStatement(syntax: WhileStatementSyntax): WhileBoundStatement {
         const condition = this.bindExpression(syntax.whileCommand.expression, true);
-        const statementsList = syntax.statementsList.map(statement => this.bindStatement(statement));
+        const statementsList = this.bindStatementsList(syntax.statementsList);
 
         return new WhileBoundStatement(condition, statementsList, syntax);
     }
 
-    private bindLabelStatement(syntax: LabelStatementSyntax): LabelBoundStatement {
-        const labelName = syntax.command.labelToken.text;
+    private bindLabelStatement(syntax: LabelCommandSyntax): LabelBoundStatement {
+        const labelName = syntax.labelToken.token.text;
         this._definedLabels[labelName] = true;
 
         return new LabelBoundStatement(labelName, syntax);
     }
 
-    private bindGoToStatement(syntax: GoToStatementSyntax): GoToBoundStatement {
+    private bindGoToStatement(syntax: GoToCommandSyntax): GoToBoundStatement {
         this._goToStatements.push(syntax);
 
-        return new GoToBoundStatement(syntax.command.labelToken.text, syntax);
+        return new GoToBoundStatement(syntax.labelToken.token.text, syntax);
     }
 
-    private bindExpressionStatement(syntax: ExpressionStatementSyntax): BaseBoundStatement<BaseStatementSyntax> {
-        const expression = this.bindExpression(syntax.command.expression, false);
+    private bindExpressionStatement(syntax: ExpressionCommandSyntax): BaseBoundStatement<BaseStatementSyntax> {
+        const expression = this.bindExpression(syntax.expression, false);
 
         if (expression.hasErrors) {
             return new InvalidExpressionBoundStatement(expression, syntax);
         }
 
         switch (expression.kind) {
-            case BoundExpressionKind.Equal: {
+            case BoundKind.EqualExpression: {
                 const binaryExpression = expression as EqualBoundExpression;
 
                 switch (binaryExpression.leftExpression.kind) {
-                    case BoundExpressionKind.Variable: {
+                    case BoundKind.VariableExpression: {
                         const variable = binaryExpression.leftExpression as VariableBoundExpression;
                         return new VariableAssignmentBoundStatement(variable.variableName, binaryExpression.rightExpression, syntax);
                     }
 
-                    case BoundExpressionKind.ArrayAccess: {
+                    case BoundKind.ArrayAccessExpression: {
                         const array = binaryExpression.leftExpression as ArrayAccessBoundExpression;
                         return new ArrayAssignmentBoundStatement(array.arrayName, array.indices, binaryExpression.rightExpression, syntax);
                     }
 
-                    case BoundExpressionKind.LibraryProperty: {
+                    case BoundKind.LibraryPropertyExpression: {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
                         if (!libraries[property.libraryName].properties[property.propertyName].setter) {
-                            this.diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, property.syntax.range));
+                            this._diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, property.syntax.range));
                         }
 
                         return new PropertyAssignmentBoundStatement(property.libraryName, property.propertyName, binaryExpression.rightExpression, syntax);
                     }
 
                     default: {
-                        this.diagnostics.push(new Diagnostic(
+                        this._diagnostics.push(new Diagnostic(
                             ErrorCode.ValueIsNotAssignable,
                             binaryExpression.leftExpression.syntax.range));
 
@@ -159,12 +147,12 @@ export class StatementBinder {
                 }
             }
 
-            case BoundExpressionKind.LibraryMethodCall: {
+            case BoundKind.LibraryMethodCallExpression: {
                 const call = expression as LibraryMethodCallBoundExpression;
-                return new LibraryMethodCallBoundStatement(call.libraryName, call.MethodName, call.argumentsList, syntax);
+                return new LibraryMethodCallBoundStatement(call.libraryName, call.methodName, call.argumentsList, syntax);
             }
 
-            case BoundExpressionKind.SubModuleCall: {
+            case BoundKind.SubModuleCallExpression: {
                 const call = expression as SubModuleCallBoundExpression;
                 return new SubModuleCallBoundStatement(call.subModuleName, syntax);
             }
@@ -174,11 +162,11 @@ export class StatementBinder {
             ? ErrorCode.UnassignedExpressionStatement
             : ErrorCode.InvalidExpressionStatement;
 
-        this.diagnostics.push(new Diagnostic(errorCode, syntax.command.expression.range));
+        this._diagnostics.push(new Diagnostic(errorCode, syntax.expression.range));
         return new InvalidExpressionBoundStatement(expression, syntax);
     }
 
-    private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
-        return new ExpressionBinder(syntax, expectedValue, this.definedSubModules, this.diagnostics).result;
+    private bindExpression(syntax: BaseSyntaxNode, expectedValue: boolean): BaseBoundExpression<BaseStatementSyntax> {
+        return new ExpressionBinder(syntax, expectedValue, this._definedSubModules, this._diagnostics).result;
     }
 }

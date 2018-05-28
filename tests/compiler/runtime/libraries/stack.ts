@@ -1,6 +1,7 @@
 import "jasmine";
 import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
 import { Diagnostic, ErrorCode } from "../../../../src/compiler/diagnostics";
+import { CompilerRange } from "../../../../src/compiler/syntax/ranges";
 
 describe("Compiler.Runtime.Libraries.Stack", () => {
     it("can push values and get counts", () => {
@@ -44,6 +45,6 @@ Stack.PopValue("x")`,
             // Stack.PopValue("x")
             // ^^^^^^^^^^^^^^^^^^^
             // This stack has no elements to be popped
-            new Diagnostic(ErrorCode.PoppingAnEmptyStack, { line: 1, start: 0, end: 19 }));
+            new Diagnostic(ErrorCode.PoppingAnEmptyStack, CompilerRange.fromValues(1, 0, 1, 19)));
     });
 });

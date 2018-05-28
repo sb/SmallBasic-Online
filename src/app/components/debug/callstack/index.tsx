@@ -20,7 +20,7 @@ export class CallStackComponent extends React.Component<CallStackProps, CallStac
                 <ul>
                     {this.props.engine.executionStack.map((frame, i) =>
                         <li key={i}>
-                            {frame.moduleName}: ({this.props.engine.modules[frame.moduleName][frame.instructionIndex].sourceRange.line})
+                            {frame.moduleName}: ({this.props.engine.modules[frame.moduleName][frame.instructionIndex].sourceRange.start.line})
                         </li>
                     )}
                 </ul>

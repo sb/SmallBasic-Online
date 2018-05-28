@@ -4,7 +4,7 @@ import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { Diagnostic, ErrorCode } from "../../diagnostics";
-import { TextRange } from "../../syntax/nodes/syntax-nodes";
+import { CompilerRange } from "../../syntax/ranges";
 
 export class StackLibrary implements LibraryTypeDefinition {
     private _stacks: { [name: string]: BaseValue[] } = {};
@@ -50,7 +50,7 @@ export class StackLibrary implements LibraryTypeDefinition {
             "stackName": DocumentationResources.Stack_PopValue_StackName
         },
         returnsValue: true,
-        execute: (engine: ExecutionEngine, _: ExecutionMode, range: TextRange) => {
+        execute: (engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange) => {
             const stackName = engine.popEvaluationStack().toValueString();
 
             if (this._stacks[stackName] && this._stacks[stackName].length) {

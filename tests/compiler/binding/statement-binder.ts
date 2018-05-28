@@ -1,6 +1,7 @@
 import "jasmine";
 import { verifyCompilationErrors } from "../helpers";
 import { Diagnostic, ErrorCode } from "../../../src/compiler/diagnostics";
+import { CompilerRange } from "../../../src/compiler/syntax/ranges";
 
 describe("Compiler.Binding.StatementBinder", () => {
     it("reports errors on goto statements to non-existent labels", () => {
@@ -11,7 +12,7 @@ GoTo label2`,
             // GoTo label2
             //      ^^^^^^
             // No label with the name 'label2' exists in the same module.
-            new Diagnostic(ErrorCode.LabelDoesNotExist, { line: 3, start: 5, end: 11 }, "label2"));
+            new Diagnostic(ErrorCode.LabelDoesNotExist, CompilerRange.fromValues(3, 5, 3, 11), "label2"));
     });
 
     it("reports errors on main module goto statements to sub-module labels", () => {
@@ -24,7 +25,7 @@ GoTo label`,
             // GoTo label
             //      ^^^^^
             // No label with the name 'label' exists in the same module.
-            new Diagnostic(ErrorCode.LabelDoesNotExist, { line: 5, start: 5, end: 10 }, "label"));
+            new Diagnostic(ErrorCode.LabelDoesNotExist, CompilerRange.fromValues(5, 5, 5, 10), "label"));
     });
 
     it("reports errors on sub-module goto statements to main module labels", () => {
@@ -37,7 +38,7 @@ GoTo label`,
             //     GoTo label
             //          ^^^^^
             // No label with the name 'label' exists in the same module.
-            new Diagnostic(ErrorCode.LabelDoesNotExist, { line: 3, start: 9, end: 14 }, "label"));
+            new Diagnostic(ErrorCode.LabelDoesNotExist, CompilerRange.fromValues(3, 9, 3, 14), "label"));
     });
 
     it("reports error on non-value in for loop from expression", () => {
@@ -47,7 +48,7 @@ EndFor`,
             // For x = TextWindow.WriteLine("") To 5
             //         ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 8, end: 32 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 8, 1, 32)));
     });
 
     it("reports error on non-value in for loop to expression", () => {
@@ -57,7 +58,7 @@ EndFor`,
             // For x = 1 To TextWindow.WriteLine("")
             //              ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 13, end: 37 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 13, 1, 37)));
     });
 
     it("reports error on non-value in for loop step expression", () => {
@@ -67,7 +68,7 @@ EndFor`,
             // For x = 1 To 10 Step TextWindow.WriteLine("")
             //                      ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 21, end: 45 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 21, 1, 45)));
     });
 
     it("reports error on non-value in if statement expression", () => {
@@ -77,7 +78,7 @@ EndIf`,
             // If TextWindow.WriteLine("") Then
             //    ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 3, end: 27 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 3, 1, 27)));
     });
 
     it("reports error on non-value in else-if statement expression", () => {
@@ -88,7 +89,7 @@ EndIf`,
             // ElseIf TextWindow.WriteLine("") Then
             //        ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 2, start: 7, end: 31 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(2, 7, 2, 31)));
     });
 
     it("reports error on non-value in while statement expression", () => {
@@ -98,7 +99,7 @@ EndWhile`,
             // While TextWindow.WriteLine("")
             //       ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 6, end: 30 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 6, 1, 30)));
     });
 
     it("reports only one error on expressions that have errors", () => {
@@ -108,7 +109,7 @@ TextWindow.WriteLine() = 5`,
             // TextWindow.WriteLine() = 5
             // ^^^^^^^^^^^^^^^^^^^^
             // I was expecting 1 arguments, but found 0 instead.
-            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, { line: 1, start: 0, end: 20 }, "1", "0"));
+            new Diagnostic(ErrorCode.UnexpectedArgumentsCount, CompilerRange.fromValues(1, 0, 1, 20), "1", "0"));
     });
 
     it("reports error on LHS of assignment not assignable", () => {
@@ -117,7 +118,7 @@ TextWindow.WriteLine(0) = 5`,
             // TextWindow.WriteLine(0) = 5
             // ^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 23 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 0, 1, 23)));
     });
 
     it("reports error on assigning to property without a setter", () => {
@@ -126,7 +127,7 @@ Clock.Time = 5`,
             // Clock.Time = 5
             // ^^^^^^^^^^
             // This property cannot be set. You can only get its value.
-            new Diagnostic(ErrorCode.PropertyHasNoSetter, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.PropertyHasNoSetter, CompilerRange.fromValues(1, 0, 1, 10)));
     });
 
     it("reports error on invalid LHS expressions - parenthesis", () => {
@@ -135,7 +136,7 @@ Clock.Time = 5`,
             // ( x + y ) = 5
             // ^^^^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 9 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 9)));
     });
 
     it("reports error on invalid LHS expressions - and", () => {
@@ -144,7 +145,7 @@ x and y = 5`,
             // x and y = 5
             // ^^^^^^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 11 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 11)));
     });
 
     it("reports error on invalid LHS expressions - or", () => {
@@ -153,7 +154,7 @@ x or y = 5`,
             // x or y = 5
             // ^^^^^^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 10)));
     });
 
     it("reports error on invalid LHS expressions - negation", () => {
@@ -162,7 +163,7 @@ x or y = 5`,
             // -x = 5
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 6)));
     });
 
     it("reports error on invalid LHS expressions - equal", () => {
@@ -171,7 +172,7 @@ x = y = 5`,
             // x = y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - not equal", () => {
@@ -180,7 +181,7 @@ x <> y = 5`,
             // x <> y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 6)));
     });
 
     it("reports error on invalid LHS expressions - addition", () => {
@@ -189,7 +190,7 @@ x + y = 5`,
             // x + y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - subtraction", () => {
@@ -198,7 +199,7 @@ x - y = 5`,
             // x - y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - multiplication", () => {
@@ -207,7 +208,7 @@ x * y = 5`,
             // x * y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - division", () => {
@@ -216,7 +217,7 @@ x / y = 5`,
             // x / y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - greater than", () => {
@@ -225,7 +226,7 @@ x > y = 5`,
             // x > y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - greater than or equal", () => {
@@ -234,7 +235,7 @@ x >= y = 5`,
             // x >= y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 6)));
     });
 
     it("reports error on invalid LHS expressions - less than", () => {
@@ -243,7 +244,7 @@ x < y = 5`,
             // x < y = 5
             // ^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 5)));
     });
 
     it("reports error on invalid LHS expressions - less than or equal", () => {
@@ -252,7 +253,7 @@ x <= y = 5`,
             // x <= y = 5
             // ^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 6)));
     });
 
     it("reports error on invalid LHS expressions -library method", () => {
@@ -261,7 +262,7 @@ TextWindow.WriteLine = 5`,
             // TextWindow.WriteLine = 5
             // ^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 20 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 0, 1, 20)));
     });
 
     it("reports error on invalid LHS expressions - library method call", () => {
@@ -270,7 +271,7 @@ TextWindow.WriteLine("") = 5`,
             // TextWindow.WriteLine("") = 5
             // ^^^^^^^^^^^^^^^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 24 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 0, 1, 24)));
     });
 
     it("reports error on invalid LHS expressions - library type", () => {
@@ -279,7 +280,7 @@ TextWindow = 5`,
             // TextWindow = 5
             // ^^^^^^^^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(1, 0, 1, 10)));
     });
 
     it("reports error on invalid LHS expressions - number literal", () => {
@@ -288,7 +289,7 @@ TextWindow = 5`,
             // 6 = 5
             // ^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 1)));
     });
 
     it("reports error on invalid LHS expressions - string literal", () => {
@@ -297,7 +298,7 @@ TextWindow = 5`,
             // "literal" = 5
             // ^^^^^^^^^
             // You cannot assign to this expression. Did you mean to use a variable instead?
-            new Diagnostic(ErrorCode.ValueIsNotAssignable, { line: 1, start: 0, end: 9 }));
+            new Diagnostic(ErrorCode.ValueIsNotAssignable, CompilerRange.fromValues(1, 0, 1, 9)));
     });
 
     it("reports error on invalid LHS expressions - submodule", () => {
@@ -309,7 +310,7 @@ M = 5`,
             // M = 5
             // ^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(4, 0, 4, 1)));
     });
 
     it("reports error on invalid LHS expressions - submodule call", () => {
@@ -321,7 +322,7 @@ M() = 5`,
             // M() = 5
             // ^^^
             // This expression must return a value to be used here.
-            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, { line: 4, start: 0, end: 3 }));
+            new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, CompilerRange.fromValues(4, 0, 4, 3)));
     });
     
     it("reports error on invalid expression statements - variable", () => {
@@ -330,7 +331,7 @@ x`,
             // x
             // ^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 1)));
     });
     
     it("reports error on invalid expression statements - array access", () => {
@@ -339,7 +340,7 @@ ar[0]`,
             // ar[0]
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - library property", () => {
@@ -348,7 +349,7 @@ Clock.Time`,
             // Clock.Time
             // ^^^^^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 10 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 10)));
     });
     
     it("reports error on invalid expression statements - parenthesis", () => {
@@ -357,7 +358,7 @@ Clock.Time`,
             // (x)
             // ^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 3 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 3)));
     });
     
     it("reports error on invalid expression statements - and", () => {
@@ -366,7 +367,7 @@ x and y`,
             // x and y
             // ^^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 7 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 7)));
     });
     
     it("reports error on invalid expression statements - or", () => {
@@ -375,7 +376,7 @@ x or y`,
             // x or y
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 6)));
     });
     
     it("reports error on invalid expression statements - negation", () => {
@@ -384,7 +385,7 @@ x or y`,
             // -5
             // ^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 2 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 2)));
     });
     
     it("reports error on invalid expression statements - not equal", () => {
@@ -393,7 +394,7 @@ x <> y`,
             // x <> y
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 6)));
     });
     
     it("reports error on invalid expression statements - addition", () => {
@@ -402,7 +403,7 @@ x + y`,
             // x + y
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - subtraction", () => {
@@ -411,7 +412,7 @@ x - y`,
             // x - y
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - multiplication", () => {
@@ -420,7 +421,7 @@ x * y`,
             // x * y
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - division", () => {
@@ -429,7 +430,7 @@ x / y`,
             // x / y
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - greater than", () => {
@@ -438,7 +439,7 @@ x < y`,
             // x < y
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - less than", () => {
@@ -447,7 +448,7 @@ x > y`,
             // x > y
             // ^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - greater than or equal", () => {
@@ -456,7 +457,7 @@ x <= y`,
             // x <= y
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 6)));
     });
     
     it("reports error on invalid expression statements - less than or equal", () => {
@@ -465,7 +466,7 @@ x >= y`,
             // x >= y
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 6)));
     });
     
     it("reports error on invalid expression statements - library method", () => {
@@ -474,7 +475,7 @@ TextWindow.WriteLine`,
             // TextWindow.WriteLine
             // ^^^^^^^^^^^^^^^^^^^^
             // This expression is not a valid statement.
-            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 1, start: 0, end: 20 }));
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, CompilerRange.fromValues(1, 0, 1, 20)));
     });
     
     it("reports error on invalid expression statements - library type", () => {
@@ -483,7 +484,7 @@ Clock`,
             // Clock
             // ^^^^^
             // This expression is not a valid statement.
-            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 1, start: 0, end: 5 }));
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, CompilerRange.fromValues(1, 0, 1, 5)));
     });
     
     it("reports error on invalid expression statements - string literal", () => {
@@ -492,7 +493,7 @@ Clock`,
             // "test"
             // ^^^^^^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 6 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 6)));
     });
     
     it("reports error on invalid expression statements - number literal", () => {
@@ -501,7 +502,7 @@ Clock`,
             // 5
             // ^
             // This value is not assigned to anything. Did you mean to assign it to a variable?
-            new Diagnostic(ErrorCode.UnassignedExpressionStatement, { line: 1, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.UnassignedExpressionStatement, CompilerRange.fromValues(1, 0, 1, 1)));
     });
     
     it("reports error on invalid expression statements - submodule", () => {
@@ -512,6 +513,6 @@ x`,
             // x
             // ^
             // This expression is not a valid statement.
-            new Diagnostic(ErrorCode.InvalidExpressionStatement, { line: 3, start: 0, end: 1 }));
+            new Diagnostic(ErrorCode.InvalidExpressionStatement, CompilerRange.fromValues(3, 0, 3, 1)));
     });
 });

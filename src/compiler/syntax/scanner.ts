@@ -1,18 +1,19 @@
 import { ErrorCode, Diagnostic } from "../diagnostics";
-import { Token, TokenKind } from "./nodes/tokens";
+import { Token, TokenKind } from "./tokens";
+import { CompilerRange } from "./ranges";
 
 export class Scanner {
-    private index: number = 0;
-    private line: number = 0;
-    private column: number = 0;
+    private _index: number = 0;
+    private _line: number = 0;
+    private _column: number = 0;
 
-    private _tokens: Token[] = [];
+    private _result: Token[] = [];
 
-    public get tokens(): ReadonlyArray<Token> {
-        return this._tokens;
+    public get result(): ReadonlyArray<Token> {
+        return this._result;
     }
 
-    public constructor(private text: string, private diagnostics: Diagnostic[]) {
+    public constructor(private readonly _text: string, private readonly _diagnostics: Diagnostic[]) {
         while (this.scanNextToken());
     }
 
@@ -20,24 +21,24 @@ export class Scanner {
         let current: string | undefined = undefined;
         let next: string | undefined = undefined;
 
-        if (this.index + 1 < this.text.length) {
-            current = this.text[this.index];
-            next = this.text[this.index + 1];
-        } else if (this.index < this.text.length) {
-            current = this.text[this.index];
+        if (this._index + 1 < this._text.length) {
+            current = this._text[this._index];
+            next = this._text[this._index + 1];
+        } else if (this._index < this._text.length) {
+            current = this._text[this._index];
         } else {
             return false;
         }
 
         switch (current) {
             case "\r": switch (next) {
-                case "\n": this.index += 2; this.line++; this.column = 0; return true;
-                default: this.index++; this.line++; this.column = 0; return true;
+                case "\n": this._index += 2; this._line++; this._column = 0; return true;
+                default: this._index++; this._line++; this._column = 0; return true;
             }
 
-            case "\n": this.index++; this.line++; this.column = 0; return true;
-            case " ": this.index++; this.column++; return true;
-            case "\t": this.index++; this.column++; return true;
+            case "\n": this._index++; this._line++; this._column = 0; return true;
+            case " ": this._index++; this._column++; return true;
+            case "\t": this._index++; this._column++; return true;
 
             case "(": this.addToken(current, TokenKind.LeftParen); return true;
             case ")": this.addToken(current, TokenKind.RightParen); return true;
@@ -78,42 +79,42 @@ export class Scanner {
         }
 
         const token = this.addToken(current, TokenKind.UnrecognizedToken);
-        this.diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, token.range, current));
+        this._diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, token.range, current));
 
         return true;
     }
 
     private scanCommentToken(): void {
-        let lookAhead = this.index;
-        while (lookAhead < this.text.length) {
-            const current = this.text[lookAhead];
+        let lookAhead = this._index;
+        while (lookAhead < this._text.length) {
+            const current = this._text[lookAhead];
             if (current === "\r" || current === "\n") {
                 break;
             }
             lookAhead++;
         }
 
-        this.addToken(this.text.substr(this.index, lookAhead - this.index).trim(), TokenKind.Comment);
+        this.addToken(this._text.substr(this._index, lookAhead - this._index).trim(), TokenKind.Comment);
     }
 
     private scanStringToken(): void {
-        let lookAhead = this.index + 1;
-        while (lookAhead < this.text.length) {
-            const ch = this.text[lookAhead];
+        let lookAhead = this._index + 1;
+        while (lookAhead < this._text.length) {
+            const ch = this._text[lookAhead];
             switch (ch) {
                 case "\"":
-                    this.addToken(this.text.substr(this.index, lookAhead - this.index + 1), TokenKind.StringLiteral);
+                    this.addToken(this._text.substr(this._index, lookAhead - this._index + 1), TokenKind.StringLiteral);
                     return;
                 case "\r":
                 case "\n":
-                    const token = this.addToken(this.text.substr(this.index, lookAhead - this.index), TokenKind.StringLiteral);
-                    this.diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, token.range));
+                    const token = this.addToken(this._text.substr(this._index, lookAhead - this._index), TokenKind.StringLiteral);
+                    this._diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, token.range));
                     return;
                 default:
                     if (!Scanner.isSupportedCharacter(ch)) {
-                        const column = this.column + lookAhead - this.index;
-                        const range = { line: this.line, start: column, end: column };
-                        this.diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, range, ch));
+                        const column = this._column + lookAhead - this._index;
+                        const range = CompilerRange.fromValues(this._line, column, this._line, column);
+                        this._diagnostics.push(new Diagnostic(ErrorCode.UnrecognizedCharacter, range, ch));
                     }
 
                     lookAhead++;
@@ -121,31 +122,31 @@ export class Scanner {
             }
         }
 
-        const unrecognizedToken = this.addToken(this.text.substr(this.index, lookAhead - this.index), TokenKind.StringLiteral);
-        this.diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, unrecognizedToken.range));
+        const unrecognizedToken = this.addToken(this._text.substr(this._index, lookAhead - this._index), TokenKind.StringLiteral);
+        this._diagnostics.push(new Diagnostic(ErrorCode.UnterminatedStringLiteral, unrecognizedToken.range));
     }
 
     private scanNumberToken(): void {
-        let lookAhead = this.index;
-        while (lookAhead < this.text.length && "0" <= this.text[lookAhead] && this.text[lookAhead] <= "9") {
+        let lookAhead = this._index;
+        while (lookAhead < this._text.length && "0" <= this._text[lookAhead] && this._text[lookAhead] <= "9") {
             lookAhead++;
         }
 
-        if (lookAhead < this.text.length && this.text[lookAhead] === ".") {
+        if (lookAhead < this._text.length && this._text[lookAhead] === ".") {
             lookAhead++;
 
-            while (lookAhead < this.text.length && "0" <= this.text[lookAhead] && this.text[lookAhead] <= "9") {
+            while (lookAhead < this._text.length && "0" <= this._text[lookAhead] && this._text[lookAhead] <= "9") {
                 lookAhead++;
             }
         }
 
-        this.addToken(this.text.substr(this.index, lookAhead - this.index), TokenKind.NumberLiteral);
+        this.addToken(this._text.substr(this._index, lookAhead - this._index), TokenKind.NumberLiteral);
     }
 
     private scanWordToken(): void {
-        let lookAhead = this.index;
-        while (lookAhead < this.text.length) {
-            const current = this.text[lookAhead];
+        let lookAhead = this._index;
+        while (lookAhead < this._text.length) {
+            const current = this._text[lookAhead];
             if (current === "_" || "a" <= current && current <= "z" || "A" <= current && current <= "Z" || "0" <= current && current <= "9") {
                 lookAhead++;
             } else {
@@ -153,7 +154,7 @@ export class Scanner {
             }
         }
 
-        const word = this.text.substr(this.index, lookAhead - this.index);
+        const word = this._text.substr(this._index, lookAhead - this._index);
 
         switch (word.toLowerCase()) {
             case "if": this.addToken(word, TokenKind.IfKeyword); return;
@@ -177,16 +178,11 @@ export class Scanner {
     }
 
     private addToken(current: string, kind: TokenKind): Token {
-        const token = new Token(current, kind, {
-            line: this.line,
-            start: this.column,
-            end: this.column + current.length
-        });
+        const token = new Token(current, kind, CompilerRange.fromValues(this._line, this._column, this._line, this._column + current.length));
+        this._index += current.length;
+        this._column += current.length;
 
-        this.index += current.length;
-        this.column += current.length;
-
-        this._tokens.push(token);
+        this._result.push(token);
         return token;
     }
 

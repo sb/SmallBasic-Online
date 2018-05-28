@@ -1,6 +1,7 @@
 import "jasmine";
 import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
 import { Diagnostic, ErrorCode } from "../../../../src/compiler/diagnostics";
+import { CompilerRange } from "../../../../src/compiler/syntax/ranges";
 
 describe("Compiler.Runtime.Expressions.Division", () => {
     it("errors on division by zero", () => {
@@ -9,7 +10,7 @@ TextWindow.WriteLine(4 / 0)`,
             // TextWindow.WriteLine(4 / 0)
             //                      ^^^^^
             // You cannot divide by zero. Please consider checking the divisor before dividing.
-            new Diagnostic(ErrorCode.CannotDivideByZero, { line: 1, start: 21, end: 26 }));
+            new Diagnostic(ErrorCode.CannotDivideByZero, CompilerRange.fromValues(1, 21, 1, 26)));
     });
 
     it("computes division - number divided by number", () => {
@@ -32,7 +33,7 @@ TextWindow.WriteLine(1 / "t")`,
             // TextWindow.WriteLine(1 / "t")
             //                      ^^^^^^^
             // You cannot use the operator '/' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 28 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 28), "/"));
     });
 
     it("computes division - number divided by array / error", () => {
@@ -42,7 +43,7 @@ TextWindow.WriteLine(1 / x)`,
             // TextWindow.WriteLine(1 / x)
             //                      ^^^^^
             // You cannot use the operator '/' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 26 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 26), "/"));
     });
 
     it("computes division - numeric string divided by number", () => {
@@ -65,7 +66,7 @@ TextWindow.WriteLine("1" / "t")`,
             // TextWindow.WriteLine("1" / "t")
             //                      ^^^^^^^^^
             // You cannot use the operator '/' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 30 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 30), "/"));
     });
 
     it("computes division - numeric string divided by array / error", () => {
@@ -75,7 +76,7 @@ TextWindow.WriteLine("1" / x)`,
             // TextWindow.WriteLine("1" / x)
             //                      ^^^^^^^
             // You cannot use the operator '/' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 28 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 28), "/"));
     });
 
     it("computes division - non-numeric string divided by number", () => {
@@ -84,7 +85,7 @@ TextWindow.WriteLine("r" / 5)`,
             // TextWindow.WriteLine("r" / 5)
             //                      ^^^^^^^
             // You cannot use the operator '/' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 28 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 28), "/"));
     });
 
     it("computes division - non-numeric string divided by numeric string", () => {
@@ -93,7 +94,7 @@ TextWindow.WriteLine("r" / "4")`,
             // TextWindow.WriteLine("r" / "4")
             //                      ^^^^^^^^^
             // You cannot use the operator '/' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 30 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 30), "/"));
     });
 
     it("computes division - non-numeric string divided by non-numeric string", () => {
@@ -102,7 +103,7 @@ TextWindow.WriteLine("r" / "t")`,
             // TextWindow.WriteLine("r" / "t")
             //                      ^^^^^^^^^
             // You cannot use the operator '/' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 1, start: 21, end: 30 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(1, 21, 1, 30), "/"));
     });
 
     it("computes division - non-numeric string divided by array / error", () => {
@@ -112,7 +113,7 @@ TextWindow.WriteLine("r" / x)`,
             // TextWindow.WriteLine("r" / x)
             //                      ^^^^^^^
             // You cannot use the operator '/' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 2, start: 21, end: 28 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(2, 21, 2, 28), "/"));
     });
 
     it("computes division - array divided by number", () => {
@@ -122,7 +123,7 @@ TextWindow.WriteLine(x / 5)`,
             // TextWindow.WriteLine(x / 5)
             //                      ^^^^^
             // You cannot use the operator '/' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 26 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 26), "/"));
     });
 
     it("computes division - array divided by numeric string", () => {
@@ -132,7 +133,7 @@ TextWindow.WriteLine(x / "4")`,
             // TextWindow.WriteLine(x / "4")
             //                      ^^^^^^^
             // You cannot use the operator '/' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 28 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 28), "/"));
     });
 
     it("computes division - array divided by non-numeric string", () => {
@@ -142,7 +143,7 @@ TextWindow.WriteLine(x / "t")`,
             // TextWindow.WriteLine(x / "t")
             //                      ^^^^^^^
             // You cannot use the operator '/' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 28 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 28), "/"));
     });
 
     it("computes division - array divided by array / error", () => {
@@ -153,6 +154,6 @@ TextWindow.WriteLine(x / y)`,
             // TextWindow.WriteLine(x / y)
             //                      ^^^^^
             // You cannot use the operator '/' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 3, start: 21, end: 26 }, "/"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(3, 21, 3, 26), "/"));
     });
 });

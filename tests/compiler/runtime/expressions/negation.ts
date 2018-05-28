@@ -1,6 +1,7 @@
 import { Diagnostic, ErrorCode } from "../../../../src/compiler/diagnostics";
 import "jasmine";
 import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
+import { CompilerRange } from "../../../../src/compiler/syntax/ranges";
 
 describe("Compiler.Runtime.Expressions.Negation", () => {
     it("can negate variables - numbers", () => {
@@ -17,7 +18,7 @@ TextWindow.WriteLine(-x)`,
             // TextWindow.WriteLine(-x)
             //                      ^^
             // You cannot use the operator '-' with a string value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, { line: 2, start: 21, end: 23 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAString, CompilerRange.fromValues(2, 21, 2, 23), "-"));
     });
 
     it("can negate variables - numeric strings", () => {
@@ -35,6 +36,6 @@ TextWindow.WriteLine(-x)`,
             // TextWindow.WriteLine(-x)
             //                      ^^
             // You cannot use the operator '-' with an array value
-            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, { line: 2, start: 21, end: 23 }, "-"));
+            new Diagnostic(ErrorCode.CannotUseOperatorWithAnArray, CompilerRange.fromValues(2, 21, 2, 23), "-"));
     });
 });

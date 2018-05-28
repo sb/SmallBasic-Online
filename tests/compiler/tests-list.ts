@@ -6,6 +6,9 @@ import "./binding/module-binder";
 import "./binding/statement-binder";
 import "./binding/expression-binder";
 
+import "./services/completion-service";
+import "./services/hover-service";
+
 import "./runtime/expressions/addition";
 import "./runtime/expressions/array-access";
 import "./runtime/expressions/division";

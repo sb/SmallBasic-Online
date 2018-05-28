@@ -32,7 +32,7 @@
     "awesome-typescript-loader": "3.2.3",
     "css-loader": "0.28.7",
     "electron": "1.8.4",
-    "electron-builder": "19.34.2",
+    "electron-builder": "20.15.1",
     "esutils": "2.0.2",
     "file-loader": "1.1.5",
     "gulp": "3.9.1",
