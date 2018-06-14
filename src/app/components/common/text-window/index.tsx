@@ -2,7 +2,7 @@ import * as React from "react";
 
 import "./style.css";
 import { Scanner } from "../../../../compiler/syntax/scanner";
-import { TextWindowColors } from "../../../../compiler/runtime/libraries/text-window";
+import { TextWindowColor } from "../../../../compiler/runtime/libraries/text-window";
 import { ValueKind, BaseValue } from "../../../../compiler/runtime/values/base-value";
 import { NumberValue } from "../../../../compiler/runtime/values/number-value";
 import { StringValue } from "../../../../compiler/runtime/values/string-value";
@@ -11,7 +11,7 @@ import { ExecutionEngine } from "../../../../compiler/execution-engine";
 
 interface OutputChunk {
     text: string;
-    color: TextWindowColors;
+    color: TextWindowColor;
     appendNewLine: boolean;
 }
 
@@ -22,8 +22,8 @@ interface TextWindowComponentProps {
 interface TextWindowComponentState {
     isCursorVisible: boolean;
 
-    foreground: TextWindowColors;
-    background: TextWindowColors;
+    foreground: TextWindowColor;
+    background: TextWindowColor;
 
     inputBuffer: string;
     inputKind?: ValueKind;
@@ -31,26 +31,26 @@ interface TextWindowComponentState {
     outputLines: OutputChunk[];
 }
 
-const inputColor: TextWindowColors = TextWindowColors.Gray;
+const inputColor: TextWindowColor = TextWindowColor.Gray;
 
-function textWindowColorToCssColor(color: TextWindowColors): string {
+function textWindowColorToCssColor(color: TextWindowColor): string {
     switch (color) {
-        case TextWindowColors.Black: return "rgb(0, 0, 0)";
-        case TextWindowColors.DarkBlue: return "rgb(0, 0, 128)";
-        case TextWindowColors.DarkGreen: return "rgb(0, 128, 0)";
-        case TextWindowColors.DarkCyan: return "rgb(0, 128, 128)";
-        case TextWindowColors.DarkRed: return "rgb(128, 0, 0)";
-        case TextWindowColors.DarkMagenta: return "rgb(128, 0, 128)";
-        case TextWindowColors.DarkYellow: return "rgb(128, 128, 0)";
-        case TextWindowColors.Gray: return "rgb(128, 128, 128)";
-        case TextWindowColors.DarkGray: return "rgb(64, 64, 64)";
-        case TextWindowColors.Blue: return "rgb(0, 0, 255)";
-        case TextWindowColors.Green: return "rgb(0, 255, 0)";
-        case TextWindowColors.Cyan: return "rgb(0, 255, 255)";
-        case TextWindowColors.Red: return "rgb(255, 0, 0)";
-        case TextWindowColors.Magenta: return "rgb(255, 0, 255)";
-        case TextWindowColors.Yellow: return "rgb(255, 255, 0)";
-        case TextWindowColors.White: return "rgb(255, 255, 255)";
+        case TextWindowColor.Black: return "rgb(0, 0, 0)";
+        case TextWindowColor.DarkBlue: return "rgb(0, 0, 128)";
+        case TextWindowColor.DarkGreen: return "rgb(0, 128, 0)";
+        case TextWindowColor.DarkCyan: return "rgb(0, 128, 128)";
+        case TextWindowColor.DarkRed: return "rgb(128, 0, 0)";
+        case TextWindowColor.DarkMagenta: return "rgb(128, 0, 128)";
+        case TextWindowColor.DarkYellow: return "rgb(128, 128, 0)";
+        case TextWindowColor.Gray: return "rgb(128, 128, 128)";
+        case TextWindowColor.DarkGray: return "rgb(64, 64, 64)";
+        case TextWindowColor.Blue: return "rgb(0, 0, 255)";
+        case TextWindowColor.Green: return "rgb(0, 255, 0)";
+        case TextWindowColor.Cyan: return "rgb(0, 255, 255)";
+        case TextWindowColor.Red: return "rgb(255, 0, 0)";
+        case TextWindowColor.Magenta: return "rgb(255, 0, 255)";
+        case TextWindowColor.Yellow: return "rgb(255, 255, 0)";
+        case TextWindowColor.White: return "rgb(255, 255, 255)";
     }
 }
 
@@ -66,8 +66,8 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.state = {
             isCursorVisible: true,
 
-            foreground: props.engine.libraries.TextWindow.foreground,
-            background: props.engine.libraries.TextWindow.background,
+            foreground: this.props.engine.libraries.TextWindow.foreground,
+            background: this.props.engine.libraries.TextWindow.background,
 
             inputBuffer: "",
             inputKind: undefined,
@@ -105,7 +105,7 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 this.appendOutput(exception
                     ? {
                         text: exception.toString(),
-                        color: TextWindowColors.Red,
+                        color: TextWindowColor.Red,
                         appendNewLine: true
                     } : {
                         text: EditorResources.TextWindow_TerminationMessage,

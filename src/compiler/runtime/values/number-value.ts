@@ -1,10 +1,10 @@
 import { ExecutionEngine } from "../../execution-engine";
 import { StringValue } from "./string-value";
-import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../instructions";
-import { Diagnostic, ErrorCode } from "../../diagnostics";
+import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../emitting/instructions";
+import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
 import { TokenKind } from "../../syntax/tokens";
-import { CompilerUtils } from "../../compiler-utils";
+import { CompilerUtils } from "../../utils/compiler-utils";
 
 export class NumberValue extends BaseValue {
     public constructor(public readonly value: number) {

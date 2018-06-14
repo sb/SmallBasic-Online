@@ -1,6 +1,6 @@
 import "jasmine";
 import { ErrorResources } from "../../../src/strings/errors";
-import { CompilerUtils } from "../../../src/compiler/compiler-utils";
+import { CompilerUtils } from "../../../src/compiler/utils/compiler-utils";
 import { getMarkerPosition } from "../helpers";
 import { HoverService } from "../../../src/compiler/services/hover-service";
 import { DocumentationResources } from "../../../src/strings/documentation";

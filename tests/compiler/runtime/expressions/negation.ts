@@ -1,4 +1,4 @@
-import { Diagnostic, ErrorCode } from "../../../../src/compiler/diagnostics";
+import { Diagnostic, ErrorCode } from "../../../../src/compiler/utils/diagnostics";
 import "jasmine";
 import { verifyRuntimeResult, verifyRuntimeError } from "../../helpers";
 import { CompilerRange } from "../../../../src/compiler/syntax/ranges";

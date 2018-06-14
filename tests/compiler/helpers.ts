@@ -1,7 +1,7 @@
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../src/compiler/execution-engine";
 import "jasmine";
 import { Compilation } from "../../src/compiler/compilation";
-import { Diagnostic, ErrorCode } from "../../src/compiler/diagnostics";
+import { Diagnostic, ErrorCode } from "../../src/compiler/utils/diagnostics";
 import { NumberValue } from "../../src/compiler/runtime/values/number-value";
 import { StringValue } from "../../src/compiler/runtime/values/string-value";
 import { CompilerPosition, CompilerRange } from "../../src/compiler/syntax/ranges";

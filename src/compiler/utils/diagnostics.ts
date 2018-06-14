@@ -1,5 +1,5 @@
-import { CompilerRange } from "./syntax/ranges";
-import { ErrorResources } from "../strings/errors";
+import { CompilerRange } from "../syntax/ranges";
+import { ErrorResources } from "../../strings/errors";
 import { CompilerUtils } from "./compiler-utils";
 
 export enum ErrorCode {
@@ -54,7 +54,7 @@ export class Diagnostic {
     }
 
     public toString(): string {
-        const template = (ErrorResources as any)[ErrorCode[this.code]] as string;
+        const template = ErrorResources.get(ErrorCode[this.code]);
 
         if (!template) {
             throw new Error(`Error code ${ErrorCode[this.code]} has no string resource`);

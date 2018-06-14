@@ -1,10 +1,10 @@
 import { BaseValue } from "./runtime/values/base-value";
 import { Compilation } from "./compilation";
-import { BaseInstruction } from "./runtime/instructions";
-import { SupportedLibraries } from "./runtime/supported-libraries";
-import { Diagnostic } from "./diagnostics";
+import { BaseInstruction } from "./emitting/instructions";
+import { RuntimeLibraries } from "./runtime/libraries";
+import { Diagnostic } from "./utils/diagnostics";
 import { ArrayValue } from "./runtime/values/array-value";
-import { PubSubPayloadChannel } from "./notifications";
+import { PubSubPayloadChannel } from "./utils/notifications";
 import { ModulesBinder } from "./binding/modules-binder";
 
 export interface StackFrame {
@@ -28,10 +28,10 @@ export enum ExecutionState {
 }
 
 export class ExecutionEngine {
+    private _libraries: RuntimeLibraries = new RuntimeLibraries();
     private _executionStack: StackFrame[] = [];
     private _evaluationStack: BaseValue[] = [];
     private _memory: ArrayValue = new ArrayValue();
-    private _libraries: SupportedLibraries = new SupportedLibraries();
     private _modules: { readonly [name: string]: ReadonlyArray<BaseInstruction> };
 
     private _exception?: Diagnostic;
@@ -39,6 +39,10 @@ export class ExecutionEngine {
     private _state: ExecutionState = ExecutionState.Running;
 
     public readonly programTerminated: PubSubPayloadChannel<Diagnostic | undefined> = new PubSubPayloadChannel<Diagnostic | undefined>("programTerminated");
+
+    public get libraries(): RuntimeLibraries {
+        return this._libraries;
+    }
 
     public get executionStack(): ReadonlyArray<StackFrame> {
         return this._executionStack;
@@ -50,10 +54,6 @@ export class ExecutionEngine {
 
     public get memory(): ArrayValue {
         return this._memory;
-    }
-
-    public get libraries(): SupportedLibraries {
-        return this._libraries;
     }
 
     public get modules(): { readonly [name: string]: ReadonlyArray<BaseInstruction> } {

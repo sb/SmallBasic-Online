@@ -1,11 +1,9 @@
-import { SupportedLibraries } from "../../compiler/runtime/supported-libraries";
+import { RuntimeLibraries } from "../runtime/libraries";
 import { CompilerPosition } from "../syntax/ranges";
 import { Compilation } from "../compilation";
-import { CompilerUtils } from "../compiler-utils";
+import { CompilerUtils } from "../utils/compiler-utils";
 import { SyntaxNodeVisitor, ObjectAccessExpressionSyntax, SyntaxKind, IdentifierExpressionSyntax } from "../syntax/syntax-nodes";
 import { CommandsParser } from "../syntax/command-parser";
-
-const libraries: SupportedLibraries = new SupportedLibraries();
 
 export module CompletionService {
     export enum ResultKind {
@@ -49,7 +47,7 @@ export module CompletionService {
             }
 
             const libraryName = (node.baseExpression as IdentifierExpressionSyntax).identifierToken.token.text;
-            const library = libraries[libraryName];
+            const library = RuntimeLibraries.Metadata[libraryName];
             if (!library) {
                 return undefined;
             }
@@ -60,21 +58,21 @@ export module CompletionService {
                 memberName = "";
             }
 
-            Object.keys(library.methods).forEach(method => {
-                if (CompilerUtils.stringStartsWith(method, memberName)) {
+            CompilerUtils.values(library.methods).forEach(method => {
+                if (CompilerUtils.stringStartsWith(method.methodName, memberName)) {
                     results.push({
-                        title: method,
-                        description: library.methods[method].description,
+                        title: method.methodName,
+                        description: method.description,
                         kind: ResultKind.Method
                     });
                 }
             });
 
-            Object.keys(library.properties).forEach(property => {
-                if (CompilerUtils.stringStartsWith(property, memberName)) {
+            CompilerUtils.values(library.properties).forEach(property => {
+                if (CompilerUtils.stringStartsWith(property.propertyName, memberName)) {
                     results.push({
-                        title: property,
-                        description: library.properties[property].description,
+                        title: property.propertyName,
+                        description: property.description,
                         kind: ResultKind.Property
                     });
                 }
@@ -85,12 +83,12 @@ export module CompletionService {
 
         public visitIdentifierExpression(node: IdentifierExpressionSyntax): Result[] | undefined {
             const libraryName = node.identifierToken.token.text;
-            return Object.keys(libraries).filter(name => {
-                return CompilerUtils.stringStartsWith(name, libraryName);
-            }).map(name => {
+            return CompilerUtils.values(RuntimeLibraries.Metadata).filter(library => {
+                return CompilerUtils.stringStartsWith(library.typeName, libraryName);
+            }).map(library => {
                 return {
-                    title: name,
-                    description: libraries[name].description,
+                    title: library.typeName,
+                    description: library.description,
                     kind: ResultKind.Class
                 };
             });

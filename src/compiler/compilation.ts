@@ -1,7 +1,7 @@
-import { ModuleEmitter } from "./runtime/module-emitter";
-import { BaseInstruction } from "./runtime/instructions";
+import { ModuleEmitter } from "./emitting/module-emitter";
+import { BaseInstruction } from "./emitting/instructions";
 import { CommandsParser } from "./syntax/command-parser";
-import { Diagnostic } from "./diagnostics";
+import { Diagnostic } from "./utils/diagnostics";
 import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/tokens";

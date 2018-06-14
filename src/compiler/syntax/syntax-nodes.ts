@@ -34,7 +34,7 @@ export enum SyntaxKind {
     ObjectAccessExpression,
     ArrayAccessExpression,
     Argument,
-    CallExpression,
+    InvocationExpression,
     ParenthesisExpression,
     IdentifierExpression,
     NumberLiteralExpression,
@@ -431,13 +431,13 @@ export class ArgumentSyntax extends BaseSyntaxNode {
     }
 }
 
-export class CallExpressionSyntax extends BaseExpressionSyntax {
+export class InvocationExpressionSyntax extends BaseExpressionSyntax {
     public constructor(
         public readonly baseExpression: BaseExpressionSyntax,
         public readonly leftParenToken: TokenSyntax,
         public readonly argumentsList: ReadonlyArray<ArgumentSyntax>,
         public readonly rightParenToken: TokenSyntax) {
-        super(SyntaxKind.CallExpression, CompilerRange.combine(baseExpression.range, rightParenToken.range));
+        super(SyntaxKind.InvocationExpression, CompilerRange.combine(baseExpression.range, rightParenToken.range));
     }
 
     public children(): ReadonlyArray<BaseSyntaxNode> {
@@ -532,7 +532,7 @@ export class SyntaxNodeVisitor<TResult> {
             case SyntaxKind.ObjectAccessExpression: return this.visitObjectAccessExpression(node as ObjectAccessExpressionSyntax);
             case SyntaxKind.ArrayAccessExpression: return this.visitArrayAccessExpression(node as ArrayAccessExpressionSyntax);
             case SyntaxKind.Argument: return this.visitArgument(node as ArgumentSyntax);
-            case SyntaxKind.CallExpression: return this.visitCallExpression(node as CallExpressionSyntax);
+            case SyntaxKind.InvocationExpression: return this.visitInvocationExpression(node as InvocationExpressionSyntax);
             case SyntaxKind.ParenthesisExpression: return this.visitParenthesisExpression(node as ParenthesisExpressionSyntax);
             case SyntaxKind.IdentifierExpression: return this.visitIdentifierExpression(node as IdentifierExpressionSyntax);
             case SyntaxKind.NumberLiteralExpression: return this.visitNumberLiteralExpression(node as NumberLiteralExpressionSyntax);
@@ -645,7 +645,7 @@ export class SyntaxNodeVisitor<TResult> {
         return this.defaultVisit(node);
     }
 
-    public visitCallExpression(node: CallExpressionSyntax): TResult | undefined {
+    public visitInvocationExpression(node: InvocationExpressionSyntax): TResult | undefined {
         return this.defaultVisit(node);
     }
 

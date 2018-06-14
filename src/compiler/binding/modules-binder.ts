@@ -1,5 +1,5 @@
 import { StatementBinder } from "./statement-binder";
-import { Diagnostic, ErrorCode } from "../diagnostics";
+import { Diagnostic, ErrorCode } from "../utils/diagnostics";
 import { BaseSyntaxNode, ParseTreeSyntax } from "../syntax/syntax-nodes";
 import { BaseBoundStatement } from "./bound-nodes";
 

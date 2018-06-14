@@ -5,6 +5,10 @@ function generateContents(identifier: string, entries: { [entryName: string]: st
 
 export module ${identifier} {
 ${Object.keys(entries).map(entryName => `    export const ${entryName} = "${entries[entryName]}";`).join("\n")}
+
+    export function get(key: string): string {
+        return (<any>${identifier})[key];
+    }
 }
 `;
 }

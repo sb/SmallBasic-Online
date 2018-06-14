@@ -1,12 +1,12 @@
-import { SyntaxKind } from "./syntax/syntax-nodes";
-import { TokenKind } from "./syntax/tokens";
-import { SyntaxNodesResources } from "../strings/syntax-nodes";
+import { SyntaxKind } from "../syntax/syntax-nodes";
+import { TokenKind } from "../syntax/tokens";
+import { SyntaxNodesResources } from "../../strings/syntax-nodes";
 
 export module CompilerUtils {
     export function formatString(template: string, args: ReadonlyArray<string>): string {
         return template.replace(/{[0-9]+}/g, match => args[parseInt(match.replace(/^{/, "").replace(/}$/, ""))]);
     }
-    
+
     export function stringStartsWith(value: string, prefix?: string): boolean {
         if (!prefix || !prefix.length) {
             return true;
@@ -20,6 +20,10 @@ export module CompilerUtils {
         } else {
             return prefix === value.substr(0, prefix.length);
         }
+    }
+
+    export function values<TMember>(parent: { [key: string]: TMember }): ReadonlyArray<TMember> {
+        return Object.keys(parent).map(key => parent[key]);
     }
 
     export function commandToDisplayString(kind: SyntaxKind): string {

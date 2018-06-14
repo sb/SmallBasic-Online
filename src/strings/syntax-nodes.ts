@@ -7,4 +7,8 @@ export module SyntaxNodesResources {
     export const Comment = "comment";
     export const Label = "label";
     export const Expression = "expression";
+
+    export function get(key: string): string {
+        return (<any>SyntaxNodesResources)[key];
+    }
 }

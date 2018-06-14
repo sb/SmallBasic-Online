@@ -36,4 +36,8 @@ export module DocumentationResources {
     export const TextWindow_WriteLine_Data = "The string or number to be written to the text window.";
     export const TextWindow_ForegroundColor = "Gets or sets the foreground color of the text to be output in the text window.";
     export const TextWindow_BackgroundColor = "Gets or sets the background color of the text to be output in the text window.";
+
+    export function get(key: string): string {
+        return (<any>DocumentationResources)[key];
+    }
 }

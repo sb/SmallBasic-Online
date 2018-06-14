@@ -1,12 +1,11 @@
-import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
 import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
-import { DocumentationResources } from "../../../strings/documentation";
 import { ExecutionState, ExecutionEngine } from "../../execution-engine";
-import { PubSubPayloadChannel, PubSubChannel } from "../../notifications";
+import { PubSubPayloadChannel, PubSubChannel } from "../../utils/notifications";
 
-export enum TextWindowColors {
+export enum TextWindowColor {
     Black = 0,
     DarkBlue = 1,
     DarkGreen = 2,
@@ -25,31 +24,26 @@ export enum TextWindowColors {
     White = 15
 }
 
-const defaultForegroundColor = TextWindowColors.White;
-const defaultBackgroundColor = TextWindowColors.Black;
+const defaultForegroundColor = TextWindowColor.White;
+const defaultBackgroundColor = TextWindowColor.Black;
 
 export interface BufferValue {
     value: BaseValue;
     appendNewLine: boolean;
 }
 
-export class TextWindowLibrary implements LibraryTypeDefinition {
+export class TextWindowLibrary implements LibraryTypeInstance {
     private _buffer?: BufferValue;
-    private _foregroundValue: TextWindowColors;
-    private _backgroundValue: TextWindowColors;
-
-    public constructor() {
-        this._foregroundValue = defaultForegroundColor;
-        this._backgroundValue = defaultBackgroundColor;
-    }
+    private _foregroundValue: TextWindowColor = defaultForegroundColor;
+    private _backgroundValue: TextWindowColor = defaultBackgroundColor;
 
     public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
     public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
 
-    public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("backgroundColorChanged");
-    public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColors> = new PubSubPayloadChannel<TextWindowColors>("foregroundColorChanged");
+    public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColor> = new PubSubPayloadChannel<TextWindowColor>("backgroundColorChanged");
+    public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColor> = new PubSubPayloadChannel<TextWindowColor>("foregroundColorChanged");
 
-    private _executeReadMethod(engine: ExecutionEngine, valueKind: ValueKind, blockedState: ExecutionState): boolean {
+    private executeReadMethod(engine: ExecutionEngine, valueKind: ValueKind, blockedState: ExecutionState): boolean {
         if (this.bufferHasValue()) {
             const value = this.readValueFromBuffer();
             if (value.value.kind !== valueKind) {
@@ -66,7 +60,7 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
         }
     }
 
-    private _executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): boolean {
+    private executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): boolean {
         if (engine.state === ExecutionState.BlockedOnOutput) {
             if (!this.bufferHasValue()) {
                 engine.state = ExecutionState.Running;
@@ -82,109 +76,48 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
         return false;
     }
 
-    private _read: LibraryMethodDefinition = {
-        description: DocumentationResources.TextWindow_Read,
-        parameters: {},
-        returnsValue: true,
-        execute: (engine: ExecutionEngine) => this._executeReadMethod(engine, ValueKind.String, ExecutionState.BlockedOnStringInput)
-    };
+    private getColor(color: TextWindowColor): BaseValue {
+        return new StringValue(TextWindowColor[color]);
+    }
 
-    private _readNumber: LibraryMethodDefinition = {
-        description: DocumentationResources.TextWindow_ReadNumber,
-        parameters: {},
-        returnsValue: true,
-        execute: (engine: ExecutionEngine) => this._executeReadMethod(engine, ValueKind.Number, ExecutionState.BlockedOnNumberInput)
-    };
-
-    private _write: LibraryMethodDefinition = {
-        description: DocumentationResources.TextWindow_Write,
-        parameters: {
-            data: DocumentationResources.TextWindow_Write_Data
-        },
-        returnsValue: false,
-        execute: (engine: ExecutionEngine) => this._executeWriteMethod(engine, false)
-    };
-
-    private _writeLine: LibraryMethodDefinition = {
-        description: DocumentationResources.TextWindow_WriteLine,
-        parameters: {
-            data: DocumentationResources.TextWindow_WriteLine_Data
-        },
-        returnsValue: false,
-        execute: (engine: ExecutionEngine) => this._executeWriteMethod(engine, true)
-    };
-
-    private _foregroundColor: LibraryPropertyDefinition = {
-        description: DocumentationResources.TextWindow_ForegroundColor,
-        getter: () => {
-            return new StringValue(TextWindowColors[this._foregroundValue]);
-        },
-        setter: (value: BaseValue) => {
-            let selectedColor = defaultForegroundColor;
-
-            switch (value.kind) {
-                case ValueKind.Number: {
-                    const numberValue = (value as NumberValue).value;
-                    if (TextWindowColors[numberValue]) {
-                        selectedColor = numberValue;
-                    }
-                    break;
+    private tryParseColorValue(value: BaseValue): TextWindowColor | undefined {
+        switch (value.kind) {
+            case ValueKind.Number: {
+                const numberValue = (value as NumberValue).value;
+                if (TextWindowColor[numberValue]) {
+                    return numberValue;
                 }
-                case ValueKind.String: {
-                    const stringValue = (value as StringValue).value.toLowerCase();
-                    for (let color in TextWindowColors) {
-                        if (color.toLowerCase() === stringValue) {
-                            selectedColor = <any>TextWindowColors[color];
-                        }
-                    }
-                    break;
-                }
+                break;
             }
-
-            this._foregroundValue = selectedColor;
-            this.foregroundColorChanged.publish(this._foregroundValue);
-        }
-    };
-
-    private _backgroundColor: LibraryPropertyDefinition = {
-        description: DocumentationResources.TextWindow_BackgroundColor,
-        getter: () => {
-            return new StringValue(TextWindowColors[this._backgroundValue]);
-        },
-        setter: (value: BaseValue) => {
-            let selectedColor = defaultBackgroundColor;
-
-            switch (value.kind) {
-                case ValueKind.Number: {
-                    const numberValue = (value as NumberValue).value;
-                    if (TextWindowColors[numberValue]) {
-                        selectedColor = numberValue;
+            case ValueKind.String: {
+                const stringValue = (value as StringValue).value.toLowerCase();
+                for (let color in TextWindowColor) {
+                    if (color.toLowerCase() === stringValue) {
+                        return <any>TextWindowColor[color];
                     }
-                    break;
                 }
-                case ValueKind.String: {
-                    const stringValue = (value as StringValue).value.toLowerCase();
-                    for (let color in TextWindowColors) {
-                        if (color.toLowerCase() === stringValue) {
-                            selectedColor = <any>TextWindowColors[color];
-                        }
-                    }
-                    break;
-                }
+                break;
             }
-
-            this._backgroundValue = selectedColor;
-            this.backgroundColorChanged.publish(this._backgroundValue);
         }
-    };
 
-    public readonly description: string = DocumentationResources.TextWindow;
+        return undefined;
+    }
 
-    public get foreground(): TextWindowColors {
+    private setForegroundColor(value: BaseValue): void {
+        this._foregroundValue = this.tryParseColorValue(value) || defaultForegroundColor;
+        this.foregroundColorChanged.publish(this._foregroundValue);
+    }
+
+    private setBackgroundColor(value: BaseValue): void {
+        this._backgroundValue = this.tryParseColorValue(value) || defaultBackgroundColor;
+        this.backgroundColorChanged.publish(this._backgroundValue);
+    }
+
+    public get foreground(): TextWindowColor {
         return this._foregroundValue;
     }
 
-    public get background(): TextWindowColors {
+    public get background(): TextWindowColor {
         return this._backgroundValue;
     }
 
@@ -213,15 +146,15 @@ export class TextWindowLibrary implements LibraryTypeDefinition {
         return value;
     }
 
-    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
-        Read: this._read,
-        ReadNumber: this._readNumber,
-        Write: this._write,
-        WriteLine: this._writeLine
+    public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
+        Read: { execute: engine => this.executeReadMethod(engine, ValueKind.String, ExecutionState.BlockedOnStringInput) },
+        ReadNumber: { execute: engine => this.executeReadMethod(engine, ValueKind.Number, ExecutionState.BlockedOnNumberInput) },
+        Write: { execute: engine => this.executeWriteMethod(engine, false) },
+        WriteLine: { execute: engine => this.executeWriteMethod(engine, true) }
     };
 
-    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
-        ForegroundColor: this._foregroundColor,
-        BackgroundColor: this._backgroundColor
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
+        ForegroundColor: { getter: () => this.getColor(this._foregroundValue), setter: this.setForegroundColor.bind(this) },
+        BackgroundColor: { getter: () => this.getColor(this._backgroundValue), setter: this.setBackgroundColor.bind(this) }
     };
 }

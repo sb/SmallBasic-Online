@@ -1,9 +1,7 @@
 import { Compilation } from "../../compiler/compilation";
 import { CompilerRange, CompilerPosition } from "../syntax/ranges";
-import { SupportedLibraries } from "../runtime/supported-libraries";
+import { RuntimeLibraries } from "../runtime/libraries";
 import { SyntaxKind, ObjectAccessExpressionSyntax, IdentifierExpressionSyntax, SyntaxNodeVisitor } from "../syntax/syntax-nodes";
-
-const libraries = new SupportedLibraries();
 
 export module HoverService {
     export interface Result {
@@ -40,7 +38,7 @@ export module HoverService {
             }
 
             const libraryName = (node.baseExpression as IdentifierExpressionSyntax).identifierToken.token.text;
-            const library = libraries[libraryName];
+            const library = RuntimeLibraries.Metadata[libraryName];
             if (!library) {
                 return undefined;
             }

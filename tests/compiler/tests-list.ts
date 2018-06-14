@@ -34,5 +34,6 @@ import "./runtime/statements/if-statements";
 import "./runtime/statements/labels";
 import "./runtime/statements/while-loop";
 
+import "./runtime/libraries-metadata";
 import "./runtime/stepping-through";
 import "./runtime/submodules";
