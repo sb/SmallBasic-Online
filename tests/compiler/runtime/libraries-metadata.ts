@@ -4,12 +4,15 @@ import { RuntimeLibraries } from "../../../src/compiler/runtime/libraries";
 
 describe("Compiler.Runtime.LibrariesMetadata", () => {
     it("all libraries have correct metadata", () => {
-        const libraries = new RuntimeLibraries();
+        const implementations = new RuntimeLibraries();
 
         CompilerUtils.values(RuntimeLibraries.Metadata).forEach(library => {
+            const libraryImplementation = implementations[library.typeName];
+            expect(libraryImplementation).toBeDefined();
+
             expect(library.typeName.length).toBeGreaterThan(0);
             expect(library.description.length).toBeGreaterThan(0);
-            expect(library.kind).toBeDefined();
+            expect(library.programKind).toBeDefined();
 
             CompilerUtils.values(library.methods).forEach(method => {
                 expect(method.typeName.length).toBeGreaterThan(0);
@@ -21,16 +24,29 @@ describe("Compiler.Runtime.LibrariesMetadata", () => {
                     expect(parameter.length).toBeGreaterThan(0);
                     expect(method.parameterDescription(parameter).length).toBeGreaterThan(0);
                 });
+
+                expect(libraryImplementation.methods[method.methodName]).toBeDefined();
+                delete (<any>libraryImplementation.methods)[method.methodName];
             });
+
+            expect(Object.keys(libraryImplementation.methods).length).toBe(0);
 
             CompilerUtils.values(library.properties).forEach(property => {
                 expect(property.typeName.length).toBeGreaterThan(0);
                 expect(property.propertyName.length).toBeGreaterThan(0);
                 expect(property.description.length).toBeGreaterThan(0);
 
-                expect(property.hasGetter).toBe(!!libraries[property.typeName].properties[property.propertyName].getter);
-                expect(property.hasSetter).toBe(!!libraries[property.typeName].properties[property.propertyName].setter);
+                const propertyImplementation = libraryImplementation.properties[property.propertyName];
+                expect(property.hasGetter).toBe(!!propertyImplementation.getter);
+                expect(property.hasSetter).toBe(!!propertyImplementation.setter);
+
+                delete (<any>libraryImplementation.properties)[property.propertyName];
             });
+
+            expect(Object.keys(libraryImplementation.properties).length).toBe(0);
+            delete (<any>implementations)[library.typeName];
         });
+
+        expect(Object.keys(implementations).length).toBe(0);
     });
 });

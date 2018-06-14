@@ -1,0 +1,10 @@
+{
+    "SyntaxNodes_Identifier": "identifier",
+    "SyntaxNodes_StringLiteral": "string",
+    "SyntaxNodes_NumberLiteral": "number",
+    "SyntaxNodes_Comment": "comment",
+    "SyntaxNodes_Label": "label",
+    "SyntaxNodes_Expression": "expression",
+    "ProgramKind_TextWindow": "Text Window",
+    "ProgramKind_Turtle": "Turtle"
+}

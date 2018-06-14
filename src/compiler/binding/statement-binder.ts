@@ -3,6 +3,7 @@ import { ExpressionBinder } from "./expression-binder";
 import { ErrorCode, Diagnostic } from "../utils/diagnostics";
 import { BaseBoundStatement, ArrayAccessBoundExpression, BaseBoundExpression, BoundKind, EqualBoundExpression, LibraryMethodInvocationBoundExpression, LibraryPropertyBoundExpression, SubModuleInvocationBoundExpression, VariableBoundExpression, ForBoundStatement, IfBoundStatement, WhileBoundStatement, LabelBoundStatement, GoToBoundStatement, InvalidExpressionBoundStatement, VariableAssignmentBoundStatement, ArrayAssignmentBoundStatement, PropertyAssignmentBoundStatement, LibraryMethodInvocationBoundStatement, SubModuleInvocationBoundStatement, IfHeaderBoundNode } from "./bound-nodes";
 import { GoToCommandSyntax, BaseSyntaxNode, SyntaxKind, ForStatementSyntax, IfStatementSyntax, WhileStatementSyntax, LabelCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax } from "../syntax/syntax-nodes";
+import { ProgramKind } from "../runtime/libraries-metadata";
 
 export class StatementBinder {
     private _definedLabels: { [name: string]: boolean } = {};
@@ -12,6 +13,7 @@ export class StatementBinder {
 
     public constructor(
         statements: ReadonlyArray<BaseSyntaxNode>,
+        public programKind: ProgramKind,
         private _definedSubModules: { readonly [name: string]: boolean },
         private readonly _diagnostics: Diagnostic[]) {
         this.result = this.bindStatementsList(statements);
@@ -165,6 +167,8 @@ export class StatementBinder {
     }
 
     private bindExpression(syntax: BaseSyntaxNode, expectedValue: boolean): BaseBoundExpression<BaseStatementSyntax> {
-        return new ExpressionBinder(syntax, expectedValue, this._definedSubModules, this._diagnostics).result;
+        const binder = new ExpressionBinder(syntax, expectedValue, this.programKind, this._definedSubModules, this._diagnostics);
+        this.programKind = binder.programKind;
+        return binder.result;
     }
 }

@@ -1,5 +1,5 @@
 import "jasmine";
-import { ErrorResources } from "../../../src/strings/errors";
+import { DiagnosticsResources } from "../../../src/strings/diagnostics";
 import { CompilerUtils } from "../../../src/compiler/utils/compiler-utils";
 import { getMarkerPosition } from "../helpers";
 import { HoverService } from "../../../src/compiler/services/hover-service";
@@ -27,14 +27,14 @@ describe("Compiler.Services.HoverService", () => {
     it("provides error description on hover - lhs", () => {
         testHover(`
 Text${marker}Window[0] = 5`, [
-                ErrorResources.UnexpectedVoid_ExpectingValue
+                DiagnosticsResources.UnexpectedVoid_ExpectingValue
             ]);
     });
 
     it("provides error description on hover - rhs", () => {
         testHover(`
 x = TextWindow.Write${marker}Line()`, [
-                CompilerUtils.formatString(ErrorResources.UnexpectedArgumentsCount, ["1", "0"])
+                CompilerUtils.formatString(DiagnosticsResources.UnexpectedArgumentsCount, ["1", "0"])
             ]);
     });
 

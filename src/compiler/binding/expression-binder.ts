@@ -43,6 +43,8 @@ import {
     BaseExpressionSyntax
 } from "../syntax/syntax-nodes";
 import { TokenKind } from "../syntax/tokens";
+import { ProgramKind } from "../runtime/libraries-metadata";
+import { CompilerUtils } from "../utils/compiler-utils";
 
 export class ExpressionBinder {
     private readonly _result: BaseBoundExpression<BaseExpressionSyntax>;
@@ -54,6 +56,7 @@ export class ExpressionBinder {
     public constructor(
         syntax: BaseSyntaxNode,
         expectedValue: boolean,
+        public programKind: ProgramKind,
         private readonly _definedSubModules: { readonly [name: string]: boolean },
         private readonly _diagnostics: Diagnostic[]) {
         this._result = this.bindExpression(syntax, expectedValue);
@@ -228,11 +231,23 @@ export class ExpressionBinder {
     private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         let hasErrors = false;
         const name = syntax.identifierToken.token.text;
+        const library = RuntimeLibraries.Metadata[name];
 
-        if (RuntimeLibraries.Metadata[name]) {
+        if (library) {
             if (expectedValue) {
                 hasErrors = true;
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
+            }
+
+            if (this.programKind === ProgramKind.Any) {
+                this.programKind = library.programKind;
+            } else if (library.programKind !== ProgramKind.Any && library.programKind !== this.programKind) {
+                hasErrors = true;
+                this._diagnostics.push(new Diagnostic(
+                    ErrorCode.ProgramKindChanged,
+                    syntax.range,
+                    CompilerUtils.programKindToDisplayString(this.programKind),
+                    CompilerUtils.programKindToDisplayString(library.programKind)));
             }
 
             return new LibraryTypeBoundExpression(name, hasErrors, syntax);

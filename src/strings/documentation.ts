@@ -36,6 +36,8 @@ export module DocumentationResources {
     export const TextWindow_WriteLine_Data = "The string or number to be written to the text window.";
     export const TextWindow_ForegroundColor = "Gets or sets the foreground color of the text to be output in the text window.";
     export const TextWindow_BackgroundColor = "Gets or sets the background color of the text to be output in the text window.";
+    export const Turtle = "The Turtle provides Logo-like functionality to draw shapes by manipulating the properties of a pen and drawing primitives.";
+    export const Turtle_Speed = "Specifies how fast the turtle should move. Valid values are 1 to 10. If Speed is set to 10, the turtle moves and rotates instantly.";
 
     export function get(key: string): string {
         return (<any>DocumentationResources)[key];

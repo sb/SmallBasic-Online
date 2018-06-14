@@ -7,6 +7,7 @@ import { StackLibrary } from "./libraries/stack";
 import { BaseValue } from "./values/base-value";
 import { CompilerRange } from "../syntax/ranges";
 import { LibrariesMetadata } from "./libraries-metadata";
+import { TurtleLibrary } from "./libraries/turtle";
 
 export interface LibraryTypeInstance {
     readonly methods: { readonly [name: string]: LibraryMethodInstance };
@@ -14,7 +15,7 @@ export interface LibraryTypeInstance {
 }
 
 export interface LibraryMethodInstance {
-    readonly execute:(engine: ExecutionEngine, mode: ExecutionMode, range: CompilerRange) => boolean ;
+    readonly execute: (engine: ExecutionEngine, mode: ExecutionMode, range: CompilerRange) => boolean;
 }
 
 export interface LibraryPropertyInstance {
@@ -32,4 +33,5 @@ export class RuntimeLibraries {
     public readonly Program: ProgramLibrary = new ProgramLibrary();
     public readonly Stack: StackLibrary = new StackLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
+    public readonly Turtle: TurtleLibrary = new TurtleLibrary();
 }

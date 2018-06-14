@@ -2,7 +2,7 @@ import { DocumentationResources } from "../../strings/documentation";
 
 export enum ProgramKind {
     Any,
-    Console,
+    TextWindow,
     Turtle
 }
 
@@ -39,7 +39,7 @@ class PropertyMetadata {
 class TypeMetadata {
     public constructor(
         public readonly typeName: string,
-        public readonly kind: ProgramKind,
+        public readonly programKind: ProgramKind,
         public readonly methods: { readonly [name: string]: MethodMetadata },
         public readonly properties: { readonly [name: string]: PropertyMetadata }) {
     }
@@ -91,7 +91,7 @@ export class LibrariesMetadata {
             // No Properties
         });
 
-    public readonly TextWindow: TypeMetadata = new TypeMetadata("TextWindow", ProgramKind.Console,
+    public readonly TextWindow: TypeMetadata = new TypeMetadata("TextWindow", ProgramKind.TextWindow,
         {
             Read: new MethodMetadata("TextWindow", "Read", true, []),
             ReadNumber: new MethodMetadata("TextWindow", "ReadNumber", true, []),
@@ -101,5 +101,13 @@ export class LibrariesMetadata {
         {
             ForegroundColor: new PropertyMetadata("TextWindow", "ForegroundColor", true, true),
             BackgroundColor: new PropertyMetadata("TextWindow", "BackgroundColor", true, true)
+        });
+
+    public readonly Turtle: TypeMetadata = new TypeMetadata("Turtle", ProgramKind.Turtle,
+        {
+            // No Methods
+        },
+        {
+            Speed: new PropertyMetadata("Turtle", "Speed", true, true)
         });
 }
