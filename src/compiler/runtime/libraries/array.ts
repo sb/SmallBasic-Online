@@ -72,11 +72,11 @@ export class ArrayLibrary implements LibraryTypeInstance {
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
-        IsArray: { execute: this.executeIsArray },
-        GetItemCount: { execute: this.executeGetItemCount },
-        GetAllIndices: { execute: this.executeGetAllIndices },
-        ContainsValue: { execute: this.executeContainsValue },
-        ContainsIndex: { execute: this.executeContainsIndex }
+        IsArray: { execute: this.executeIsArray.bind(this) },
+        GetItemCount: { execute: this.executeGetItemCount.bind(this) },
+        GetAllIndices: { execute: this.executeGetAllIndices.bind(this) },
+        ContainsValue: { execute: this.executeContainsValue.bind(this) },
+        ContainsIndex: { execute: this.executeContainsIndex.bind(this) }
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {

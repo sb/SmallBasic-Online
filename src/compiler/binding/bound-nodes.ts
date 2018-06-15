@@ -1,8 +1,6 @@
 import { BaseSyntaxNode, UnaryOperatorExpressionSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, InvocationExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax, IfHeaderSyntax, IfStatementSyntax, WhileStatementSyntax, ForStatementSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
 
 export enum BoundKind {
-    SuBModuleDeclaration,
-
     // Statements
     IfHeaderStatement,
     IfStatement,

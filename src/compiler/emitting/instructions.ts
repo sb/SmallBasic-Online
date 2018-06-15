@@ -33,7 +33,9 @@ export enum InstructionKind {
     Multiply,
     Divide,
     PushNumber,
-    PushString
+    PushString,
+    Duplicate,
+    DeleteVariable
 }
 
 export abstract class BaseInstruction {
@@ -493,6 +495,32 @@ export class PushStringInstruction extends BaseInstruction {
 
     public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
         engine.pushEvaluationStack(new StringValue(this.value));
+        frame.instructionIndex++;
+    }
+}
+
+export class DuplicateInstruction extends BaseInstruction {
+    public constructor(range: CompilerRange) {
+        super(InstructionKind.Duplicate, range);
+    }
+
+    public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
+        const value = engine.popEvaluationStack();
+        engine.pushEvaluationStack(value);
+        engine.pushEvaluationStack(value);
+        frame.instructionIndex++;
+    }
+}
+
+export class DeleteVariableInstruction extends BaseInstruction {
+    public constructor(
+        public readonly name: string,
+        range: CompilerRange) {
+        super(InstructionKind.DeleteVariable, range);
+    }
+
+    public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
+        engine.memory.deleteIndex(this.name);
         frame.instructionIndex++;
     }
 }

@@ -8,6 +8,7 @@ import { BaseValue } from "./values/base-value";
 import { CompilerRange } from "../syntax/ranges";
 import { LibrariesMetadata } from "./libraries-metadata";
 import { TurtleLibrary } from "./libraries/turtle";
+import { MathLibrary } from "./libraries/math";
 
 export interface LibraryTypeInstance {
     readonly methods: { readonly [name: string]: LibraryMethodInstance };
@@ -30,6 +31,7 @@ export class RuntimeLibraries {
 
     public readonly Array: ArrayLibrary = new ArrayLibrary();
     public readonly Clock: ClockLibrary = new ClockLibrary();
+    public readonly Math: MathLibrary = new MathLibrary();
     public readonly Program: ProgramLibrary = new ProgramLibrary();
     public readonly Stack: StackLibrary = new StackLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();

@@ -68,7 +68,7 @@ export class ExpressionBinder {
         switch (syntax.kind) {
             case SyntaxKind.ArrayAccessExpression: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
             case SyntaxKind.BinaryOperatorExpression: expression = this.bindBinaryOperator(syntax as BinaryOperatorExpressionSyntax); break;
-            case SyntaxKind.InvocationExpression: expression = this.bindCall(syntax as InvocationExpressionSyntax, expectedValue); break;
+            case SyntaxKind.InvocationExpression: expression = this.bindInvocation(syntax as InvocationExpressionSyntax, expectedValue); break;
             case SyntaxKind.ObjectAccessExpression: expression = this.bindObjectAccess(syntax as ObjectAccessExpressionSyntax, expectedValue); break;
             case SyntaxKind.ParenthesisExpression: expression = this.bindParenthesis(syntax as ParenthesisExpressionSyntax); break;
             case SyntaxKind.NumberLiteralExpression: expression = this.bindNumberLiteral(syntax as NumberLiteralExpressionSyntax); break;
@@ -116,7 +116,7 @@ export class ExpressionBinder {
         return new ArrayAccessBoundExpression(arrayName, indices, hasErrors, syntax);
     }
 
-    private bindCall(syntax: InvocationExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindInvocation(syntax: InvocationExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         const baseExpression = this.bindExpression(syntax.baseExpression, false);
         const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg.expression, true));
 

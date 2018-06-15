@@ -21,6 +21,10 @@ export class ArrayValue extends BaseValue {
         this._values[index] = value;
     }
 
+    public deleteIndex(index: string): void {
+        delete this._values[index];
+    }
+
     public toBoolean(): boolean {
         return false;
     }

@@ -18,8 +18,8 @@ export class ProgramLibrary implements LibraryTypeInstance {
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
-        Pause: { execute: this.executePause },
-        End: { execute: this.executeEnd }
+        Pause: { execute: this.executePause.bind(this) },
+        End: { execute: this.executeEnd.bind(this) }
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {

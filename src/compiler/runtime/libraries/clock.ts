@@ -12,6 +12,6 @@ export class ClockLibrary implements LibraryTypeInstance {
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-        Time: { getter: this.getTime }
+        Time: { getter: this.getTime.bind(this) }
     };
 }

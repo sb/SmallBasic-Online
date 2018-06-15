@@ -1,8 +1,9 @@
 import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction, StoreVariableInstruction, PushNumberInstruction, LessThanInstruction, LoadVariableInstruction, AddInstruction, MethodInvocationInstruction, InvokeSubModuleInstruction, StoreArrayElementInstruction, StorePropertyInstruction, NegateInstruction, GreaterThanInstruction, LessThanOrEqualInstruction, GreaterThanOrEqualInstruction, PushStringInstruction, EqualInstruction, SubtractInstruction, MultiplyInstruction, DivideInstruction, LoadPropertyInstruction, LoadArrayElementInstruction } from "./instructions";
 import { BaseBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement, BaseBoundExpression, BoundKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodInvocationBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression, SubModuleInvocationBoundStatement, LibraryMethodInvocationBoundStatement } from "../binding/bound-nodes";
 import { Constants } from "../runtime/values/base-value";
-import { Optimizations } from "./optimizations";
 import { BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
+import { TempLabelsRemover } from "./passes/temp-labels-remover";
+import { LibraryCallsRewriter } from "./passes/library-calls-rewriter";
 
 export class ModuleEmitter {
     private _jumpLabelCounter: number = 1;
@@ -15,7 +16,8 @@ export class ModuleEmitter {
     public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>) {
         statements.forEach(statement => this.emitStatement(statement));
 
-        Optimizations.removeTempInstructions(this._instructions);
+        LibraryCallsRewriter.rewrite(this._instructions);
+        TempLabelsRemover.remove(this._instructions);
     }
 
     private emitStatement(statement: BaseBoundStatement<BaseStatementSyntax>): void {
