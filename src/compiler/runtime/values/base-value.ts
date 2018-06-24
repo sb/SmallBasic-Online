@@ -1,5 +1,5 @@
 import { ExecutionEngine } from "../../execution-engine";
-import { SubtractInstruction, AddInstruction, MultiplyInstruction, DivideInstruction } from "../instructions";
+import { SubtractInstruction, AddInstruction, MultiplyInstruction, DivideInstruction } from "../../emitting/instructions";
 
 export module Constants {
     export const True = "True";

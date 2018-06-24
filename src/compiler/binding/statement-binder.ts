@@ -1,10 +1,9 @@
-import { SupportedLibraries } from "../runtime/supported-libraries";
+import { RuntimeLibraries } from "../runtime/libraries";
 import { ExpressionBinder } from "./expression-binder";
-import { ErrorCode, Diagnostic } from "../diagnostics";
-import { BaseBoundStatement, ArrayAccessBoundExpression, BaseBoundExpression, BoundKind, EqualBoundExpression, LibraryMethodCallBoundExpression, LibraryPropertyBoundExpression, SubModuleCallBoundExpression, VariableBoundExpression, ForBoundStatement, IfBoundStatement, WhileBoundStatement, LabelBoundStatement, GoToBoundStatement, InvalidExpressionBoundStatement, VariableAssignmentBoundStatement, ArrayAssignmentBoundStatement, PropertyAssignmentBoundStatement, LibraryMethodCallBoundStatement, SubModuleCallBoundStatement, IfHeaderBoundNode } from "./bound-nodes";
+import { ErrorCode, Diagnostic } from "../utils/diagnostics";
+import { BaseBoundStatement, ArrayAccessBoundExpression, BaseBoundExpression, BoundKind, EqualBoundExpression, LibraryMethodInvocationBoundExpression, LibraryPropertyBoundExpression, SubModuleInvocationBoundExpression, VariableBoundExpression, ForBoundStatement, IfBoundStatement, WhileBoundStatement, LabelBoundStatement, GoToBoundStatement, InvalidExpressionBoundStatement, VariableAssignmentBoundStatement, ArrayAssignmentBoundStatement, PropertyAssignmentBoundStatement, LibraryMethodInvocationBoundStatement, SubModuleInvocationBoundStatement, IfHeaderBoundNode } from "./bound-nodes";
 import { GoToCommandSyntax, BaseSyntaxNode, SyntaxKind, ForStatementSyntax, IfStatementSyntax, WhileStatementSyntax, LabelCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax } from "../syntax/syntax-nodes";
-
-const libraries: SupportedLibraries = new SupportedLibraries();
+import { ProgramKind } from "../runtime/libraries-metadata";
 
 export class StatementBinder {
     private _definedLabels: { [name: string]: boolean } = {};
@@ -14,6 +13,7 @@ export class StatementBinder {
 
     public constructor(
         statements: ReadonlyArray<BaseSyntaxNode>,
+        public programKind: ProgramKind,
         private _definedSubModules: { readonly [name: string]: boolean },
         private readonly _diagnostics: Diagnostic[]) {
         this.result = this.bindStatementsList(statements);
@@ -130,7 +130,7 @@ export class StatementBinder {
                     case BoundKind.LibraryPropertyExpression: {
                         const property = binaryExpression.leftExpression as LibraryPropertyBoundExpression;
 
-                        if (!libraries[property.libraryName].properties[property.propertyName].setter) {
+                        if (!RuntimeLibraries.Metadata[property.libraryName].properties[property.propertyName].hasSetter) {
                             this._diagnostics.push(new Diagnostic(ErrorCode.PropertyHasNoSetter, property.syntax.range));
                         }
 
@@ -147,14 +147,14 @@ export class StatementBinder {
                 }
             }
 
-            case BoundKind.LibraryMethodCallExpression: {
-                const call = expression as LibraryMethodCallBoundExpression;
-                return new LibraryMethodCallBoundStatement(call.libraryName, call.methodName, call.argumentsList, syntax);
+            case BoundKind.LibraryMethodInvocationExpression: {
+                const call = expression as LibraryMethodInvocationBoundExpression;
+                return new LibraryMethodInvocationBoundStatement(call.libraryName, call.methodName, call.argumentsList, syntax);
             }
 
-            case BoundKind.SubModuleCallExpression: {
-                const call = expression as SubModuleCallBoundExpression;
-                return new SubModuleCallBoundStatement(call.subModuleName, syntax);
+            case BoundKind.SubModuleInvocationExpression: {
+                const call = expression as SubModuleInvocationBoundExpression;
+                return new SubModuleInvocationBoundStatement(call.subModuleName, syntax);
             }
         }
 
@@ -167,6 +167,8 @@ export class StatementBinder {
     }
 
     private bindExpression(syntax: BaseSyntaxNode, expectedValue: boolean): BaseBoundExpression<BaseStatementSyntax> {
-        return new ExpressionBinder(syntax, expectedValue, this._definedSubModules, this._diagnostics).result;
+        const binder = new ExpressionBinder(syntax, expectedValue, this.programKind, this._definedSubModules, this._diagnostics);
+        this.programKind = binder.programKind;
+        return binder.result;
     }
 }

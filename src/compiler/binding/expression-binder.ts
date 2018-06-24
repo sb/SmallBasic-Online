@@ -1,5 +1,5 @@
-import { SupportedLibraries } from "../runtime/supported-libraries";
-import { Diagnostic, ErrorCode } from "../diagnostics";
+import { RuntimeLibraries } from "../runtime/libraries";
+import { Diagnostic, ErrorCode } from "../utils/diagnostics";
 import {
     ArrayAccessBoundExpression,
     BaseBoundExpression,
@@ -9,8 +9,8 @@ import {
     NegationBoundExpression,
     SubModuleBoundExpression,
     VariableBoundExpression,
-    LibraryMethodCallBoundExpression,
-    SubModuleCallBoundExpression,
+    LibraryMethodInvocationBoundExpression,
+    SubModuleInvocationBoundExpression,
     LibraryPropertyBoundExpression,
     ParenthesisBoundExpression,
     NumberLiteralBoundExpression,
@@ -32,7 +32,7 @@ import {
     ArrayAccessExpressionSyntax,
     BaseSyntaxNode,
     BinaryOperatorExpressionSyntax,
-    CallExpressionSyntax,
+    InvocationExpressionSyntax,
     SyntaxKind,
     ObjectAccessExpressionSyntax,
     ParenthesisExpressionSyntax,
@@ -43,8 +43,8 @@ import {
     BaseExpressionSyntax
 } from "../syntax/syntax-nodes";
 import { TokenKind } from "../syntax/tokens";
-
-const libraries: SupportedLibraries = new SupportedLibraries();
+import { ProgramKind } from "../runtime/libraries-metadata";
+import { CompilerUtils } from "../utils/compiler-utils";
 
 export class ExpressionBinder {
     private readonly _result: BaseBoundExpression<BaseExpressionSyntax>;
@@ -56,6 +56,7 @@ export class ExpressionBinder {
     public constructor(
         syntax: BaseSyntaxNode,
         expectedValue: boolean,
+        public programKind: ProgramKind,
         private readonly _definedSubModules: { readonly [name: string]: boolean },
         private readonly _diagnostics: Diagnostic[]) {
         this._result = this.bindExpression(syntax, expectedValue);
@@ -67,7 +68,7 @@ export class ExpressionBinder {
         switch (syntax.kind) {
             case SyntaxKind.ArrayAccessExpression: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
             case SyntaxKind.BinaryOperatorExpression: expression = this.bindBinaryOperator(syntax as BinaryOperatorExpressionSyntax); break;
-            case SyntaxKind.CallExpression: expression = this.bindCall(syntax as CallExpressionSyntax, expectedValue); break;
+            case SyntaxKind.InvocationExpression: expression = this.bindInvocation(syntax as InvocationExpressionSyntax, expectedValue); break;
             case SyntaxKind.ObjectAccessExpression: expression = this.bindObjectAccess(syntax as ObjectAccessExpressionSyntax, expectedValue); break;
             case SyntaxKind.ParenthesisExpression: expression = this.bindParenthesis(syntax as ParenthesisExpressionSyntax); break;
             case SyntaxKind.NumberLiteralExpression: expression = this.bindNumberLiteral(syntax as NumberLiteralExpressionSyntax); break;
@@ -115,7 +116,7 @@ export class ExpressionBinder {
         return new ArrayAccessBoundExpression(arrayName, indices, hasErrors, syntax);
     }
 
-    private bindCall(syntax: CallExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindInvocation(syntax: InvocationExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         const baseExpression = this.bindExpression(syntax.baseExpression, false);
         const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg.expression, true));
 
@@ -124,8 +125,8 @@ export class ExpressionBinder {
         switch (baseExpression.kind) {
             case BoundKind.LibraryMethodExpression: {
                 const method = baseExpression as LibraryMethodBoundExpression;
-                const definition = libraries[method.libraryName].methods[method.methodName];
-                const parametersCount = Object.keys(definition.parameters).length;
+                const definition = RuntimeLibraries.Metadata[method.libraryName].methods[method.methodName];
+                const parametersCount = definition.parameters.length;
 
                 if (argumentsList.length !== parametersCount) {
                     hasErrors = true;
@@ -136,7 +137,7 @@ export class ExpressionBinder {
                     this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
                 }
 
-                return new LibraryMethodCallBoundExpression(method.libraryName, method.methodName, argumentsList, definition.returnsValue, hasErrors, syntax);
+                return new LibraryMethodInvocationBoundExpression(method.libraryName, method.methodName, argumentsList, definition.returnsValue, hasErrors, syntax);
             }
             case BoundKind.SubModuleExpression: {
                 if (argumentsList.length !== 0) {
@@ -148,12 +149,12 @@ export class ExpressionBinder {
                 }
 
                 const subModule = baseExpression as SubModuleBoundExpression;
-                return new SubModuleCallBoundExpression(subModule.subModuleName, hasErrors, syntax);
+                return new SubModuleInvocationBoundExpression(subModule.subModuleName, hasErrors, syntax);
             }
             default: {
                 hasErrors = true;
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, baseExpression.syntax.range));
-                return new LibraryMethodCallBoundExpression("<library>", "<method>", argumentsList, true, hasErrors, syntax);
+                return new LibraryMethodInvocationBoundExpression("<library>", "<method>", argumentsList, true, hasErrors, syntax);
             }
         }
     }
@@ -170,19 +171,18 @@ export class ExpressionBinder {
         }
 
         const libraryType = leftHandSide as LibraryTypeBoundExpression;
-        const propertyInfo = libraries[libraryType.libraryName].properties[rightHandSide];
+        const propertyInfo = RuntimeLibraries.Metadata[libraryType.libraryName].properties[rightHandSide];
 
         if (propertyInfo) {
-            const hasValue = !!propertyInfo.getter;
-            if (expectedValue && !hasValue) {
+            if (expectedValue && !propertyInfo.hasGetter) {
                 hasErrors = true;
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
             }
 
-            return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, hasValue, hasErrors, syntax);
+            return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, propertyInfo.hasGetter, hasErrors, syntax);
         }
 
-        const methodInfo = libraries[libraryType.libraryName].methods[rightHandSide];
+        const methodInfo = RuntimeLibraries.Metadata[libraryType.libraryName].methods[rightHandSide];
         if (methodInfo) {
             if (expectedValue) {
                 hasErrors = true;
@@ -231,11 +231,23 @@ export class ExpressionBinder {
     private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
         let hasErrors = false;
         const name = syntax.identifierToken.token.text;
+        const library = RuntimeLibraries.Metadata[name];
 
-        if (libraries[name]) {
+        if (library) {
             if (expectedValue) {
                 hasErrors = true;
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
+            }
+
+            if (this.programKind === ProgramKind.Any) {
+                this.programKind = library.programKind;
+            } else if (library.programKind !== ProgramKind.Any && library.programKind !== this.programKind) {
+                hasErrors = true;
+                this._diagnostics.push(new Diagnostic(
+                    ErrorCode.ProgramKindChanged,
+                    syntax.range,
+                    CompilerUtils.programKindToDisplayString(this.programKind),
+                    CompilerUtils.programKindToDisplayString(library.programKind)));
             }
 
             return new LibraryTypeBoundExpression(name, hasErrors, syntax);

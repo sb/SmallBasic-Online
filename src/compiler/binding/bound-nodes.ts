@@ -1,8 +1,6 @@
-import { BaseSyntaxNode, UnaryOperatorExpressionSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, CallExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax, IfHeaderSyntax, IfStatementSyntax, WhileStatementSyntax, ForStatementSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
+import { BaseSyntaxNode, UnaryOperatorExpressionSyntax, BinaryOperatorExpressionSyntax, ArrayAccessExpressionSyntax, IdentifierExpressionSyntax, ObjectAccessExpressionSyntax, InvocationExpressionSyntax, StringLiteralExpressionSyntax, NumberLiteralExpressionSyntax, ParenthesisExpressionSyntax, IfHeaderSyntax, IfStatementSyntax, WhileStatementSyntax, ForStatementSyntax, LabelCommandSyntax, GoToCommandSyntax, ExpressionCommandSyntax, IfCommandSyntax, ElseIfCommandSyntax, BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
 
 export enum BoundKind {
-    SuBModuleDeclaration,
-
     // Statements
     IfHeaderStatement,
     IfStatement,
@@ -10,8 +8,8 @@ export enum BoundKind {
     ForStatement,
     LabelStatement,
     GoToStatement,
-    SubModuleCallStatement,
-    LibraryMethodCallStatement,
+    SubModuleInvocationStatement,
+    LibraryMethodInvocationStatement,
     VariableAssignmentStatement,
     PropertyAssignmentStatement,
     ArrayAssignmentStatement,
@@ -35,9 +33,9 @@ export enum BoundKind {
     LibraryTypeExpression,
     LibraryPropertyExpression,
     LibraryMethodExpression,
-    LibraryMethodCallExpression,
+    LibraryMethodInvocationExpression,
     SubModuleExpression,
-    SubModuleCallExpression,
+    SubModuleInvocationExpression,
     VariableExpression,
     StringLiteralExpression,
     NumberLiteralExpression,
@@ -143,11 +141,11 @@ export class GoToBoundStatement extends BaseBoundStatement<GoToCommandSyntax> {
     }
 }
 
-export class SubModuleCallBoundStatement extends BaseBoundStatement<ExpressionCommandSyntax> {
+export class SubModuleInvocationBoundStatement extends BaseBoundStatement<ExpressionCommandSyntax> {
     public constructor(
         public readonly subModuleName: string,
         syntax: ExpressionCommandSyntax) {
-        super(BoundKind.SubModuleCallStatement, syntax);
+        super(BoundKind.SubModuleInvocationStatement, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
@@ -155,13 +153,13 @@ export class SubModuleCallBoundStatement extends BaseBoundStatement<ExpressionCo
     }
 }
 
-export class LibraryMethodCallBoundStatement extends BaseBoundStatement<ExpressionCommandSyntax> {
+export class LibraryMethodInvocationBoundStatement extends BaseBoundStatement<ExpressionCommandSyntax> {
     public constructor(
         public readonly libraryName: string,
         public readonly methodName: string,
         public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         syntax: ExpressionCommandSyntax) {
-        super(BoundKind.LibraryMethodCallStatement, syntax);
+        super(BoundKind.LibraryMethodInvocationStatement, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
@@ -470,15 +468,15 @@ export class LibraryMethodBoundExpression extends BaseBoundExpression<ObjectAcce
     }
 }
 
-export class LibraryMethodCallBoundExpression extends BaseBoundExpression<CallExpressionSyntax> {
+export class LibraryMethodInvocationBoundExpression extends BaseBoundExpression<InvocationExpressionSyntax> {
     public constructor(
         public readonly libraryName: string,
         public readonly methodName: string,
         public readonly argumentsList: ReadonlyArray<BaseBoundExpression<BaseExpressionSyntax>>,
         hasValue: boolean,
         hasErrors: boolean,
-        syntax: CallExpressionSyntax) {
-        super(BoundKind.LibraryMethodCallExpression, hasValue, hasErrors, syntax);
+        syntax: InvocationExpressionSyntax) {
+        super(BoundKind.LibraryMethodInvocationExpression, hasValue, hasErrors, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {
@@ -499,12 +497,12 @@ export class SubModuleBoundExpression extends BaseBoundExpression<IdentifierExpr
     }
 }
 
-export class SubModuleCallBoundExpression extends BaseBoundExpression<CallExpressionSyntax> {
+export class SubModuleInvocationBoundExpression extends BaseBoundExpression<InvocationExpressionSyntax> {
     public constructor(
         public readonly subModuleName: string,
         hasErrors: boolean,
-        syntax: CallExpressionSyntax) {
-        super(BoundKind.SubModuleCallExpression, false, hasErrors, syntax);
+        syntax: InvocationExpressionSyntax) {
+        super(BoundKind.SubModuleInvocationExpression, false, hasErrors, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode<BaseSyntaxNode>> {

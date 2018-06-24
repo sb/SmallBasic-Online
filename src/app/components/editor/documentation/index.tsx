@@ -1,10 +1,10 @@
-import { SupportedLibraries } from "../../../../compiler/runtime/supported-libraries";
+import { RuntimeLibraries } from "../../../../compiler/runtime/libraries";
 import * as React from "react";
 import { EditorResources } from "../../../../strings/editor";
 
 import "./style.css";
+import { CompilerUtils } from "../../../../compiler/utils/compiler-utils";
 
-const libraries: SupportedLibraries = new SupportedLibraries();
 const DocumentationIcon = require("./header.png");
 
 interface DocumentationProps {
@@ -59,40 +59,37 @@ export class DocumentationComponent extends React.Component<DocumentationProps, 
                 <div className="sidebar-component-icon" style={{ backgroundImage: `url("${DocumentationIcon}")` }}></div>
                 <div className="sidebar-component-label">{EditorResources.Documentation_Header}</div>
                 <ul>
-                    {Object.keys(libraries).map(libraryName => {
-                        const library = libraries[libraryName];
+                    {CompilerUtils.values(RuntimeLibraries.Metadata).map(library => {
                         return (
-                            <li className="library-class" key={libraryName}>
-                                <p className="library-class-name" onClick={(() => this.libraryClicked(libraryName)).bind(this)}>{libraryName}</p>
-                                <div className="library-members" style={{ display: this.state.library === libraryName ? "inherit" : "none" }}>
+                            <li className="library-class" key={library.typeName}>
+                                <p className="library-class-name" onClick={(() => this.libraryClicked(library.typeName)).bind(this)}>{library.typeName}</p>
+                                <div className="library-members" style={{ display: this.state.library === library.typeName ? "inherit" : "none" }}>
                                     <p className="description">{library.description}</p>
                                     <ul>
-                                        {Object.keys(library.properties).map(propertyName => {
-                                            const property = library.properties[propertyName];
+                                        {CompilerUtils.values(library.properties).map(property => {
                                             return (
-                                                <li className="library-member" key={propertyName}>
-                                                    <p className="library-member-name" onClick={(() => this.memberClicked(propertyName)).bind(this)}>
-                                                        {libraryName}.{propertyName}
+                                                <li className="library-member" key={property.propertyName}>
+                                                    <p className="library-member-name" onClick={(() => this.memberClicked(property.propertyName)).bind(this)}>
+                                                        {library.typeName}.{property.propertyName}
                                                     </p>
-                                                    <div style={{ display: this.state.member === propertyName ? "inherit" : "none" }}>
+                                                    <div style={{ display: this.state.member === property.propertyName ? "inherit" : "none" }}>
                                                         <p className="description">{property.description}</p>
                                                     </div>
                                                 </li>
                                             );
                                         })}
-                                        {Object.keys(library.methods).map(methodName => {
-                                            const method = library.methods[methodName];
+                                        {CompilerUtils.values(library.methods).map(method => {
                                             return (
-                                                <li className="library-member" key={methodName}>
-                                                    <p className="library-member-name" onClick={(() => this.memberClicked(methodName)).bind(this)}>
-                                                        {libraryName}.{methodName}({Object.keys(method.parameters).join(", ")})
+                                                <li className="library-member" key={method.methodName}>
+                                                    <p className="library-member-name" onClick={(() => this.memberClicked(method.methodName)).bind(this)}>
+                                                        {method.typeName}.{method.methodName}({method.parameters.join(", ")})
                                                     </p>
-                                                    <div style={{ display: this.state.member === methodName ? "inherit" : "none" }}>
+                                                    <div style={{ display: this.state.member === method.methodName ? "inherit" : "none" }}>
                                                         <p className="description">{method.description}</p>
                                                         <ul>
-                                                            {Object.keys(method.parameters).map(name =>
-                                                                <li className="members-details" key={name}>
-                                                                    <p className="description"><b>{name}</b>: {method.parameters[name]}</p>
+                                                            {method.parameters.map(parameter =>
+                                                                <li className="members-details" key={parameter}>
+                                                                    <p className="description"><b>{parameter}</b>: {method.parameterDescription(parameter)}</p>
                                                                 </li>
                                                             )}
                                                         </ul>

@@ -1,12 +1,12 @@
 import { ExecutionEngine, ExecutionMode, StackFrame } from "../execution-engine";
-import { StringValue } from "./values/string-value";
-import { ValueKind, BaseValue, Constants } from "./values/base-value";
-import { NumberValue } from "./values/number-value";
-import { ErrorCode, Diagnostic } from "../diagnostics";
+import { StringValue } from "../runtime/values/string-value";
+import { ValueKind, BaseValue, Constants } from "../runtime/values/base-value";
+import { NumberValue } from "../runtime/values/number-value";
+import { ErrorCode, Diagnostic } from "../utils/diagnostics";
 import { TokenKind } from "../syntax/tokens";
-import { ArrayValue } from "./values/array-value";
+import { ArrayValue } from "../runtime/values/array-value";
 import { CompilerRange } from "../syntax/ranges";
-import { CompilerUtils } from "../compiler-utils";
+import { CompilerUtils } from "../utils/compiler-utils";
 
 export enum InstructionKind {
     TempLabel,
@@ -14,14 +14,14 @@ export enum InstructionKind {
     TempConditionalJump,
     Jump,
     ConditionalJump,
-    CallSubModule,
+    InvokeSubModule,
     StoreVariable,
     StoreArrayElement,
     StoreProperty,
     LoadVariable,
     LoadArrayElement,
     LoadProperty,
-    MethodCall,
+    MethodInvocation,
     Negate,
     Equal,
     LessThan,
@@ -33,7 +33,9 @@ export enum InstructionKind {
     Multiply,
     Divide,
     PushNumber,
-    PushString
+    PushString,
+    Duplicate,
+    DeleteVariable
 }
 
 export abstract class BaseInstruction {
@@ -120,11 +122,11 @@ export class ConditionalJumpInstruction extends BaseInstruction {
     }
 }
 
-export class CallSubModuleInstruction extends BaseInstruction {
+export class InvokeSubModuleInstruction extends BaseInstruction {
     public constructor(
         public readonly name: string,
         range: CompilerRange) {
-        super(InstructionKind.CallSubModule, range);
+        super(InstructionKind.InvokeSubModule, range);
     }
 
     public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
@@ -292,12 +294,12 @@ export class LoadPropertyInstruction extends BaseInstruction {
     }
 }
 
-export class MethodCallInstruction extends BaseInstruction {
+export class MethodInvocationInstruction extends BaseInstruction {
     public constructor(
         public readonly library: string,
         public readonly method: string,
         range: CompilerRange) {
-        super(InstructionKind.MethodCall, range);
+        super(InstructionKind.MethodInvocation, range);
     }
 
     public execute(engine: ExecutionEngine, mode: ExecutionMode, frame: StackFrame): void {
@@ -493,6 +495,32 @@ export class PushStringInstruction extends BaseInstruction {
 
     public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
         engine.pushEvaluationStack(new StringValue(this.value));
+        frame.instructionIndex++;
+    }
+}
+
+export class DuplicateInstruction extends BaseInstruction {
+    public constructor(range: CompilerRange) {
+        super(InstructionKind.Duplicate, range);
+    }
+
+    public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
+        const value = engine.popEvaluationStack();
+        engine.pushEvaluationStack(value);
+        engine.pushEvaluationStack(value);
+        frame.instructionIndex++;
+    }
+}
+
+export class DeleteVariableInstruction extends BaseInstruction {
+    public constructor(
+        public readonly name: string,
+        range: CompilerRange) {
+        super(InstructionKind.DeleteVariable, range);
+    }
+
+    public execute(engine: ExecutionEngine, _2: ExecutionMode, frame: StackFrame): void {
+        engine.memory.deleteIndex(this.name);
         frame.instructionIndex++;
     }
 }

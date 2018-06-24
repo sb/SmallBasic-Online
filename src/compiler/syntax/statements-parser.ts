@@ -1,4 +1,4 @@
-import { ErrorCode, Diagnostic } from "../diagnostics";
+import { ErrorCode, Diagnostic } from "../utils/diagnostics";
 import {
     BaseSyntaxNode,
     SyntaxKind,
@@ -21,7 +21,7 @@ import {
     IfHeaderSyntax,
     BaseStatementSyntax
 } from "./syntax-nodes";
-import { CompilerUtils } from "../compiler-utils";
+import { CompilerUtils } from "../utils/compiler-utils";
 
 export class StatementsParser {
     private _index: number = 0;

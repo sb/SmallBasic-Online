@@ -1,7 +1,7 @@
-import { ModuleEmitter } from "./runtime/module-emitter";
-import { BaseInstruction } from "./runtime/instructions";
+import { ModuleEmitter } from "./emitting/module-emitter";
+import { BaseInstruction } from "./emitting/instructions";
 import { CommandsParser } from "./syntax/command-parser";
-import { Diagnostic } from "./diagnostics";
+import { Diagnostic } from "./utils/diagnostics";
 import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/tokens";
@@ -9,12 +9,14 @@ import { StatementsParser } from "./syntax/statements-parser";
 import { BaseSyntaxNode, ParseTreeSyntax, BaseStatementSyntax, SyntaxKind } from "./syntax/syntax-nodes";
 import { BaseBoundStatement } from "./binding/bound-nodes";
 import { CompilerPosition } from "./syntax/ranges";
+import { ProgramKind } from "./runtime/libraries-metadata";
 
 export class Compilation {
     public readonly tokens: ReadonlyArray<Token>;
     public readonly parseTree: ParseTreeSyntax;
     public readonly boundSubModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>> };
     public readonly diagnostics: Diagnostic[] = [];
+    public readonly programKind: ProgramKind;
 
     public get isReadyToRun(): boolean {
         return !!this.text.trim() && !this.diagnostics.length;
@@ -29,7 +31,9 @@ export class Compilation {
         this.parseTree = new StatementsParser(commands, this.diagnostics).result;
         this.setParentNode(this.parseTree);
 
-        this.boundSubModules = new ModulesBinder(this.parseTree, this.diagnostics).boundModules;
+        const binder = new ModulesBinder(this.parseTree, this.diagnostics);
+        this.boundSubModules = binder.boundModules;
+        this.programKind = binder.programKind;
     }
 
     public emit(): { readonly [name: string]: ReadonlyArray<BaseInstruction> } {

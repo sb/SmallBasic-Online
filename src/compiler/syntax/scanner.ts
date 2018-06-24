@@ -1,4 +1,4 @@
-import { ErrorCode, Diagnostic } from "../diagnostics";
+import { ErrorCode, Diagnostic } from "../utils/diagnostics";
 import { Token, TokenKind } from "./tokens";
 import { CompilerRange } from "./ranges";
 

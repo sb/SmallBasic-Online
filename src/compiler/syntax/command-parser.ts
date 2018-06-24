@@ -1,10 +1,10 @@
-import { ErrorCode, Diagnostic } from "../diagnostics";
-import { IfCommandSyntax, BaseSyntaxNode, BinaryOperatorExpressionSyntax, UnaryOperatorExpressionSyntax, ObjectAccessExpressionSyntax, ArrayAccessExpressionSyntax, CallExpressionSyntax, IdentifierExpressionSyntax, ParenthesisExpressionSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, ForCommandSyntax, ForStepClauseSyntax, EndForCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, SubCommandSyntax, EndSubCommandSyntax, ExpressionCommandSyntax, ArgumentSyntax, NumberLiteralExpressionSyntax, StringLiteralExpressionSyntax } from "./syntax-nodes";
+import { ErrorCode, Diagnostic } from "../utils/diagnostics";
+import { IfCommandSyntax, BaseSyntaxNode, BinaryOperatorExpressionSyntax, UnaryOperatorExpressionSyntax, ObjectAccessExpressionSyntax, ArrayAccessExpressionSyntax, InvocationExpressionSyntax, IdentifierExpressionSyntax, ParenthesisExpressionSyntax, ElseIfCommandSyntax, ElseCommandSyntax, EndIfCommandSyntax, ForCommandSyntax, ForStepClauseSyntax, EndForCommandSyntax, WhileCommandSyntax, EndWhileCommandSyntax, LabelCommandSyntax, GoToCommandSyntax, SubCommandSyntax, EndSubCommandSyntax, ExpressionCommandSyntax, ArgumentSyntax, NumberLiteralExpressionSyntax, StringLiteralExpressionSyntax } from "./syntax-nodes";
 import { } from "./nodes/expressions";
 import { TokenKind, Token } from "./tokens";
 import { CompilerRange } from "./ranges";
 import { CommentCommandSyntax, TokenSyntax } from "./syntax-nodes";
-import { CompilerUtils } from "../compiler-utils";
+import { CompilerUtils } from "../utils/compiler-utils";
 
 export class CommandsParser {
     public static readonly MissingTokenText: string = "?";
@@ -322,7 +322,7 @@ export class CommandsParser {
         }
 
         const rightParen = this.eat(TokenKind.RightParen);
-        return new CallExpressionSyntax(leftHandSide, leftParen, argumentsList, rightParen);
+        return new InvocationExpressionSyntax(leftHandSide, leftParen, argumentsList, rightParen);
     }
 
     private parseTerminalExpression(): BaseSyntaxNode {

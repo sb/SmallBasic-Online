@@ -25,14 +25,17 @@ import "./runtime/expressions/to-boolean";
 
 import "./runtime/libraries/array";
 import "./runtime/libraries/clock";
+import "./runtime/libraries/math";
 import "./runtime/libraries/program";
 import "./runtime/libraries/stack";
 import "./runtime/libraries/text-window";
+import "./runtime/libraries/turtle";
 
 import "./runtime/statements/for-loop";
 import "./runtime/statements/if-statements";
 import "./runtime/statements/labels";
 import "./runtime/statements/while-loop";
 
+import "./runtime/libraries-metadata";
 import "./runtime/stepping-through";
 import "./runtime/submodules";

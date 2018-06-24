@@ -1,12 +1,13 @@
-import { SyntaxKind } from "./syntax/syntax-nodes";
-import { TokenKind } from "./syntax/tokens";
-import { SyntaxNodesResources } from "../strings/syntax-nodes";
+import { SyntaxKind } from "../syntax/syntax-nodes";
+import { TokenKind } from "../syntax/tokens";
+import { ProgramKind } from "../runtime/libraries-metadata";
+import { CompilerResources } from "../../strings/compiler";
 
 export module CompilerUtils {
     export function formatString(template: string, args: ReadonlyArray<string>): string {
         return template.replace(/{[0-9]+}/g, match => args[parseInt(match.replace(/^{/, "").replace(/}$/, ""))]);
     }
-    
+
     export function stringStartsWith(value: string, prefix?: string): boolean {
         if (!prefix || !prefix.length) {
             return true;
@@ -22,6 +23,10 @@ export module CompilerUtils {
         }
     }
 
+    export function values<TMember>(parent: { [key: string]: TMember }): ReadonlyArray<TMember> {
+        return Object.keys(parent).map(key => parent[key]);
+    }
+
     export function commandToDisplayString(kind: SyntaxKind): string {
         switch (kind) {
             case SyntaxKind.IfCommand: return tokenToDisplayString(TokenKind.IfKeyword);
@@ -32,11 +37,11 @@ export module CompilerUtils {
             case SyntaxKind.EndForCommand: return tokenToDisplayString(TokenKind.EndForKeyword);
             case SyntaxKind.WhileCommand: return tokenToDisplayString(TokenKind.WhileKeyword);
             case SyntaxKind.EndWhileCommand: return tokenToDisplayString(TokenKind.EndWhileKeyword);
-            case SyntaxKind.LabelCommand: return SyntaxNodesResources.Label;
+            case SyntaxKind.LabelCommand: return CompilerResources.SyntaxNodes_Label;
             case SyntaxKind.GoToCommand: return tokenToDisplayString(TokenKind.GoToKeyword);
             case SyntaxKind.SubCommand: return tokenToDisplayString(TokenKind.SubKeyword);
             case SyntaxKind.EndSubCommand: return tokenToDisplayString(TokenKind.EndSubKeyword);
-            case SyntaxKind.ExpressionCommand: return SyntaxNodesResources.Expression;
+            case SyntaxKind.ExpressionCommand: return CompilerResources.SyntaxNodes_Expression;
             default: throw new Error(`Unexpected syntax kind: ${SyntaxKind[kind]}`);
         }
     }
@@ -78,12 +83,20 @@ export module CompilerUtils {
             case TokenKind.Or: return "Or";
             case TokenKind.And: return "And";
 
-            case TokenKind.Identifier: return SyntaxNodesResources.Identifier;
-            case TokenKind.NumberLiteral: return SyntaxNodesResources.NumberLiteral;
-            case TokenKind.StringLiteral: return SyntaxNodesResources.StringLiteral;
-            case TokenKind.Comment: return SyntaxNodesResources.Comment;
+            case TokenKind.Identifier: return CompilerResources.SyntaxNodes_Identifier;
+            case TokenKind.NumberLiteral: return CompilerResources.SyntaxNodes_NumberLiteral;
+            case TokenKind.StringLiteral: return CompilerResources.SyntaxNodes_StringLiteral;
+            case TokenKind.Comment: return CompilerResources.SyntaxNodes_Comment;
 
             default: throw new Error(`Unrecognized token kind: ${TokenKind[kind]}`);
+        }
+    }
+
+    export function programKindToDisplayString(kind: ProgramKind): string {
+        switch (kind) {
+            case ProgramKind.TextWindow: return CompilerResources.ProgramKind_TextWindow;
+            case ProgramKind.Turtle: return CompilerResources.ProgramKind_Turtle;
+            default: throw new Error(`Unexpected program kind: ${ProgramKind[kind]}`);
         }
     }
 }

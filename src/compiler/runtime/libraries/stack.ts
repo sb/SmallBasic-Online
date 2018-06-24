@@ -1,76 +1,51 @@
-import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
-import { DocumentationResources } from "../../../strings/documentation";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
 import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
-import { Diagnostic, ErrorCode } from "../../diagnostics";
+import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
 import { CompilerRange } from "../../syntax/ranges";
 
-export class StackLibrary implements LibraryTypeDefinition {
+export class StackLibrary implements LibraryTypeInstance {
     private _stacks: { [name: string]: BaseValue[] } = {};
 
-    private _pushValue: LibraryMethodDefinition = {
-        description: DocumentationResources.Stack_PushValue,
-        parameters: {
-            "stackName": DocumentationResources.Stack_PushValue_StackName,
-            "value": DocumentationResources.Stack_PushValue_Value
-        },
-        returnsValue: false,
-        execute: (engine: ExecutionEngine) => {
-            const value = engine.popEvaluationStack();
-            const stackName = engine.popEvaluationStack().toValueString();
+    private executePushValue(engine: ExecutionEngine): boolean {
+        const value = engine.popEvaluationStack();
+        const stackName = engine.popEvaluationStack().toValueString();
 
-            if (!this._stacks[stackName]) {
-                this._stacks[stackName] = [];
-            }
-
-            this._stacks[stackName].push(value);
-            return true;
+        if (!this._stacks[stackName]) {
+            this._stacks[stackName] = [];
         }
-    };
 
-    private _getCount: LibraryMethodDefinition = {
-        description: DocumentationResources.Stack_GetCount,
-        parameters: {
-            "stackName": DocumentationResources.Stack_GetCount_StackName
-        },
-        returnsValue: true,
-        execute: (engine: ExecutionEngine) => {
-            const stackName = engine.popEvaluationStack().toValueString();
-            const count = this._stacks[stackName] ? this._stacks[stackName].length : 0;
+        this._stacks[stackName].push(value);
+        return true;
+    }
 
-            engine.pushEvaluationStack(new NumberValue(count));
-            return true;
+    private executeGetCount(engine: ExecutionEngine): boolean {
+        const stackName = engine.popEvaluationStack().toValueString();
+        const count = this._stacks[stackName] ? this._stacks[stackName].length : 0;
+
+        engine.pushEvaluationStack(new NumberValue(count));
+        return true;
+    }
+
+    private executePopValue(engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange): boolean {
+        const stackName = engine.popEvaluationStack().toValueString();
+
+        if (this._stacks[stackName] && this._stacks[stackName].length) {
+            engine.pushEvaluationStack(this._stacks[stackName].pop()!);
+        } else {
+            engine.terminate(new Diagnostic(ErrorCode.PoppingAnEmptyStack, range));
         }
+
+        return true;
+    }
+
+    public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
+        PushValue: { execute: this.executePushValue.bind(this) },
+        GetCount: { execute: this.executeGetCount.bind(this) },
+        PopValue: { execute: this.executePopValue.bind(this) }
     };
 
-    private _popValue: LibraryMethodDefinition = {
-        description: DocumentationResources.Stack_PopValue,
-        parameters: {
-            "stackName": DocumentationResources.Stack_PopValue_StackName
-        },
-        returnsValue: true,
-        execute: (engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange) => {
-            const stackName = engine.popEvaluationStack().toValueString();
-
-            if (this._stacks[stackName] && this._stacks[stackName].length) {
-                engine.pushEvaluationStack(this._stacks[stackName].pop()!);
-            } else {
-                engine.terminate(new Diagnostic(ErrorCode.PoppingAnEmptyStack, range));
-            }
-
-            return true;
-        }
-    };
-
-    public readonly description: string = DocumentationResources.Stack;
-
-    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
-        PushValue: this._pushValue,
-        GetCount: this._getCount,
-        PopValue: this._popValue
-    };
-
-    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
     };
 }

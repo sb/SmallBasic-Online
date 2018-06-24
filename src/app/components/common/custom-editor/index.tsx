@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Diagnostic } from "../../../../compiler/diagnostics";
+import { Diagnostic } from "../../../../compiler/utils/diagnostics";
 
 import "./style.css";
 import { EditorUtils } from "../../../editor-utils";

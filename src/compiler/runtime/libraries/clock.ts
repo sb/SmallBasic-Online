@@ -1,22 +1,17 @@
-import { LibraryTypeDefinition, LibraryMethodDefinition, LibraryPropertyDefinition } from "../supported-libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
 import { StringValue } from "../values/string-value";
-import { DocumentationResources } from "../../../strings/documentation";
+import { BaseValue } from "../values/base-value";
 
-export class ClockLibrary implements LibraryTypeDefinition {
-    private _time: LibraryPropertyDefinition = {
-        description: DocumentationResources.Clock_Time,
-        getter: () => {
-            const time = new Date().toLocaleTimeString();
-            return new StringValue(time);
-        }
+export class ClockLibrary implements LibraryTypeInstance {
+    private getTime(): BaseValue {
+        const time = new Date().toLocaleTimeString();
+        return new StringValue(time);
+    }
+
+    public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
     };
 
-    public readonly description: string = DocumentationResources.Clock;
-
-    public readonly methods: { readonly [name: string]: LibraryMethodDefinition } = {
-    };
-
-    public readonly properties: { readonly [name: string]: LibraryPropertyDefinition } = {
-        Time: this._time
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
+        Time: { getter: this.getTime.bind(this) }
     };
 }

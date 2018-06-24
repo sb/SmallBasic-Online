@@ -30,4 +30,8 @@ export module EditorResources {
     export const CallStack_Header = "Call Stack";
     export const Memory_Header = "Memory";
     export const TextWindow_TerminationMessage = "Program ended...";
+
+    export function get(key: string): string {
+        return (<any>EditorResources)[key];
+    }
 }

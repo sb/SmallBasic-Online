@@ -1,9 +1,9 @@
 import { ExecutionEngine } from "../../execution-engine";
-import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../instructions";
-import { Diagnostic, ErrorCode } from "../../diagnostics";
+import { AddInstruction, DivideInstruction, MultiplyInstruction, SubtractInstruction } from "../../emitting/instructions";
+import { Diagnostic, ErrorCode } from "../../utils/diagnostics";
 import { BaseValue, ValueKind } from "./base-value";
 import { TokenKind } from "../../syntax/tokens";
-import { CompilerUtils } from "../../compiler-utils";
+import { CompilerUtils } from "../../utils/compiler-utils";
 
 export class ArrayValue extends BaseValue {
     private _values: { [key: string]: BaseValue };
@@ -19,6 +19,10 @@ export class ArrayValue extends BaseValue {
 
     public setIndex(index: string, value: BaseValue): void {
         this._values[index] = value;
+    }
+
+    public deleteIndex(index: string): void {
+        delete this._values[index];
     }
 
     public toBoolean(): boolean {

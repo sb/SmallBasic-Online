@@ -1,6 +1,6 @@
-import { CompilerRange } from "./syntax/ranges";
-import { ErrorResources } from "../strings/errors";
+import { CompilerRange } from "../syntax/ranges";
 import { CompilerUtils } from "./compiler-utils";
+import { DiagnosticsResources } from "../../strings/diagnostics";
 
 export enum ErrorCode {
     // Scanner Errors
@@ -35,6 +35,7 @@ export enum ErrorCode {
     UnsupportedDotBaseExpression,
     LibraryMemberNotFound,
     ValueIsNotAssignable,
+    ProgramKindChanged,
 
     // Runtime Errors
     CannotUseAnArrayAsAnIndexToAnotherArray,
@@ -54,7 +55,7 @@ export class Diagnostic {
     }
 
     public toString(): string {
-        const template = (ErrorResources as any)[ErrorCode[this.code]] as string;
+        const template = DiagnosticsResources.get(ErrorCode[this.code]);
 
         if (!template) {
             throw new Error(`Error code ${ErrorCode[this.code]} has no string resource`);
