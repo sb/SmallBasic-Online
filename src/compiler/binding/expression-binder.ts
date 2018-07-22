@@ -1,32 +1,32 @@
 import { RuntimeLibraries } from "../runtime/libraries";
 import { Diagnostic, ErrorCode } from "../utils/diagnostics";
 import {
-    ArrayAccessBoundExpression,
+    BoundArrayAccessExpression,
     BaseBoundExpression,
     BoundKind,
-    LibraryMethodBoundExpression,
-    LibraryTypeBoundExpression,
-    NegationBoundExpression,
-    SubModuleBoundExpression,
-    VariableBoundExpression,
-    LibraryMethodInvocationBoundExpression,
-    SubModuleInvocationBoundExpression,
-    LibraryPropertyBoundExpression,
-    ParenthesisBoundExpression,
-    NumberLiteralBoundExpression,
-    StringLiteralBoundExpression,
-    OrBoundExpression,
-    AndBoundExpression,
-    NotEqualBoundExpression,
-    EqualBoundExpression,
-    LessThanBoundExpression,
-    GreaterThanBoundExpression,
-    GreaterThanOrEqualBoundExpression,
-    LessThanOrEqualBoundExpression,
-    AdditionBoundExpression,
-    SubtractionBoundExpression,
-    MultiplicationBoundExpression,
-    DivisionBoundExpression
+    BoundLibraryMethodExpression,
+    BoundLibraryTypeExpression,
+    BoundNegationExpression,
+    BoundSubModuleExpression,
+    BoundVariableExpression,
+    BoundLibraryMethodInvocationExpression,
+    BoundSubModuleInvocationExpression,
+    BoundLibraryPropertyExpression,
+    BoundParenthesisExpression,
+    BoundNumberLiteralExpression,
+    BoundStringLiteralExpression,
+    BoundOrExpression,
+    BoundAndExpression,
+    BoundNotEqualExpression,
+    BoundEqualExpression,
+    BoundLessThanExpression,
+    BoundGreaterThanExpression,
+    BoundGreaterThanOrEqualExpression,
+    BoundLessThanOrEqualExpression,
+    BoundAdditionExpression,
+    BoundSubtractionExpression,
+    BoundMultiplicationExpression,
+    BoundDivisionExpression
 } from "./bound-nodes";
 import {
     ArrayAccessExpressionSyntax,
@@ -81,7 +81,7 @@ export class ExpressionBinder {
         return expression;
     }
 
-    private bindArrayAccess(syntax: ArrayAccessExpressionSyntax): ArrayAccessBoundExpression {
+    private bindArrayAccess(syntax: ArrayAccessExpressionSyntax): BoundArrayAccessExpression {
         const baseExpression = this.bindExpression(syntax.baseExpression, true);
         const indexExpression = this.bindExpression(syntax.indexExpression, true);
 
@@ -91,13 +91,13 @@ export class ExpressionBinder {
 
         switch (baseExpression.kind) {
             case BoundKind.ArrayAccessExpression: {
-                const arrayAccess = baseExpression as ArrayAccessBoundExpression;
+                const arrayAccess = baseExpression as BoundArrayAccessExpression;
                 arrayName = arrayAccess.arrayName;
                 indices = [...(arrayAccess).indices, indexExpression];
                 break;
             }
             case BoundKind.VariableExpression: {
-                arrayName = (baseExpression as VariableBoundExpression).variableName;
+                arrayName = (baseExpression as BoundVariableExpression).variableName;
                 indices = [indexExpression];
                 break;
             }
@@ -113,7 +113,7 @@ export class ExpressionBinder {
             }
         }
 
-        return new ArrayAccessBoundExpression(arrayName, indices, hasErrors, syntax);
+        return new BoundArrayAccessExpression(arrayName, indices, hasErrors, syntax);
     }
 
     private bindInvocation(syntax: InvocationExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
@@ -124,7 +124,7 @@ export class ExpressionBinder {
 
         switch (baseExpression.kind) {
             case BoundKind.LibraryMethodExpression: {
-                const method = baseExpression as LibraryMethodBoundExpression;
+                const method = baseExpression as BoundLibraryMethodExpression;
                 const definition = RuntimeLibraries.Metadata[method.libraryName].methods[method.methodName];
                 const parametersCount = definition.parameters.length;
 
@@ -137,7 +137,7 @@ export class ExpressionBinder {
                     this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
                 }
 
-                return new LibraryMethodInvocationBoundExpression(method.libraryName, method.methodName, argumentsList, definition.returnsValue, hasErrors, syntax);
+                return new BoundLibraryMethodInvocationExpression(method.libraryName, method.methodName, argumentsList, definition.returnsValue, hasErrors, syntax);
             }
             case BoundKind.SubModuleExpression: {
                 if (argumentsList.length !== 0) {
@@ -148,13 +148,13 @@ export class ExpressionBinder {
                     this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
                 }
 
-                const subModule = baseExpression as SubModuleBoundExpression;
-                return new SubModuleInvocationBoundExpression(subModule.subModuleName, hasErrors, syntax);
+                const subModule = baseExpression as BoundSubModuleExpression;
+                return new BoundSubModuleInvocationExpression(subModule.subModuleName, hasErrors, syntax);
             }
             default: {
                 hasErrors = true;
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnsupportedCallBaseExpression, baseExpression.syntax.range));
-                return new LibraryMethodInvocationBoundExpression("<library>", "<method>", argumentsList, true, hasErrors, syntax);
+                return new BoundLibraryMethodInvocationExpression("<library>", "<method>", argumentsList, true, hasErrors, syntax);
             }
         }
     }
@@ -167,10 +167,10 @@ export class ExpressionBinder {
         if (leftHandSide.kind !== BoundKind.LibraryTypeExpression) {
             hasErrors = true;
             this._diagnostics.push(new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, leftHandSide.syntax.range));
-            return new LibraryPropertyBoundExpression("<library>", rightHandSide, true, hasErrors, syntax);
+            return new BoundLibraryPropertyExpression("<library>", rightHandSide, true, hasErrors, syntax);
         }
 
-        const libraryType = leftHandSide as LibraryTypeBoundExpression;
+        const libraryType = leftHandSide as BoundLibraryTypeExpression;
         const propertyInfo = RuntimeLibraries.Metadata[libraryType.libraryName].properties[rightHandSide];
 
         if (propertyInfo) {
@@ -179,7 +179,7 @@ export class ExpressionBinder {
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
             }
 
-            return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, propertyInfo.hasGetter, hasErrors, syntax);
+            return new BoundLibraryPropertyExpression(libraryType.libraryName, rightHandSide, propertyInfo.hasGetter, hasErrors, syntax);
         }
 
         const methodInfo = RuntimeLibraries.Metadata[libraryType.libraryName].methods[rightHandSide];
@@ -189,23 +189,23 @@ export class ExpressionBinder {
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
             }
 
-            return new LibraryMethodBoundExpression(libraryType.libraryName, rightHandSide, false, hasErrors, syntax);
+            return new BoundLibraryMethodExpression(libraryType.libraryName, rightHandSide, false, hasErrors, syntax);
         }
 
         hasErrors = true;
         this._diagnostics.push(new Diagnostic(ErrorCode.LibraryMemberNotFound, leftHandSide.syntax.range, libraryType.libraryName, rightHandSide));
-        return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, true, hasErrors, syntax);
+        return new BoundLibraryPropertyExpression(libraryType.libraryName, rightHandSide, true, hasErrors, syntax);
     }
 
     private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression {
         const expression = this.bindExpression(syntax.expression, true);
-        return new ParenthesisBoundExpression(expression, expression.hasErrors, syntax);
+        return new BoundParenthesisExpression(expression, expression.hasErrors, syntax);
     }
 
     private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression {
         const value = parseFloat(syntax.numberToken.token.text);
         const isNotANumber = isNaN(value);
-        const expression = new NumberLiteralBoundExpression(value, isNotANumber, syntax);
+        const expression = new BoundNumberLiteralExpression(value, isNotANumber, syntax);
 
         if (isNotANumber) {
             this._diagnostics.push(new Diagnostic(ErrorCode.ValueIsNotANumber, expression.syntax.range, syntax.numberToken.token.text));
@@ -225,7 +225,7 @@ export class ExpressionBinder {
             value = value.substr(0, value.length - 1);
         }
 
-        return new StringLiteralBoundExpression(value, false, syntax);
+        return new BoundStringLiteralExpression(value, false, syntax);
     }
 
     private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
@@ -250,24 +250,24 @@ export class ExpressionBinder {
                     CompilerUtils.programKindToDisplayString(library.programKind)));
             }
 
-            return new LibraryTypeBoundExpression(name, hasErrors, syntax);
+            return new BoundLibraryTypeExpression(name, hasErrors, syntax);
         } else if (this._definedSubModules[name]) {
             if (expectedValue) {
                 hasErrors = true;
                 this._diagnostics.push(new Diagnostic(ErrorCode.UnexpectedVoid_ExpectingValue, syntax.range));
             }
 
-            return new SubModuleBoundExpression(name, hasErrors, syntax);
+            return new BoundSubModuleExpression(name, hasErrors, syntax);
         } else {
-            return new VariableBoundExpression(name, hasErrors, syntax);
+            return new BoundVariableExpression(name, hasErrors, syntax);
         }
     }
 
-    private bindUnaryOperator(syntax: UnaryOperatorExpressionSyntax): NegationBoundExpression {
+    private bindUnaryOperator(syntax: UnaryOperatorExpressionSyntax): BoundNegationExpression {
         const expression = this.bindExpression(syntax.expression, true);
 
         if (syntax.operatorToken.token.kind === TokenKind.Minus) {
-            return new NegationBoundExpression(expression, expression.hasErrors, syntax);
+            return new BoundNegationExpression(expression, expression.hasErrors, syntax);
         } else {
             throw new Error(`Unsupported token kind: ${TokenKind[syntax.operatorToken.kind]}`);
         }
@@ -280,18 +280,18 @@ export class ExpressionBinder {
         const hasErrors = leftHandSide.hasErrors || rightHandSide.hasErrors;
 
         switch (syntax.operatorToken.token.kind) {
-            case TokenKind.Or: return new OrBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.And: return new AndBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.NotEqual: return new NotEqualBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.Equal: return new EqualBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.LessThan: return new LessThanBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.GreaterThan: return new GreaterThanBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.LessThanOrEqual: return new LessThanOrEqualBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.GreaterThanOrEqual: return new GreaterThanOrEqualBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.Plus: return new AdditionBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.Minus: return new SubtractionBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.Multiply: return new MultiplicationBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
-            case TokenKind.Divide: return new DivisionBoundExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.Or: return new BoundOrExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.And: return new BoundAndExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.NotEqual: return new BoundNotEqualExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.Equal: return new BoundEqualExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.LessThan: return new BoundLessThanExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.GreaterThan: return new BoundGreaterThanExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.LessThanOrEqual: return new BoundLessThanOrEqualExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.GreaterThanOrEqual: return new BoundGreaterThanOrEqualExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.Plus: return new BoundAdditionExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.Minus: return new BoundSubtractionExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.Multiply: return new BoundMultiplicationExpression(leftHandSide, rightHandSide, hasErrors, syntax);
+            case TokenKind.Divide: return new BoundDivisionExpression(leftHandSide, rightHandSide, hasErrors, syntax);
             default: throw new Error(`Unexpected token kind ${TokenKind[syntax.operatorToken.kind]}`);
         }
     }

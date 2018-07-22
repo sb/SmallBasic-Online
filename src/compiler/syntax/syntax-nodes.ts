@@ -503,8 +503,8 @@ export class TokenSyntax extends BaseSyntaxNode {
     }
 }
 
-export class SyntaxNodeVisitor<TResult> {
-    public visit(node: BaseSyntaxNode): TResult | undefined {
+export class SyntaxNodeVisitor {
+    public visit(node: BaseSyntaxNode): void {
         switch (node.kind) {
             case SyntaxKind.ParseTree: return this.visitParseTree(node as ParseTreeSyntax);
             case SyntaxKind.SubModuleDeclaration: return this.visitSubModuleDeclaration(node as SubModuleDeclarationSyntax);
@@ -541,142 +541,135 @@ export class SyntaxNodeVisitor<TResult> {
         }
     }
 
-    public visitParseTree(node: ParseTreeSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitParseTree(node: ParseTreeSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitSubModuleDeclaration(node: SubModuleDeclarationSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitSubModuleDeclaration(node: SubModuleDeclarationSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitIfHeader(node: IfHeaderSyntax<IfCommandSyntax | ElseIfCommandSyntax | ElseCommandSyntax>): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitIfHeader(node: IfHeaderSyntax<IfCommandSyntax | ElseIfCommandSyntax | ElseCommandSyntax>): void {
+        this.defaultVisit(node);
     }
 
-    public visitIfStatement(node: IfStatementSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitIfStatement(node: IfStatementSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitWhileStatement(node: WhileStatementSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitWhileStatement(node: WhileStatementSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitForStatement(node: ForStatementSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitForStatement(node: ForStatementSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitIfCommand(node: IfCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitIfCommand(node: IfCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitElseCommand(node: ElseCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitElseCommand(node: ElseCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitElseIfCommand(node: ElseIfCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitElseIfCommand(node: ElseIfCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitEndIfCommand(node: EndIfCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitEndIfCommand(node: EndIfCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitForStepClause(node: ForStepClauseSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitForStepClause(node: ForStepClauseSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitForCommand(node: ForCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitForCommand(node: ForCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitEndForCommand(node: EndForCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitEndForCommand(node: EndForCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitWhileCommand(node: WhileCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitWhileCommand(node: WhileCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitEndWhileCommand(node: EndWhileCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitEndWhileCommand(node: EndWhileCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitLabelCommand(node: LabelCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitLabelCommand(node: LabelCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitGoToCommand(node: GoToCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitGoToCommand(node: GoToCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitSubCommand(node: SubCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitSubCommand(node: SubCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitEndSubCommand(node: EndSubCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitEndSubCommand(node: EndSubCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitExpressionCommand(node: ExpressionCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitExpressionCommand(node: ExpressionCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitCommentCommand(node: CommentCommandSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitCommentCommand(node: CommentCommandSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitUnaryOperatorExpression(node: UnaryOperatorExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitUnaryOperatorExpression(node: UnaryOperatorExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitBinaryOperatorExpression(node: BinaryOperatorExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitBinaryOperatorExpression(node: BinaryOperatorExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitArrayAccessExpression(node: ArrayAccessExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitArrayAccessExpression(node: ArrayAccessExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitArgument(node: ArgumentSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitArgument(node: ArgumentSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitInvocationExpression(node: InvocationExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitInvocationExpression(node: InvocationExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitParenthesisExpression(node: ParenthesisExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitParenthesisExpression(node: ParenthesisExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitIdentifierExpression(node: IdentifierExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitIdentifierExpression(node: IdentifierExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitNumberLiteralExpression(node: NumberLiteralExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitNumberLiteralExpression(node: NumberLiteralExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitStringLiteralExpression(node: StringLiteralExpressionSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitStringLiteralExpression(node: StringLiteralExpressionSyntax): void {
+        this.defaultVisit(node);
     }
 
-    public visitToken(node: TokenSyntax): TResult | undefined {
-        return this.defaultVisit(node);
+    public visitToken(node: TokenSyntax): void {
+        this.defaultVisit(node);
     }
 
-    private defaultVisit(node: BaseSyntaxNode): TResult | undefined {
-        const children = node.children();
-        for (let i = 0; i < children.length; i++) {
-            const result = this.visit(children[i]);
-            if (result) {
-                return result;
-            }
-        }
-        return undefined;
+    private defaultVisit(node: BaseSyntaxNode): void {
+        node.children().forEach(child => this.visit(child));
     }
 }

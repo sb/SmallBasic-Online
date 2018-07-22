@@ -4,12 +4,14 @@ import { CompilerUtils } from "../../../src/compiler/utils/compiler-utils";
 import { getMarkerPosition } from "../helpers";
 import { HoverService } from "../../../src/compiler/services/hover-service";
 import { DocumentationResources } from "../../../src/strings/documentation";
+import { Compilation } from "../../../src/compiler/compilation";
 
 const marker = "$";
 
 function testHover(text: string, expectedHover?: string[]): void {
     const position = getMarkerPosition(text, marker);
-    const result = HoverService.provideHover(text.replace(marker, ""), position);
+    const compilation = new Compilation(text.replace(marker, ""));
+    const result = HoverService.provideHover(compilation, position);
 
     if (expectedHover) {
         expect(result).toBeDefined();

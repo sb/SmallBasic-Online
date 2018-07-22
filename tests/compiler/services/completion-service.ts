@@ -1,12 +1,14 @@
 import "jasmine";
 import { CompletionService } from "../../../src/compiler/services/completion-service";
 import { getMarkerPosition } from "../helpers";
+import { Compilation } from "../../../src/compiler/compilation";
 
 const marker = "$";
 
 function testItemExists(text: string, expectedItem?: string): void {
     const position = getMarkerPosition(text, marker);
-    const result = CompletionService.provideCompletion(text.replace(marker, ""), position);
+    const compilation = new Compilation(text.replace(marker, ""));
+    const result = CompletionService.provideCompletion(compilation, position);
 
     if (expectedItem) {
         expect(result.filter(item => item.title === expectedItem).length).toBe(1);
@@ -17,7 +19,8 @@ function testItemExists(text: string, expectedItem?: string): void {
 
 function testItemDoesNotExist(text: string, notExpectedItem: string): void {
     const position = getMarkerPosition(text, marker);
-    const result = CompletionService.provideCompletion(text.replace(marker, ""), position);
+    const compilation = new Compilation(text.replace(marker, ""));
+    const result = CompletionService.provideCompletion(compilation, position);
 
     expect(result.filter(item => item.title === notExpectedItem).length).toBe(0);
 }
