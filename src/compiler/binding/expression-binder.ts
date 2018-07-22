@@ -47,9 +47,9 @@ import { ProgramKind } from "../runtime/libraries-metadata";
 import { CompilerUtils } from "../utils/compiler-utils";
 
 export class ExpressionBinder {
-    private readonly _result: BaseBoundExpression<BaseExpressionSyntax>;
+    private readonly _result: BaseBoundExpression;
 
-    public get result(): BaseBoundExpression<BaseExpressionSyntax> {
+    public get result(): BaseBoundExpression {
         return this._result;
     }
 
@@ -62,8 +62,8 @@ export class ExpressionBinder {
         this._result = this.bindExpression(syntax, expectedValue);
     }
 
-    private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
-        let expression: BaseBoundExpression<BaseExpressionSyntax>;
+    private bindExpression(syntax: BaseExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
+        let expression: BaseBoundExpression;
 
         switch (syntax.kind) {
             case SyntaxKind.ArrayAccessExpression: expression = this.bindArrayAccess(syntax as ArrayAccessExpressionSyntax); break;
@@ -86,7 +86,7 @@ export class ExpressionBinder {
         const indexExpression = this.bindExpression(syntax.indexExpression, true);
 
         let arrayName: string;
-        let indices: BaseBoundExpression<BaseExpressionSyntax>[];
+        let indices: BaseBoundExpression[];
         let hasErrors = baseExpression.hasErrors || indexExpression.hasErrors;
 
         switch (baseExpression.kind) {
@@ -116,7 +116,7 @@ export class ExpressionBinder {
         return new ArrayAccessBoundExpression(arrayName, indices, hasErrors, syntax);
     }
 
-    private bindInvocation(syntax: InvocationExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindInvocation(syntax: InvocationExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
         const baseExpression = this.bindExpression(syntax.baseExpression, false);
         const argumentsList = syntax.argumentsList.map(arg => this.bindExpression(arg.expression, true));
 
@@ -159,7 +159,7 @@ export class ExpressionBinder {
         }
     }
 
-    private bindObjectAccess(syntax: ObjectAccessExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindObjectAccess(syntax: ObjectAccessExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
         const leftHandSide = this.bindExpression(syntax.baseExpression, false);
         const rightHandSide = syntax.identifierToken.token.text;
         let hasErrors = leftHandSide.hasErrors;
@@ -197,12 +197,12 @@ export class ExpressionBinder {
         return new LibraryPropertyBoundExpression(libraryType.libraryName, rightHandSide, true, hasErrors, syntax);
     }
 
-    private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindParenthesis(syntax: ParenthesisExpressionSyntax): BaseBoundExpression {
         const expression = this.bindExpression(syntax.expression, true);
         return new ParenthesisBoundExpression(expression, expression.hasErrors, syntax);
     }
 
-    private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindNumberLiteral(syntax: NumberLiteralExpressionSyntax): BaseBoundExpression {
         const value = parseFloat(syntax.numberToken.token.text);
         const isNotANumber = isNaN(value);
         const expression = new NumberLiteralBoundExpression(value, isNotANumber, syntax);
@@ -214,7 +214,7 @@ export class ExpressionBinder {
         return expression;
     }
 
-    private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindStringLiteral(syntax: StringLiteralExpressionSyntax): BaseBoundExpression {
         let value = syntax.stringToken.token.text;
         if (value.length < 1 || value[0] !== "\"") {
             throw new Error(`String literal '${value}' should have never been parsed without a starting double quotes`);
@@ -228,7 +228,7 @@ export class ExpressionBinder {
         return new StringLiteralBoundExpression(value, false, syntax);
     }
 
-    private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression<BaseExpressionSyntax> {
+    private bindIdentifier(syntax: IdentifierExpressionSyntax, expectedValue: boolean): BaseBoundExpression {
         let hasErrors = false;
         const name = syntax.identifierToken.token.text;
         const library = RuntimeLibraries.Metadata[name];
@@ -273,7 +273,7 @@ export class ExpressionBinder {
         }
     }
 
-    private bindBinaryOperator(syntax: BinaryOperatorExpressionSyntax): BaseBoundExpression<BinaryOperatorExpressionSyntax> {
+    private bindBinaryOperator(syntax: BinaryOperatorExpressionSyntax): BaseBoundExpression {
         const leftHandSide = this.bindExpression(syntax.leftExpression, true);
         const rightHandSide = this.bindExpression(syntax.rightExpression, true);
 

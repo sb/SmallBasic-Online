@@ -9,13 +9,13 @@ export class ModulesBinder {
 
     private _programKind: ProgramKind;
     private _definedSubModules: { [name: string]: boolean } = {};
-    private _boundModules: { [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntaxNode>> } = {};
+    private _boundModules: { [name: string]: ReadonlyArray<BaseBoundStatement> } = {};
 
     public get programKind(): ProgramKind {
         return this._programKind;
     }
 
-    public get boundModules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement<BaseSyntaxNode>> } {
+    public get boundModules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement> } {
         return this._boundModules;
     }
 
@@ -46,7 +46,7 @@ export class ModulesBinder {
         });
     }
 
-    private bindModule(statements: ReadonlyArray<BaseSyntaxNode>): ReadonlyArray<BaseBoundStatement<BaseSyntaxNode>> {
+    private bindModule(statements: ReadonlyArray<BaseSyntaxNode>): ReadonlyArray<BaseBoundStatement> {
         const binder = new StatementBinder(statements, this._programKind, this._definedSubModules, this._diagnostics);
         this._programKind = binder.programKind;
         return binder.result;

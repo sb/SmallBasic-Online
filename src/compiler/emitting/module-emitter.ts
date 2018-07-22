@@ -1,7 +1,6 @@
 import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction, StoreVariableInstruction, PushNumberInstruction, LessThanInstruction, LoadVariableInstruction, AddInstruction, MethodInvocationInstruction, InvokeSubModuleInstruction, StoreArrayElementInstruction, StorePropertyInstruction, NegateInstruction, GreaterThanInstruction, LessThanOrEqualInstruction, GreaterThanOrEqualInstruction, PushStringInstruction, EqualInstruction, SubtractInstruction, MultiplyInstruction, DivideInstruction, LoadPropertyInstruction, LoadArrayElementInstruction } from "./instructions";
 import { BaseBoundStatement, IfBoundStatement, WhileBoundStatement, ForBoundStatement, LabelBoundStatement, VariableAssignmentBoundStatement, PropertyAssignmentBoundStatement, ArrayAssignmentBoundStatement, GoToBoundStatement, BaseBoundExpression, BoundKind, OrBoundExpression, AndBoundExpression, NotEqualBoundExpression, EqualBoundExpression, LessThanBoundExpression, ParenthesisBoundExpression, NumberLiteralBoundExpression, StringLiteralBoundExpression, VariableBoundExpression, LibraryMethodInvocationBoundExpression, LibraryPropertyBoundExpression, ArrayAccessBoundExpression, DivisionBoundExpression, MultiplicationBoundExpression, SubtractionBoundExpression, AdditionBoundExpression, NegationBoundExpression, SubModuleInvocationBoundStatement, LibraryMethodInvocationBoundStatement } from "../binding/bound-nodes";
 import { Constants } from "../runtime/values/base-value";
-import { BaseStatementSyntax, BaseExpressionSyntax } from "../syntax/syntax-nodes";
 import { TempLabelsRemover } from "./passes/temp-labels-remover";
 import { LibraryCallsRewriter } from "./passes/library-calls-rewriter";
 
@@ -13,14 +12,14 @@ export class ModuleEmitter {
         return this._instructions;
     }
 
-    public constructor(statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>) {
+    public constructor(statements: ReadonlyArray<BaseBoundStatement>) {
         statements.forEach(statement => this.emitStatement(statement));
 
         LibraryCallsRewriter.rewrite(this._instructions);
         TempLabelsRemover.remove(this._instructions);
     }
 
-    private emitStatement(statement: BaseBoundStatement<BaseStatementSyntax>): void {
+    private emitStatement(statement: BaseBoundStatement): void {
         switch (statement.kind) {
             case BoundKind.IfStatement: this.emitIfStatement(statement as IfBoundStatement); break;
             case BoundKind.WhileStatement: this.emitWhileStatement(statement as WhileBoundStatement); break;
@@ -47,10 +46,10 @@ export class ModuleEmitter {
             statement.elsePart.forEach(statement => this.emitStatement(statement));
         }
 
-        this._instructions.push(new TempLabelInstruction(endOfBlockLabel, statement.syntax.endIfCommand.range));
+        this._instructions.push(new TempLabelInstruction(endOfBlockLabel, statement.syntax.range));
     }
 
-    private emitIfPart(condition: BaseBoundExpression<BaseExpressionSyntax>, statements: ReadonlyArray<BaseBoundStatement<BaseStatementSyntax>>, endOfBlockLabel: string): void {
+    private emitIfPart(condition: BaseBoundExpression, statements: ReadonlyArray<BaseBoundStatement>, endOfBlockLabel: string): void {
         const endOfPartLabel = this.generateJumpLabel();
 
         this.emitExpression(condition);
@@ -67,7 +66,7 @@ export class ModuleEmitter {
         const startOfLoopLabel = this.generateJumpLabel();
         const endOfLoopLabel = this.generateJumpLabel();
 
-        this._instructions.push(new TempLabelInstruction(startOfLoopLabel, statement.syntax.whileCommand.range));
+        this._instructions.push(new TempLabelInstruction(startOfLoopLabel, statement.syntax.range));
         this.emitExpression(statement.condition);
         this._instructions.push(new TempConditionalJumpInstruction(undefined, endOfLoopLabel, statement.condition.syntax.range));
 
@@ -86,9 +85,9 @@ export class ModuleEmitter {
         const endOfBlockLabel = this.generateJumpLabel();
 
         this.emitExpression(statement.fromExpression);
-        this._instructions.push(new StoreVariableInstruction(statement.identifier, statement.syntax.forCommand.equalToken.range));
+        this._instructions.push(new StoreVariableInstruction(statement.identifier, statement.syntax.range));
 
-        this._instructions.push(new TempLabelInstruction(beforeCheckLabel, statement.syntax.forCommand.range));
+        this._instructions.push(new TempLabelInstruction(beforeCheckLabel, statement.syntax.range));
 
         if (statement.stepExpression) {
             this.emitExpression(statement.stepExpression);
@@ -113,17 +112,17 @@ export class ModuleEmitter {
 
         statement.statementsList.forEach(statement => this.emitStatement(statement));
 
-        this._instructions.push(new LoadVariableInstruction(statement.identifier, statement.syntax.forCommand.identifierToken.range));
+        this._instructions.push(new LoadVariableInstruction(statement.identifier, statement.syntax.range));
 
         if (statement.stepExpression) {
             this.emitExpression(statement.stepExpression);
         } else {
-            this._instructions.push(new PushNumberInstruction(1, statement.syntax.forCommand.identifierToken.range));
+            this._instructions.push(new PushNumberInstruction(1, statement.syntax.range));
         }
 
-        this._instructions.push(new AddInstruction(statement.syntax.forCommand.range));
-        this._instructions.push(new StoreVariableInstruction(statement.identifier, statement.syntax.forCommand.identifierToken.range));
-        this._instructions.push(new TempJumpInstruction(beforeCheckLabel, statement.syntax.forCommand.identifierToken.range));
+        this._instructions.push(new AddInstruction(statement.syntax.range));
+        this._instructions.push(new StoreVariableInstruction(statement.identifier, statement.syntax.range));
+        this._instructions.push(new TempJumpInstruction(beforeCheckLabel, statement.syntax.range));
 
         const endOfLoopRange = this._instructions[this._instructions.length - 1].sourceRange;
         this._instructions.push(new TempLabelInstruction(endOfBlockLabel, endOfLoopRange));
@@ -165,7 +164,7 @@ export class ModuleEmitter {
         this._instructions.push(new StorePropertyInstruction(statement.libraryName, statement.propertyName, statement.value.syntax.range));
     }
 
-    private emitExpression(expression: BaseBoundExpression<BaseExpressionSyntax>): void {
+    private emitExpression(expression: BaseBoundExpression): void {
         switch (expression.kind) {
             case BoundKind.NegationExpression: this.emitNegationExpression(expression as NegationBoundExpression); break;
             case BoundKind.OrExpression: this.emitOrExpression(expression as OrBoundExpression); break;
@@ -203,11 +202,11 @@ export class ModuleEmitter {
         const endLabel = this.generateJumpLabel();
 
         this.emitExpression(expression.leftExpression);
-        this._instructions.push(new TempConditionalJumpInstruction(trueLabel, trySecondLabel, expression.syntax.operatorToken.range));
+        this._instructions.push(new TempConditionalJumpInstruction(trueLabel, trySecondLabel, expression.syntax.range));
 
-        this._instructions.push(new TempLabelInstruction(trySecondLabel, expression.syntax.leftExpression.range));
+        this._instructions.push(new TempLabelInstruction(trySecondLabel, expression.syntax.range));
         this.emitExpression(expression.rightExpression);
-        this._instructions.push(new TempConditionalJumpInstruction(undefined, falseLabel, expression.syntax.operatorToken.range));
+        this._instructions.push(new TempConditionalJumpInstruction(undefined, falseLabel, expression.syntax.range));
 
         const endOfOperatorRange = this.instructions[this.instructions.length - 1].sourceRange;
 
@@ -226,9 +225,9 @@ export class ModuleEmitter {
         const endLabel = this.generateJumpLabel();
 
         this.emitExpression(expression.leftExpression);
-        this._instructions.push(new TempConditionalJumpInstruction(undefined, falseLabel, expression.syntax.operatorToken.range));
+        this._instructions.push(new TempConditionalJumpInstruction(undefined, falseLabel, expression.syntax.range));
         this.emitExpression(expression.rightExpression);
-        this._instructions.push(new TempConditionalJumpInstruction(undefined, falseLabel, expression.syntax.operatorToken.range));
+        this._instructions.push(new TempConditionalJumpInstruction(undefined, falseLabel, expression.syntax.range));
 
         const endOfOperatorRange = this.instructions[this.instructions.length - 1].sourceRange;
 
@@ -248,8 +247,8 @@ export class ModuleEmitter {
         this.emitExpression(expression.leftExpression);
         this.emitExpression(expression.rightExpression);
 
-        this._instructions.push(new EqualInstruction(expression.syntax.operatorToken.range));
-        this._instructions.push(new TempConditionalJumpInstruction(undefined, notEqualLabel, expression.syntax.operatorToken.range));
+        this._instructions.push(new EqualInstruction(expression.syntax.range));
+        this._instructions.push(new TempConditionalJumpInstruction(undefined, notEqualLabel, expression.syntax.range));
 
         const endOfOperatorRange = this.instructions[this.instructions.length - 1].sourceRange;
 
@@ -269,8 +268,8 @@ export class ModuleEmitter {
         this.emitExpression(expression.leftExpression);
         this.emitExpression(expression.rightExpression);
 
-        this._instructions.push(new EqualInstruction(expression.syntax.operatorToken.range));
-        this._instructions.push(new TempConditionalJumpInstruction(undefined, notEqualLabel, expression.syntax.operatorToken.range));
+        this._instructions.push(new EqualInstruction(expression.syntax.range));
+        this._instructions.push(new TempConditionalJumpInstruction(undefined, notEqualLabel, expression.syntax.range));
 
         const endOfOperatorRange = this.instructions[this.instructions.length - 1].sourceRange;
 
@@ -291,7 +290,7 @@ export class ModuleEmitter {
         this.emitExpression(expression.rightExpression);
 
         this._instructions.push(comparison);
-        this._instructions.push(new TempConditionalJumpInstruction(undefined, comparisonFailed, expression.syntax.operatorToken.range));
+        this._instructions.push(new TempConditionalJumpInstruction(undefined, comparisonFailed, expression.syntax.range));
 
         const endOfOperatorRange = this.instructions[this.instructions.length - 1].sourceRange;
 
