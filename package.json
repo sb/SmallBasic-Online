@@ -14,6 +14,7 @@
     "gulp": "node node_modules/gulp/bin/gulp.js"
   },
   "devDependencies": {
+    "angular": "1.5.9",
     "@timkendrick/monaco-editor": "0.0.7",
     "@types/es6-promise": "0.0.33",
     "@types/gulp": "3.8.33",
@@ -37,6 +38,7 @@
     "file-loader": "1.1.5",
     "gulp": "3.9.1",
     "html-webpack-plugin": "2.30.1",
+    "http-server": "^0.11.1",
     "jasmine": "2.8.0",
     "monaco-editor": "0.10.1",
     "pubsub-js": "1.6.0",
