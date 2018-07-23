@@ -1,7 +1,9 @@
 import { BaseSyntaxNode } from "../syntax/syntax-nodes";
+import { RuntimeLibraries } from "../runtime/libraries";
 
 export enum BoundKind {
     // Statements
+    StatementBlock,
     IfHeaderStatement,
     IfStatement,
     WhileStatement,
@@ -54,16 +56,28 @@ export abstract class BaseBoundNode {
 export abstract class BaseBoundStatement extends BaseBoundNode {
 }
 
+export class BoundStatementBlock extends BaseBoundStatement {
+    public constructor(
+        public readonly statements: ReadonlyArray<BaseBoundStatement>,
+        syntax: BaseSyntaxNode) {
+        super(BoundKind.StatementBlock, syntax);
+    }
+
+    public children(): ReadonlyArray<BaseBoundNode> {
+        return this.statements;
+    }
+}
+
 export class BoundIfHeaderStatement extends BaseBoundNode {
     public constructor(
         public readonly condition: BaseBoundExpression,
-        public readonly statementsList: ReadonlyArray<BaseBoundStatement>,
+        public readonly block: BoundStatementBlock,
         syntax: BaseSyntaxNode) {
         super(BoundKind.IfHeaderStatement, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode> {
-        return [this.condition, ...this.statementsList];
+        return [this.condition, this.block];
     }
 }
 
@@ -71,14 +85,14 @@ export class BoundIfStatement extends BaseBoundStatement {
     public constructor(
         public readonly ifPart: BoundIfHeaderStatement,
         public readonly elseIfParts: ReadonlyArray<BoundIfHeaderStatement>,
-        public readonly elsePart: ReadonlyArray<BaseBoundStatement> | undefined,
+        public readonly elsePart: BoundStatementBlock | undefined,
         syntax: BaseSyntaxNode) {
         super(BoundKind.IfStatement, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode> {
         return this.elsePart
-            ? [this.ifPart, ...this.elseIfParts, ...this.elsePart]
+            ? [this.ifPart, ...this.elseIfParts, this.elsePart]
             : [this.ifPart, ...this.elseIfParts];
     }
 }
@@ -86,13 +100,13 @@ export class BoundIfStatement extends BaseBoundStatement {
 export class BoundWhileStatement extends BaseBoundStatement {
     public constructor(
         public readonly condition: BaseBoundExpression,
-        public readonly statementsList: ReadonlyArray<BaseBoundStatement>,
+        public readonly block: BoundStatementBlock,
         syntax: BaseSyntaxNode) {
         super(BoundKind.WhileStatement, syntax);
     }
 
     public children(): ReadonlyArray<BaseBoundNode> {
-        return [this.condition, ...this.statementsList];
+        return [this.condition, this.block];
     }
 }
 
@@ -102,7 +116,7 @@ export class BoundForStatement extends BaseBoundStatement {
         public readonly fromExpression: BaseBoundExpression,
         public readonly toExpression: BaseBoundExpression,
         public readonly stepExpression: BaseBoundExpression | undefined,
-        public readonly statementsList: ReadonlyArray<BaseBoundStatement>,
+        public readonly block: BoundStatementBlock,
         syntax: BaseSyntaxNode) {
         super(BoundKind.ForStatement, syntax);
     }
@@ -565,6 +579,7 @@ export class BoundParenthesisExpression extends BaseBoundExpression {
 export class BoundNodeRewriter {
     public rewrite(node: BaseBoundNode): BaseBoundNode {
         switch (node.kind) {
+            case BoundKind.StatementBlock: return this.rewriteStatementBlock(node as BoundStatementBlock);
             case BoundKind.IfHeaderStatement: return this.rewriteIfHeaderStatement(node as BoundIfHeaderStatement);
             case BoundKind.IfStatement: return this.rewriteIfStatement(node as BoundIfStatement);
             case BoundKind.WhileStatement: return this.rewriteWhileStatement(node as BoundWhileStatement);
@@ -604,10 +619,16 @@ export class BoundNodeRewriter {
         }
     }
 
+    public rewriteStatementBlock(node: BoundStatementBlock): BaseBoundNode {
+        return new BoundStatementBlock(
+            node.statements.map(statement => this.rewrite(statement) as BaseBoundStatement),
+            node.syntax);
+    }
+
     public rewriteIfHeaderStatement(node: BoundIfHeaderStatement): BaseBoundNode {
         return new BoundIfHeaderStatement(
             this.rewrite(node.condition) as BaseBoundExpression,
-            node.statementsList.map(statement => this.rewrite(statement) as BaseBoundStatement),
+            this.rewrite(node.block) as BoundStatementBlock,
             node.syntax);
     }
 
@@ -615,14 +636,14 @@ export class BoundNodeRewriter {
         return new BoundIfStatement(
             this.rewrite(node.ifPart) as BoundIfHeaderStatement,
             node.elseIfParts.map(part => this.rewrite(part) as BoundIfHeaderStatement),
-            node.elsePart ? node.elsePart.map(statement => this.rewrite(statement) as BaseBoundStatement) : undefined,
+            node.elsePart ? this.rewrite(node.elsePart) as BoundStatementBlock : undefined,
             node.syntax);
     }
 
     public rewriteWhileStatement(node: BoundWhileStatement): BaseBoundNode {
         return new BoundWhileStatement(
             this.rewrite(node.condition) as BaseBoundExpression,
-            node.statementsList.map(statement => this.rewrite(statement) as BaseBoundStatement),
+            this.rewrite(node.block) as BoundStatementBlock,
             node.syntax);
     }
 
@@ -632,7 +653,7 @@ export class BoundNodeRewriter {
             this.rewrite(node.fromExpression) as BaseBoundExpression,
             this.rewrite(node.toExpression) as BaseBoundExpression,
             node.stepExpression ? this.rewrite(node.stepExpression) as BaseBoundExpression : undefined,
-            node.statementsList.map(statement => this.rewrite(statement) as BaseBoundStatement),
+            this.rewrite(node.block) as BoundStatementBlock,
             node.syntax);
     }
 
@@ -843,5 +864,74 @@ export class BoundNodeRewriter {
             this.rewrite(node.expression) as BaseBoundExpression,
             node.hasErrors,
             node.syntax);
+    }
+}
+
+export class SyntheticBoundNodeFactory {
+    public constructor(
+        private readonly syntax: BaseSyntaxNode) {
+    }
+
+    public block(...statements: BaseBoundStatement[]): BoundStatementBlock {
+        return new BoundStatementBlock(statements, this.syntax);
+    }
+
+    public if(condition: BaseBoundExpression, block: BoundStatementBlock): BoundIfStatement {
+        const ifPart = new BoundIfHeaderStatement(condition, block, this.syntax);
+        return new BoundIfStatement(ifPart, [], undefined, this.syntax);
+    }
+
+    public callStatement(libraryName: string, methodName: string, ...argumentsList: BaseBoundExpression[]): BoundLibraryMethodInvocationStatement {
+        return new BoundLibraryMethodInvocationStatement(libraryName, methodName, argumentsList, this.syntax);
+    }
+
+    public assignVariable(variableName: string, value: BaseBoundExpression): BoundVariableAssignmentStatement {
+        return new BoundVariableAssignmentStatement(variableName, value, this.syntax);
+    }
+
+    public notEqual(left: BaseBoundExpression, right: BaseBoundExpression): BoundNotEqualExpression {
+        return new BoundNotEqualExpression(left, right, false, this.syntax);
+    }
+
+    public lessThan(left: BaseBoundExpression, right: BaseBoundExpression): BoundLessThanExpression {
+        return new BoundLessThanExpression(left, right, false, this.syntax);
+    }
+
+    public greaterThan(left: BaseBoundExpression, right: BaseBoundExpression): BoundGreaterThanExpression {
+        return new BoundGreaterThanExpression(left, right, false, this.syntax);
+    }
+
+    public add(left: BaseBoundExpression, right: BaseBoundExpression): BoundAdditionExpression {
+        return new BoundAdditionExpression(left, right, false, this.syntax);
+    }
+
+    public subtract(left: BaseBoundExpression, right: BaseBoundExpression): BoundSubtractionExpression {
+        return new BoundSubtractionExpression(left, right, false, this.syntax);
+    }
+
+    public multiply(left: BaseBoundExpression, right: BaseBoundExpression): BoundMultiplicationExpression {
+        return new BoundMultiplicationExpression(left, right, false, this.syntax);
+    }
+
+    public divide(left: BaseBoundExpression, right: BaseBoundExpression): BoundDivisionExpression {
+        return new BoundDivisionExpression(left, right, false, this.syntax);
+    }
+
+    public callExpr(libraryName: string, methodName: string, ...argumentsList: BaseBoundExpression[]): BoundLibraryMethodInvocationExpression {
+        const hasValue = RuntimeLibraries.Metadata[libraryName].methods[methodName].returnsValue;
+        return new BoundLibraryMethodInvocationExpression(libraryName, methodName, argumentsList, hasValue, false, this.syntax);
+    }
+
+    public property(libraryName: string, propertyName: string): BoundLibraryPropertyExpression {
+        const hasValue = RuntimeLibraries.Metadata[libraryName].properties[propertyName].hasGetter;
+        return new BoundLibraryPropertyExpression(libraryName, propertyName, hasValue, false, this.syntax);
+    }
+
+    public variable(name: string): BoundVariableExpression {
+        return new BoundVariableExpression("<auto>_" + name, false, this.syntax);
+    }
+
+    public number(value: number): BoundNumberLiteralExpression {
+        return new BoundNumberLiteralExpression(value, false, this.syntax);
     }
 }

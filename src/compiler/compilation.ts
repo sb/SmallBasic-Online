@@ -7,14 +7,14 @@ import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/tokens";
 import { StatementsParser } from "./syntax/statements-parser";
 import { BaseSyntaxNode, ParseTreeSyntax, SyntaxKind } from "./syntax/syntax-nodes";
-import { BaseBoundStatement } from "./binding/bound-nodes";
+import { BoundStatementBlock } from "./binding/bound-nodes";
 import { CompilerPosition } from "./syntax/ranges";
 import { ProgramKind } from "./runtime/libraries-metadata";
 
 export class Compilation {
     public readonly tokens: ReadonlyArray<Token>;
     public readonly parseTree: ParseTreeSyntax;
-    public readonly boundSubModules: { [name: string]: ReadonlyArray<BaseBoundStatement> };
+    public readonly boundSubModules: { [name: string]: BoundStatementBlock };
     public readonly diagnostics: Diagnostic[] = [];
     public readonly programKind: ProgramKind;
 

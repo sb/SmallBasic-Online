@@ -1,7 +1,7 @@
 import { StatementBinder } from "./statement-binder";
 import { Diagnostic, ErrorCode } from "../utils/diagnostics";
-import { BaseSyntaxNode, ParseTreeSyntax } from "../syntax/syntax-nodes";
-import { BaseBoundStatement } from "./bound-nodes";
+import { ParseTreeSyntax, StatementBlockSyntax } from "../syntax/syntax-nodes";
+import { BoundStatementBlock } from "./bound-nodes";
 import { ProgramKind } from "../runtime/libraries-metadata";
 
 export class ModulesBinder {
@@ -9,13 +9,13 @@ export class ModulesBinder {
 
     private _programKind: ProgramKind;
     private _definedSubModules: { [name: string]: boolean } = {};
-    private _boundModules: { [name: string]: ReadonlyArray<BaseBoundStatement> } = {};
+    private _boundModules: { [name: string]: BoundStatementBlock } = {};
 
     public get programKind(): ProgramKind {
         return this._programKind;
     }
 
-    public get boundModules(): { readonly [name: string]: ReadonlyArray<BaseBoundStatement> } {
+    public get boundModules(): { readonly [name: string]: BoundStatementBlock } {
         return this._boundModules;
     }
 
@@ -46,7 +46,7 @@ export class ModulesBinder {
         });
     }
 
-    private bindModule(statements: ReadonlyArray<BaseSyntaxNode>): ReadonlyArray<BaseBoundStatement> {
+    private bindModule(statements: StatementBlockSyntax): BoundStatementBlock {
         const binder = new StatementBinder(statements, this._programKind, this._definedSubModules, this._diagnostics);
         this._programKind = binder.programKind;
         return binder.result;

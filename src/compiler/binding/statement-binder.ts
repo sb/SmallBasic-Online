@@ -1,22 +1,22 @@
 import { RuntimeLibraries } from "../runtime/libraries";
 import { ExpressionBinder } from "./expression-binder";
 import { ErrorCode, Diagnostic } from "../utils/diagnostics";
-import { BaseBoundStatement, BoundArrayAccessExpression, BaseBoundExpression, BoundKind, BoundEqualExpression, BoundLibraryMethodInvocationExpression, BoundLibraryPropertyExpression, BoundSubModuleInvocationExpression, BoundVariableExpression, BoundForStatement, BoundIfStatement, BoundWhileStatement, BoundLabelStatement, BoundGoToStatement, BoundInvalidExpressionStatement, BoundVariableAssignmentStatement, BoundArrayAssignmentStatement, BoundPropertyAssignmentStatement, BoundLibraryMethodInvocationStatement, BoundSubModuleInvocationStatement, BoundIfHeaderStatement } from "./bound-nodes";
-import { GoToCommandSyntax, BaseSyntaxNode, SyntaxKind, ForStatementSyntax, IfStatementSyntax, WhileStatementSyntax, LabelCommandSyntax, ExpressionCommandSyntax, BaseStatementSyntax } from "../syntax/syntax-nodes";
+import { BaseBoundStatement, BoundArrayAccessExpression, BaseBoundExpression, BoundKind, BoundEqualExpression, BoundLibraryMethodInvocationExpression, BoundLibraryPropertyExpression, BoundSubModuleInvocationExpression, BoundVariableExpression, BoundForStatement, BoundIfStatement, BoundWhileStatement, BoundLabelStatement, BoundGoToStatement, BoundInvalidExpressionStatement, BoundVariableAssignmentStatement, BoundArrayAssignmentStatement, BoundPropertyAssignmentStatement, BoundLibraryMethodInvocationStatement, BoundSubModuleInvocationStatement, BoundIfHeaderStatement, BoundStatementBlock } from "./bound-nodes";
+import { GoToCommandSyntax, BaseSyntaxNode, SyntaxKind, ForStatementSyntax, IfStatementSyntax, WhileStatementSyntax, LabelCommandSyntax, ExpressionCommandSyntax, BaseStatementSyntax, StatementBlockSyntax } from "../syntax/syntax-nodes";
 import { ProgramKind } from "../runtime/libraries-metadata";
 
 export class StatementBinder {
     private _definedLabels: { [name: string]: boolean } = {};
     private _goToStatements: GoToCommandSyntax[] = [];
 
-    public readonly result: ReadonlyArray<BaseBoundStatement>;
+    public readonly result: BoundStatementBlock;
 
     public constructor(
-        statements: ReadonlyArray<BaseSyntaxNode>,
+        statements: StatementBlockSyntax,
         public programKind: ProgramKind,
         private _definedSubModules: { readonly [name: string]: boolean },
         private readonly _diagnostics: Diagnostic[]) {
-        this.result = this.bindStatementsList(statements);
+        this.result = this.bindStatementsBlock(statements);
 
         this._goToStatements.forEach(statement => {
             const identifier = statement.labelToken;
@@ -26,14 +26,16 @@ export class StatementBinder {
         });
     }
 
-    private bindStatementsList(list: ReadonlyArray<BaseSyntaxNode>): ReadonlyArray<BaseBoundStatement> {
-        const boundList: BaseBoundStatement[] = [];
-        list.forEach(statement => {
+    private bindStatementsBlock(block: StatementBlockSyntax): BoundStatementBlock {
+        const result: BaseBoundStatement[] = [];
+
+        block.statements.forEach(statement => {
             if (statement.kind !== SyntaxKind.CommentCommand) {
-                boundList.push(this.bindStatement(statement));
+                result.push(this.bindStatement(statement));
             }
         });
-        return boundList;
+
+        return new BoundStatementBlock(result, block);
     }
 
     private bindStatement(syntax: BaseStatementSyntax): BaseBoundStatement {
@@ -59,7 +61,7 @@ export class StatementBinder {
             stepExpression = this.bindExpression(syntax.forCommand.stepClauseOpt.expression, true);
         }
 
-        const statementsList = this.bindStatementsList(syntax.statementsList);
+        const statementsList = this.bindStatementsBlock(syntax.statementsList);
 
         return new BoundForStatement(identifier, fromExpression, toExpression, stepExpression, statementsList, syntax);
     }
@@ -67,19 +69,19 @@ export class StatementBinder {
     private bindIfStatement(syntax: IfStatementSyntax): BoundIfStatement {
         const ifPart = new BoundIfHeaderStatement(
             this.bindExpression(syntax.ifPart.headerCommand.expression, true),
-            this.bindStatementsList(syntax.ifPart.statementsList),
+            this.bindStatementsBlock(syntax.ifPart.statementsList),
             syntax.ifPart);
 
         const elseIfParts = syntax.elseIfParts.map(elseIfPart => {
             return new BoundIfHeaderStatement(
                 this.bindExpression(elseIfPart.headerCommand.expression, true),
-                this.bindStatementsList(elseIfPart.statementsList),
+                this.bindStatementsBlock(elseIfPart.statementsList),
                 elseIfPart);
         });
 
-        let elsePart: ReadonlyArray<BaseBoundStatement> | undefined;
+        let elsePart: BoundStatementBlock | undefined;
         if (syntax.elsePartOpt) {
-            elsePart = this.bindStatementsList(syntax.elsePartOpt.statementsList);
+            elsePart = this.bindStatementsBlock(syntax.elsePartOpt.statementsList);
         }
 
         return new BoundIfStatement(ifPart, elseIfParts, elsePart, syntax);
@@ -87,7 +89,7 @@ export class StatementBinder {
 
     private bindWhileStatement(syntax: WhileStatementSyntax): BoundWhileStatement {
         const condition = this.bindExpression(syntax.whileCommand.expression, true);
-        const statementsList = this.bindStatementsList(syntax.statementsList);
+        const statementsList = this.bindStatementsBlock(syntax.statementsList);
 
         return new BoundWhileStatement(condition, statementsList, syntax);
     }

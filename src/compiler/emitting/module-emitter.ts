@@ -1,5 +1,5 @@
 import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditionalJumpInstruction, StoreVariableInstruction, PushNumberInstruction, LessThanInstruction, LoadVariableInstruction, AddInstruction, MethodInvocationInstruction, InvokeSubModuleInstruction, StoreArrayElementInstruction, StorePropertyInstruction, NegateInstruction, GreaterThanInstruction, LessThanOrEqualInstruction, GreaterThanOrEqualInstruction, PushStringInstruction, EqualInstruction, SubtractInstruction, MultiplyInstruction, DivideInstruction, LoadPropertyInstruction, LoadArrayElementInstruction } from "./instructions";
-import { BaseBoundStatement, BoundIfStatement, BoundWhileStatement, BoundForStatement, BoundLabelStatement, BoundVariableAssignmentStatement, BoundPropertyAssignmentStatement, BoundArrayAssignmentStatement, BoundGoToStatement, BaseBoundExpression, BoundKind, BoundOrExpression, BoundAndExpression, BoundNotEqualExpression, BoundEqualExpression, BoundLessThanExpression, BoundParenthesisExpression, BoundNumberLiteralExpression, BoundStringLiteralExpression, BoundVariableExpression, BoundLibraryMethodInvocationExpression, BoundLibraryPropertyExpression, BoundArrayAccessExpression, BoundDivisionExpression, BoundMultiplicationExpression, BoundSubtractionExpression, BoundAdditionExpression, BoundNegationExpression, BoundSubModuleInvocationStatement, BoundLibraryMethodInvocationStatement } from "../binding/bound-nodes";
+import { BaseBoundStatement, BoundIfStatement, BoundWhileStatement, BoundForStatement, BoundLabelStatement, BoundVariableAssignmentStatement, BoundPropertyAssignmentStatement, BoundArrayAssignmentStatement, BoundGoToStatement, BaseBoundExpression, BoundKind, BoundOrExpression, BoundAndExpression, BoundNotEqualExpression, BoundEqualExpression, BoundLessThanExpression, BoundParenthesisExpression, BoundNumberLiteralExpression, BoundStringLiteralExpression, BoundVariableExpression, BoundLibraryMethodInvocationExpression, BoundLibraryPropertyExpression, BoundArrayAccessExpression, BoundDivisionExpression, BoundMultiplicationExpression, BoundSubtractionExpression, BoundAdditionExpression, BoundNegationExpression, BoundSubModuleInvocationStatement, BoundLibraryMethodInvocationStatement, BoundStatementBlock } from "../binding/bound-nodes";
 import { Constants } from "../runtime/values/base-value";
 import { TempLabelsRemover } from "./passes/temp-labels-remover";
 import { LibraryCallsRewriter } from "./passes/library-calls-rewriter";
@@ -12,15 +12,16 @@ export class ModuleEmitter {
         return this._instructions;
     }
 
-    public constructor(statements: ReadonlyArray<BaseBoundStatement>) {
-        statements.forEach(statement => this.emitStatement(statement));
+    public constructor(block: BoundStatementBlock) {
+        const rewritten = new LibraryCallsRewriter().rewrite(block);
+        this.emitStatement(rewritten);
 
-        LibraryCallsRewriter.rewrite(this._instructions);
         TempLabelsRemover.remove(this._instructions);
     }
 
     private emitStatement(statement: BaseBoundStatement): void {
         switch (statement.kind) {
+            case BoundKind.StatementBlock: this.emitStatementBlock(statement as BoundStatementBlock); break;
             case BoundKind.IfStatement: this.emitIfStatement(statement as BoundIfStatement); break;
             case BoundKind.WhileStatement: this.emitWhileStatement(statement as BoundWhileStatement); break;
             case BoundKind.ForStatement: this.emitForStatement(statement as BoundForStatement); break;
@@ -35,27 +36,33 @@ export class ModuleEmitter {
         }
     }
 
+    private emitStatementBlock(statement: BoundStatementBlock): void {
+        statement.statements.forEach(child => {
+            this.emitStatement(child);
+        });
+    }
+
     private emitIfStatement(statement: BoundIfStatement): void {
         const endOfBlockLabel = this.generateJumpLabel();
 
-        this.emitIfPart(statement.ifPart.condition, statement.ifPart.statementsList, endOfBlockLabel);
+        this.emitIfHeader(statement.ifPart.condition, statement.ifPart.block, endOfBlockLabel);
 
-        statement.elseIfParts.forEach(part => this.emitIfPart(part.condition, part.statementsList, endOfBlockLabel));
+        statement.elseIfParts.forEach(part => this.emitIfHeader(part.condition, part.block, endOfBlockLabel));
 
         if (statement.elsePart) {
-            statement.elsePart.forEach(statement => this.emitStatement(statement));
+            this.emitStatement(statement.elsePart);
         }
 
         this._instructions.push(new TempLabelInstruction(endOfBlockLabel, statement.syntax.range));
     }
 
-    private emitIfPart(condition: BaseBoundExpression, statements: ReadonlyArray<BaseBoundStatement>, endOfBlockLabel: string): void {
+    private emitIfHeader(condition: BaseBoundExpression, block: BoundStatementBlock, endOfBlockLabel: string): void {
         const endOfPartLabel = this.generateJumpLabel();
 
         this.emitExpression(condition);
         this._instructions.push(new TempConditionalJumpInstruction(undefined, endOfPartLabel, condition.syntax.range));
 
-        statements.forEach(statement => this.emitStatement(statement));
+        block.statements.forEach(statement => this.emitStatement(statement));
 
         const endOfPartRange = this._instructions[this._instructions.length - 1].sourceRange;
         this._instructions.push(new TempJumpInstruction(endOfBlockLabel, endOfPartRange));
@@ -70,7 +77,7 @@ export class ModuleEmitter {
         this.emitExpression(statement.condition);
         this._instructions.push(new TempConditionalJumpInstruction(undefined, endOfLoopLabel, statement.condition.syntax.range));
 
-        statement.statementsList.forEach(statement => this.emitStatement(statement));
+        this.emitStatement(statement.block);
 
         const endOfLoopRange = this._instructions[this._instructions.length - 1].sourceRange;
         this._instructions.push(new TempJumpInstruction(startOfLoopLabel, endOfLoopRange));
@@ -110,7 +117,7 @@ export class ModuleEmitter {
 
         this._instructions.push(new TempLabelInstruction(afterCheckLabel, statement.toExpression.syntax.range));
 
-        statement.statementsList.forEach(statement => this.emitStatement(statement));
+        this.emitStatement(statement.block);
 
         this._instructions.push(new LoadVariableInstruction(statement.identifier, statement.syntax.range));
 
