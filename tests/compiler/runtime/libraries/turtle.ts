@@ -129,9 +129,10 @@ angle_after = Turtle.Angle`);
 
     it("can get and set position", () => {
         const compilation = new Compilation(`
+Turtle.Speed = 10
 x_before = Turtle.X
 y_before = Turtle.Y
-Turtle.MoveTo(50, 50)
+Turtle.MoveTo(50, 100)
 x_after = Turtle.X
 y_after = Turtle.Y`);
 
@@ -143,6 +144,6 @@ y_after = Turtle.Y`);
         expect(engine.memory.values["x_before"].toDebuggerString()).toBe("250");
         expect(engine.memory.values["y_before"].toDebuggerString()).toBe("250");
         expect(engine.memory.values["x_after"].toDebuggerString()).toBe("50");
-        expect(engine.memory.values["y_after"].toDebuggerString()).toBe("50");
+        expect(engine.memory.values["y_after"].toDebuggerString()).toBe("100");
     });
 });

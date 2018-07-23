@@ -6,6 +6,7 @@ import { EditorUtils } from "../../../editor-utils";
 import { CompilerRange } from "../../../../compiler/syntax/ranges";
 import { CompletionService } from "../../../../compiler/services/completion-service";
 import { HoverService } from "../../../../compiler/services/hover-service";
+import { Compilation } from "../../../../compiler/compilation";
 
 interface CustomEditorProps {
     readOnly: boolean;
@@ -93,7 +94,7 @@ class EditorCompletionService implements monaco.languages.CompletionItemProvider
     ];
 
     public provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.CompletionItem[] {
-        return CompletionService.provideCompletion(model.getValue(), EditorUtils.editorPositionToCompilerPosition(position)).map(item => {
+        return CompletionService.provideCompletion(new Compilation(model.getValue()), EditorUtils.editorPositionToCompilerPosition(position)).map(item => {
             let kind: monaco.languages.CompletionItemKind;
             switch (item.kind) {
                 case CompletionService.ResultKind.Class: kind = monaco.languages.CompletionItemKind.Class; break;
@@ -114,7 +115,7 @@ class EditorCompletionService implements monaco.languages.CompletionItemProvider
 
 class EditorHoverService implements monaco.languages.HoverProvider {
     public provideHover(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.Hover {
-        const result = HoverService.provideHover(model.getValue(), EditorUtils.editorPositionToCompilerPosition(position));
+        const result = HoverService.provideHover(new Compilation(model.getValue()), EditorUtils.editorPositionToCompilerPosition(position));
         if (result) {
             return {
                 contents: result.text,

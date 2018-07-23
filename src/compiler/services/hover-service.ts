@@ -9,9 +9,7 @@ export module HoverService {
         range: CompilerRange;
     }
 
-    export function provideHover(text: string, position: CompilerPosition): Result | undefined {
-        const compilation = new Compilation(text);
-
+    export function provideHover(compilation: Compilation, position: CompilerPosition): Result | undefined {
         for (let i = 0; i < compilation.diagnostics.length; i++) {
             const diagnostic = compilation.diagnostics[i];
 
@@ -25,22 +23,36 @@ export module HoverService {
 
         const node = compilation.getSyntaxNode(position, SyntaxKind.ObjectAccessExpression);
         if (node) {
-            return new HoverVisitor().visit(node);
+            const visitor = new HoverVisitor();
+            visitor.visit(node);
+            return visitor.result;
         }
 
         return undefined;
     }
 
-    class HoverVisitor extends SyntaxNodeVisitor<Result> {
-        public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): Result | undefined {
+    class HoverVisitor extends SyntaxNodeVisitor {
+        private _firstResult: Result | undefined;
+
+        public get result(): Result | undefined {
+            return this._firstResult;
+        }
+
+        private setResult(result: Result): void {
+            if (!this._firstResult) {
+                this._firstResult = result;
+            }
+        }
+
+        public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): void {
             if (node.baseExpression.kind !== SyntaxKind.IdentifierExpression) {
-                return undefined;
+                return;
             }
 
             const libraryName = (node.baseExpression as IdentifierExpressionSyntax).identifierToken.token.text;
             const library = RuntimeLibraries.Metadata[libraryName];
             if (!library) {
-                return undefined;
+                return;
             }
 
             let description: string;
@@ -50,16 +62,16 @@ export module HoverService {
             } else if (library.properties[memberName]) {
                 description = library.properties[memberName].description;
             } else {
-                return undefined;
+                return;
             }
 
-            return {
+            this.setResult({
                 range: node.range,
                 text: [
                     `${libraryName}.${memberName}`,
                     description
                 ]
-            };
+            });
         }
     }
 }
