@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="https://cdn.rawgit.com/konvajs/konva/1.3.0/konva.js"></script>
+<script src="lib/text.js"></script>
+
+<div id="container"></div>
+
+<script type="text/javascript">
+var width = window.innerWidth;
+var height = window.innerHeight;
+
+var tween = null;
+
+var stage = new Konva.Stage({
+  container: 'container',
+  width: width,
+  height: height
+});
+
+var layer = new Konva.Layer();
+var dragLayer = new Konva.Layer();
+
+// Call your function to test it out
+addText(layer, stage, "This is a Text")
+
+stage.add(layer, dragLayer);
+</script>
+</body>
+</html>
