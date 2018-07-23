@@ -2,7 +2,6 @@ import { BaseInstruction, TempLabelInstruction, TempJumpInstruction, TempConditi
 import { BaseBoundStatement, BoundIfStatement, BoundWhileStatement, BoundForStatement, BoundLabelStatement, BoundVariableAssignmentStatement, BoundPropertyAssignmentStatement, BoundArrayAssignmentStatement, BoundGoToStatement, BaseBoundExpression, BoundKind, BoundOrExpression, BoundAndExpression, BoundNotEqualExpression, BoundEqualExpression, BoundLessThanExpression, BoundParenthesisExpression, BoundNumberLiteralExpression, BoundStringLiteralExpression, BoundVariableExpression, BoundLibraryMethodInvocationExpression, BoundLibraryPropertyExpression, BoundArrayAccessExpression, BoundDivisionExpression, BoundMultiplicationExpression, BoundSubtractionExpression, BoundAdditionExpression, BoundNegationExpression, BoundSubModuleInvocationStatement, BoundLibraryMethodInvocationStatement, BoundStatementBlock } from "../binding/bound-nodes";
 import { Constants } from "../runtime/values/base-value";
 import { TempLabelsRemover } from "./passes/temp-labels-remover";
-import { LibraryCallsRewriter } from "./passes/library-calls-rewriter";
 
 export class ModuleEmitter {
     private _jumpLabelCounter: number = 1;
@@ -13,8 +12,7 @@ export class ModuleEmitter {
     }
 
     public constructor(block: BoundStatementBlock) {
-        const rewritten = new LibraryCallsRewriter().rewrite(block);
-        this.emitStatement(rewritten);
+        this.emitStatement(block);
 
         TempLabelsRemover.remove(this._instructions);
     }

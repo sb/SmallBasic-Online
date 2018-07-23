@@ -8,14 +8,19 @@ function testTurtleLines(callback: DoneFn, text: string, expectedOutput: string)
     const engine = new ExecutionEngine(compilation);
 
     let actualOutput = "";
-    const token = engine.libraries.Turtle.drawLine.subscribe(line => {
-        actualOutput += `\nx1: ${line.x1}, y1: ${line.y1}, x2: ${line.x2}, y2: ${line.y2}`;
-    });
+    const tokens = [
+        engine.libraries.Turtle.moveEvent.subscribe(line => {
+            actualOutput += `\nmove: x1: ${line.x1}, y1: ${line.y1}, x2: ${line.x2}, y2: ${line.y2}`;
+        }),
+        engine.libraries.Turtle.turnEvent.subscribe(delta => {
+            actualOutput += "\nturn: " + delta;
+        })
+    ];
 
     engine.execute(ExecutionMode.RunToEnd);
 
     setTimeout(() => {
-        PubSub.unsubscribe(token);
+        tokens.forEach(PubSub.unsubscribe);
 
         expect(engine.state).toBe(ExecutionState.Terminated);
         expect(engine.exception).toBeUndefined();
@@ -54,47 +59,34 @@ Turtle.Show()`);
         expect(engine.exception).toBeUndefined();
     });
 
-    it("does not draw when pen is up", callback => {
-        testTurtleLines(callback, `
-Turtle.Speed = 10
-
-Turtle.Move(10)
-Turtle.Turn(90)
-Turtle.Move(10)
-
-Turtle.PenUp()
-
-Turtle.Move(10)
-Turtle.Turn(90)
-Turtle.Move(10)`, `
-x1: 250, y1: 250, x2: 250, y2: 240
-x1: 250, y1: 240, x2: 260, y2: 240`);
-    });
-
-    it("MoveTo() is lowered correctly", callback => {
+    it("MoveTo() is executed correctly", callback => {
         testTurtleLines(callback, `
 Turtle.Speed = 10
 
 Turtle.MoveTo(100, 100)
 Turtle.MoveTo(10, 10)`, `
-x1: 250, y1: 250, x2: 100, y2: 100
-x1: 100, y1: 100, x2: 10, y2: 10`);
+turn: -45
+move: x1: 250, y1: 250, x2: 100, y2: 100
+turn: -45
+move: x1: 100, y1: 100, x2: 10, y2: 10`);
     });
 
-    it("TurnRight() is lowered correctly", callback => {
+    it("TurnRight() is executed correctly", callback => {
         testTurtleLines(callback, `
 Turtle.Speed = 10
 Turtle.TurnRight()
 Turtle.Move(10)`, `
-x1: 250, y1: 250, x2: 260, y2: 250`);
+turn: 90
+move: x1: 250, y1: 250, x2: 260, y2: 250`);
     });
 
-    it("TurnLeft() is lowered correctly", callback => {
+    it("TurnLeft() is executed correctly", callback => {
         testTurtleLines(callback, `
 Turtle.Speed = 10
 Turtle.TurnLeft()
 Turtle.Move(10)`, `
-x1: 250, y1: 250, x2: 240, y2: 250`);
+turn: -90
+move: x1: 250, y1: 250, x2: 240, y2: 250`);
     });
 
     it("can get and set speed", () => {

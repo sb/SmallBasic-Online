@@ -1,18 +1,8 @@
 import { ValueKind, BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance } from "../libraries";
-import { Animation } from "../../utils/animation";
 import { ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel } from "../../utils/notifications";
-
-interface MoveAnimationData {
-    finalX: number;
-    finalY: number;
-}
-
-interface TurnAnimationData {
-    finalAngle: number;
-}
 
 export interface TurtleLine {
     x1: number;
@@ -31,13 +21,15 @@ export class TurtleLibrary implements LibraryTypeInstance {
     private _isVisible: boolean = true;
     private _isPenDown: boolean = true;
 
-    private _moveAnimation: Animation<MoveAnimationData> = new Animation(this._createMoveAnimation.bind(this), this._updateMoveAnimation.bind(this));
-    private _turnAnimation: Animation<TurnAnimationData> = new Animation(this._createTurnAnimation.bind(this), this._updateTurnAnimation.bind(this));
-
-    public readonly drawLine: PubSubPayloadChannel<TurtleLine> = new PubSubPayloadChannel<TurtleLine>("drawLine");
+    public readonly moveEvent: PubSubPayloadChannel<TurtleLine> = new PubSubPayloadChannel<TurtleLine>("moveEvent");
+    public readonly turnEvent: PubSubPayloadChannel<number> = new PubSubPayloadChannel<number>("turnEvent");
 
     public get isVisible(): boolean {
         return this._isVisible;
+    }
+
+    public get isPenDown(): boolean {
+        return this._isPenDown;
     }
 
     private getSpeed(): BaseValue {
@@ -111,71 +103,93 @@ export class TurtleLibrary implements LibraryTypeInstance {
         return true;
     }
 
-    private _createMoveAnimation(engine: ExecutionEngine): { duration: number; data: MoveAnimationData; } {
-        const distanceArgument = engine.popEvaluationStack().tryConvertToNumber();
-
-        if (distanceArgument.kind !== ValueKind.Number) {
-            return {
-                duration: 0,
-                data: {
-                    finalX: this._positionX,
-                    finalY: this._positionY
-                }
-            };
+    private executeMove(engine: ExecutionEngine): boolean {
+        const distanceArg = engine.popEvaluationStack().tryConvertToNumber();
+        if (distanceArg.kind !== ValueKind.Number) {
+            return false;
         }
 
-        const distance = (distanceArgument as NumberValue).value;
-        const direction = this._angle / 180 * Math.PI;
-        const speed = this._speed;
+        const distance = (distanceArg as NumberValue).value;
+        const turnDelta = this._angle / 180 * Math.PI;
 
-        return {
-            duration: speed === 10 ? 0 : Math.abs(distance * 320 / (speed * speed)),
-            data: {
-                finalX: Math.round(this._positionX + distance * Math.sin(direction)),
-                finalY: Math.round(this._positionY - distance * Math.cos(direction))
-            }
-        };
-    }
+        const newY = this._positionY - distance * Math.cos(turnDelta);
+        const newX = this._positionX + distance * Math.sin(turnDelta);
 
-    private _updateMoveAnimation(percentage: number, data: MoveAnimationData): void {
-        const newX = Math.round(this._positionX + (data.finalX - this._positionX) * percentage);
-        const newY = Math.round(this._positionY + (data.finalY - this._positionY) * percentage);
-
-        if (this._isPenDown) {
-            this.drawLine.publish({
-                x1: this._positionX,
-                y1: this._positionY,
-                x2: newX,
-                y2: newY
-            });
-        }
-
+        this.moveEvent.publish({ x1: this._positionX, y1: this._positionY, x2: newX, y2: newY });
         this._positionX = newX;
         this._positionY = newY;
+
+        return true;
     }
 
-    private _createTurnAnimation(engine: ExecutionEngine): { duration: number; data: TurnAnimationData; } {
-        const angleArgument = engine.popEvaluationStack().tryConvertToNumber();
-        if (angleArgument.kind !== ValueKind.Number) {
-            return {
-                duration: 0,
-                data: {
-                    finalAngle: 0
-                }
-            };
+    private executeMoveTo(engine: ExecutionEngine): boolean {
+        const yArg = engine.popEvaluationStack().tryConvertToNumber();
+        const xArg = engine.popEvaluationStack().tryConvertToNumber();
+
+        if (yArg.kind !== ValueKind.Number || xArg.kind !== ValueKind.Number) {
+            return true;
         }
 
-        const angle = (angleArgument as NumberValue).value;
-        return {
-            duration: this._speed === 10 ? 5 : Math.abs(angle * 200 / (this._speed * this._speed)),
-            data: {
-                finalAngle: this._angle + angle
-            }
-        };
+        const newY = (yArg as NumberValue).value, newX = (xArg as NumberValue).value;
+        const distanceSquared = (newX - this._positionX) * (newX - this._positionX) + (newY - this._positionY) * (newY - this._positionY);
+
+        if (distanceSquared === 0) {
+            return true;
+        }
+
+        const distance = Math.sqrt(distanceSquared);
+        let angle = Math.acos((this._positionY - newY) / distance) * 180 / Math.PI;
+
+        if (newX < this._positionX) {
+            angle = 360 - angle;
+        }
+
+        let turnDelta = angle - (this._angle % 360);
+        if (turnDelta > 180) {
+            turnDelta = turnDelta - 360;
+        }
+
+        const newAngle = this._angle + turnDelta;
+        this.turnEvent.publish(newAngle);
+        this._angle = newAngle;
+
+        this.moveEvent.publish({ x1: this._positionX, y1: this._positionY, x2: newX, y2: newY });
+        this._positionX = newX;
+        this._positionY = newY;
+
+        return true;
     }
 
-    private _updateTurnAnimation(percentage: number, data: TurnAnimationData): void {
-        this._angle = Math.round(this._angle + (data.finalAngle - this._angle) * percentage);
+    private executeTurn(engine: ExecutionEngine): boolean {
+        const angleArg = engine.popEvaluationStack().tryConvertToNumber();
+
+        if (angleArg.kind !== ValueKind.Number) {
+            return true;
+        }
+
+        const turnDelta = (angleArg as NumberValue).value;
+
+        const newAngle = this._angle + turnDelta;
+        this.turnEvent.publish(newAngle);
+        this._angle = newAngle;
+
+        return true;
+    }
+
+    private executeTurnLeft(): boolean {
+        const newAngle = this._angle - 90;
+        this.turnEvent.publish(newAngle);
+        this._angle = newAngle;
+
+        return true;
+    }
+
+    private executeTurnRight(): boolean {
+        const newAngle = this._angle + 90;
+        this.turnEvent.publish(newAngle);
+        this._angle = newAngle;
+
+        return true;
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
@@ -183,11 +197,11 @@ export class TurtleLibrary implements LibraryTypeInstance {
         Hide: { execute: this.executeHide.bind(this) },
         PenDown: { execute: this.executePenDown.bind(this) },
         PenUp: { execute: this.executePenUp.bind(this) },
-        Move: { execute: engine => this._moveAnimation.execute(engine) },
-        Turn: { execute: engine => this._turnAnimation.execute(engine) },
-        MoveTo: { execute: () => { throw new Error("Should be rewritten into Turn() then Move()"); } },
-        TurnLeft: { execute: () => { throw new Error("Should be rewritten into Turn()"); } },
-        TurnRight: { execute: () => { throw new Error("Should be rewritten into Turn()"); } }
+        Move: { execute: this.executeMove.bind(this) },
+        MoveTo: { execute: this.executeMoveTo.bind(this) },
+        Turn: { execute: this.executeTurn.bind(this) },
+        TurnLeft: { execute: this.executeTurnLeft.bind(this) },
+        TurnRight: { execute: this.executeTurnRight.bind(this) }
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
