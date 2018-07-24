@@ -9,7 +9,7 @@ let stage = new Konva.Stage({
 const layer = new Konva.Layer();
 stage.add(layer);
 
-class Triangle {
+export class Triangle {
     public instance: Konva.Shape;
     public left: number = 0;
     public top: number = 0;
@@ -45,23 +45,16 @@ class Triangle {
     }
    
     private addTriangle(x1:number, y1:number, x2:number, y2:number, x3:number, y3:number) : Konva.Shape {
-        let triangle = new Konva.Shape({
-            sceneFunc: function (context: Konva.Context) {
-                context.beginPath();
-                context.moveTo(x1, y1);
-                context.lineTo(x2, y2);
-                context.moveTo(x2, y2);
-                context.lineTo(x3, y3);
-                context.moveTo(x3, y3);
-                context.lineTo(x1, y1);
-                context.quadraticCurveTo(x1, y1, x2, y2);
-                context.closePath();
-            },
-            fill: "slateblue",
-            stroke: "black",
-            strokeWidth: 2
-        });
-        return triangle;
+        let pts = [x1,y1,x2,y2,x3,y3];
+    
+        let poly = new Konva.Line({
+        points: pts,
+        fill: "slateblue",
+        stroke: "black",
+        strokeWidth: 2,
+        closed : true
+    });
+        return poly;
     }
 }
 
