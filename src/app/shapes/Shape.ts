@@ -23,7 +23,7 @@ abstract class Shape {
   // TODO
   }
   
-  public rotate(): void {
-  // TODO
+  public rotate(angle: number): void {
+		shape.rotation(angle);
   }
 }
