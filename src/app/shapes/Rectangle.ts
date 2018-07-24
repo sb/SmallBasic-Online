@@ -3,15 +3,11 @@ import {Shape} from "./Shape";
 
 export class Rectangle extends Shape {
   public instance: Konva.Rect;
-  private width: number;
-  private height: number;
 
   private strokeWidth: number = 2;
 
   public constructor(name: string, width: number, height: number){
     super(name);
-    this.width = width;
-    this.height = height;
     this.instance = this.createKonvaRectangle(width, height);
   }
   
