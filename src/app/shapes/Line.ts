@@ -4,6 +4,7 @@ import { Shape } from "./Shape";
 export class Line extends Shape {
 
   private strokeWidth: number = 2;
+  private static DEFAULT_COLOR: string = "black";
 
   private x1: number;
   private y1: number;
@@ -32,7 +33,7 @@ export class Line extends Shape {
   private createKonvaLine(x1: number, y1: number, x2: number, y2: number): Konva.Line {
     return new Konva.Line({
       points: [ x1, y1, x2, y2 ],
-      stroke: "red",
+      stroke: Line.DEFAULT_COLOR,
       strokeWidth: this.strokeWidth
     });
   }
