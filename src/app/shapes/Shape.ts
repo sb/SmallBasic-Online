@@ -25,14 +25,14 @@ export abstract class Shape {
     }
     
     public remove(): void {
-    // TODO
+        // TODO
     }
     
     public move(): void {
-    // TODO
+        // TODO
     }
     
     public rotate(): void {
-    // TODO
+        // TODO
     }
 }
