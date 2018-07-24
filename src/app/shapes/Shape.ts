@@ -1,7 +1,7 @@
 abstract class Shape {
 	public instance: Konva.Shape;
     public name: string;
-  
+      
     // abstract methods
     abstract getLeft(): number;
     abstract getTop(): number;
