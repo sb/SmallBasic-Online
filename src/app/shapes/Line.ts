@@ -22,11 +22,11 @@ export class Line extends Shape {
   }
   
   public getLeft(): number {
-    return this.instance.x();
+    return Math.min(this.x1, this.x2);
   }
   
   public getTop(): number {
-    return this.instance.y();
+    return Math.min(this.y1, this.y2);
   }
   
   private createKonvaLine(x1: number, y1: number, x2: number, y2: number): Konva.Line {
