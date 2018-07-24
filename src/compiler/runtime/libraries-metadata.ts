@@ -165,6 +165,34 @@ export class LibrariesMetadata {
             // No Events
         });
 
+    public readonly Shapes: TypeMetadata = new TypeMetadata("Shapes", ProgramKind.Shapes,
+        {
+            AddRectangle: new MethodMetadata("Shapes", "AddRectangle", true, ["Width", "Height"]),
+            AddEllipse: new MethodMetadata("Shapes", "AddEllipse", true, ["Width", "Height"]),
+            AddTriangle: new MethodMetadata("Shapes", "AddTriangle", true, ["X1", "Y1", "X2", "Y2", "X3", "Y3"]),
+            AddLine: new MethodMetadata("Shapes", "AddLine", true, ["X1", "Y1", "X2", "Y2"]),
+            AddImage: new MethodMetadata("Shapes", "AddImage", true, ["ImageName"]),
+            AddText: new MethodMetadata("Shapes", "AddText", true, ["Text"]),
+            SetText: new MethodMetadata("Shapes", "SetText", false, ["ShapeName", "Text"]),
+            Remove: new MethodMetadata("Shapes", "Remove", false, ["ShapeName"]),
+            Move: new MethodMetadata("Shapes", "Move", false, ["ShapeName", "X", "Y"]),
+            Rotate: new MethodMetadata("Shapes", "Rotate", false, ["ShapeName", "Angle"]),
+            Zoom: new MethodMetadata("Shapes", "Zoom", false, ["ShapeName", "ScaleX", "ScaleY"]),
+            Animate: new MethodMetadata("Shapes", "Animate", false, ["ShapeName", "X", "Y", "Duration"]),
+            GetLeft: new MethodMetadata("Shapes", "GetLeft", true, ["ShapeName"]),
+            GetTop: new MethodMetadata("Shapes", "GetTop", true, ["ShapeName"]),
+            GetOpacity: new MethodMetadata("Shapes", "GetOpacity", true, ["ShapeName"]),
+            SetOpacity: new MethodMetadata("Shapes", "SetOpacity", false, ["ShapeName", "Level"]),
+            HideShape: new MethodMetadata("Shapes", "HideShape", false, ["ShapeName"]),
+            ShowShape: new MethodMetadata("Shapes", "ShowShape", false, ["ShapeName"])
+        },
+        {
+            // No Properties
+        },
+        {
+            // No Events
+        });
+
     public readonly Stack: TypeMetadata = new TypeMetadata("Stack", ProgramKind.Any,
         {
             PushValue: new MethodMetadata("Stack", "PushValue", false, ["StackName", "Value"]),

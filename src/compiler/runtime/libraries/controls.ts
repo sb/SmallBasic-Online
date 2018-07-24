@@ -162,6 +162,7 @@ export class ControlsLibrary implements LibraryTypeInstance {
         LastTypedTextBox: { getter: this.getLastTypedTextBox.bind(this) }
     };
 
+    // TODO: implement these events
     public readonly events: { readonly [name: string]: LibraryEventInstance } = {
         ButtonClicked: {
             raise: () => { throw new Error("Not Implemented Yet"); },

@@ -11,6 +11,8 @@ import { BoundStatementBlock } from "./binding/bound-nodes";
 import { CompilerPosition } from "./syntax/ranges";
 import { ProgramKind } from "./runtime/libraries-metadata";
 
+// TODO: program kind should be calculated through a visitor, and not during binding. remove the error
+
 export class Compilation {
     public readonly tokens: ReadonlyArray<Token>;
     public readonly parseTree: ParseTreeSyntax;

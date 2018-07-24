@@ -18,6 +18,7 @@ export abstract class BaseValue {
     public abstract toValueString(): string;
     public abstract get kind(): ValueKind;
 
+    // TODO: add another helper that just returns a number and review callers?
     public abstract tryConvertToNumber(): BaseValue;
 
     public abstract isEqualTo(other: BaseValue): boolean;
