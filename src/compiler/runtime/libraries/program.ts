@@ -1,5 +1,5 @@
 import { ExecutionMode, ExecutionState, ExecutionEngine } from "../../execution-engine";
-import { LibraryTypeInstance, LibraryPropertyInstance, LibraryMethodInstance } from "../libraries";
+import { LibraryTypeInstance, LibraryPropertyInstance, LibraryMethodInstance, LibraryEventInstance } from "../libraries";
 
 export class ProgramLibrary implements LibraryTypeInstance {
     private executePause(engine: ExecutionEngine, mode: ExecutionMode): boolean {
@@ -22,6 +22,7 @@ export class ProgramLibrary implements LibraryTypeInstance {
         End: { execute: this.executeEnd.bind(this) }
     };
 
-    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-    };
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {};
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }
