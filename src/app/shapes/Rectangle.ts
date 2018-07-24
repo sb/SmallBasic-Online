@@ -2,6 +2,7 @@ import * as Konva from "konva";
 import {Shape} from "./Shape";
 
 export class Rectangle extends Shape {
+  public instance: Konva.Rect;
   private width: number;
   private height: number;
 

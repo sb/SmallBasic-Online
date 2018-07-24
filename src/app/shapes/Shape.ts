@@ -32,7 +32,7 @@ export abstract class Shape {
         // TODO
     }
     
-    public rotate(angle: number): void {
-        this.instance.rotation(angle);
+    public rotate(): void {
+        // TODO
     }
 }

@@ -18,16 +18,20 @@ export class Ellipse extends Shape{
     return this.instance.y() - this.instance.radius().y();
   }
   
+  //Need to factor strokewidth into the size of the shape to have 
+  //parity with the desktop version. Konva counts the stroke width separately.
+  //Ex: to achieve a total width of 20, radius is (20 - (2*2))/2 = 16/2 = 8 pix.
+  //    Then 8 pix + 2 pix is 10 pix which is half the desired width.
   private createKonvaEllipse(width: number, height: number): Konva.Ellipse {
       const strokeWidth = 2;
     return new Konva.Ellipse({
-        x: (width - (2*strokeWidth) )/ 2 + strokeWidth,
-        y: (height - (2*strokeWidth) ) / 2 + strokeWidth,
+        x: width / 2,
+        y: height / 2,
         radius: {
             x: (width - (2*strokeWidth) ) / 2,
             y: (height - (2*strokeWidth) ) / 2
         },
-        fill: "Slateblue",
+        fill: "slateblue",
         stroke: "black",
         strokeWidth: strokeWidth
     });
