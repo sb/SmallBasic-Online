@@ -1,4 +1,4 @@
-import shape = module('Shape')
+import shape = module('Shape');
 
 const wwidth = window.innerWidth;
 const wheight = window.innerHeight - 25;

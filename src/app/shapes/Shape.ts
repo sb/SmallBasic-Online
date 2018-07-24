@@ -1,5 +1,5 @@
 abstract class Shape {
-	public instance: Konva.Shape;
+  public instance: Konva.Shape;
   public name: string;
   
   // abstract methods
