@@ -1,10 +1,12 @@
-abstract class Shape {
-	public instance: Konva.Shape;
+import * as Konva from "konva";
+
+export abstract class Shape {
+    public instance: Konva.Shape;
     public name: string;
       
     // abstract methods
-    abstract getLeft(): number;
-    abstract getTop(): number;
+    public abstract getLeft(): number;
+    public abstract getTop(): number;
 
     public constructor(name: string){
         this.name = name;
@@ -23,14 +25,14 @@ abstract class Shape {
     }
     
     public remove(): void {
-    // TODO
+        // TODO
     }
     
     public move(): void {
-    // TODO
+        // TODO
     }
     
     public rotate(): void {
-    // TODO
+        // TODO
     }
 }
