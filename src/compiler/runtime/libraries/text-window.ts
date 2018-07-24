@@ -5,7 +5,7 @@ import { NumberValue } from "../values/number-value";
 import { ExecutionState, ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel, PubSubChannel } from "../../utils/notifications";
 
-// TODO: refactor into a plugin, and maybe remove pubsub afterwards
+// TODO: refactor into a plugin?
 
 export enum TextWindowColor {
     Black = 0,

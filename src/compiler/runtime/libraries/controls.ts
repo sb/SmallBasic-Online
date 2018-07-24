@@ -4,6 +4,8 @@ import { ExecutionEngine } from "../../execution-engine";
 import { NumberValue } from "../values/number-value";
 import { StringValue } from "../values/string-value";
 
+// TODO: add tests
+
 interface ControlsLibraryPlugin {
     addButton(caption: string, left: number, top: number): string;
     getButtonCaption(buttonName: string): string;

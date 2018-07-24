@@ -3,6 +3,8 @@ import { NumberValue } from "../values/number-value";
 import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ExecutionEngine } from "../../execution-engine";
 
+// TODO: add tests
+
 export interface TurtleLibraryPlugin {
     getSpeed(): number;
     setSpeed(speed: number): void;

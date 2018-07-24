@@ -35,7 +35,6 @@ export enum ErrorCode {
     UnsupportedDotBaseExpression,
     LibraryMemberNotFound,
     ValueIsNotAssignable,
-    ProgramKindChanged,
 
     // Runtime Errors
     CannotUseAnArrayAsAnIndexToAnotherArray,

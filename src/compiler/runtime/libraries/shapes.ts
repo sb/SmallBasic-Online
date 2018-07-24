@@ -4,6 +4,8 @@ import { ExecutionEngine } from "../../execution-engine";
 import { NumberValue } from "../values/number-value";
 import { StringValue } from "../values/string-value";
 
+// TODO: add tests
+
 interface ShapesLibraryPlugin {
     addRectangle(width: number, height: number): string;
     addEllipse(width: number, height: number): string;
@@ -214,7 +216,7 @@ export class ShapesLibrary implements LibraryTypeInstance {
         return true;
     }
 
-    // TODO: implement missing methods
+    // TODO: implement missing method
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
         AddRectangle: { execute: this.executeAddRectangle.bind(this) },
