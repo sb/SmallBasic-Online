@@ -3,7 +3,7 @@ import { StringValue } from "../values/string-value";
 import { ArrayValue } from "../values/array-value";
 import { NumberValue } from "../values/number-value";
 import { ExecutionEngine } from "../../execution-engine";
-import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 
 export class ArrayLibrary implements LibraryTypeInstance {
     private executeIsArray(engine: ExecutionEngine): boolean {
@@ -79,6 +79,7 @@ export class ArrayLibrary implements LibraryTypeInstance {
         ContainsIndex: { execute: this.executeContainsIndex.bind(this) }
     };
 
-    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-    };
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {};
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

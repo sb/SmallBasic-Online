@@ -1,4 +1,4 @@
-import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { BaseValue, ValueKind } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../execution-engine";
@@ -76,4 +76,6 @@ export class MathLibrary implements LibraryTypeInstance {
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
         Pi: { getter: this.getPi.bind(this) }
     };
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

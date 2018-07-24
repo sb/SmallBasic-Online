@@ -1,10 +1,10 @@
 import { ValueKind, BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
-import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel } from "../../utils/notifications";
 
-export interface TurtleLine {
+export interface TurtleMoveEventData {
     x1: number;
     y1: number;
     x2: number;
@@ -21,7 +21,7 @@ export class TurtleLibrary implements LibraryTypeInstance {
     private _isVisible: boolean = true;
     private _isPenDown: boolean = true;
 
-    public readonly moveEvent: PubSubPayloadChannel<TurtleLine> = new PubSubPayloadChannel<TurtleLine>("moveEvent");
+    public readonly moveEvent: PubSubPayloadChannel<TurtleMoveEventData> = new PubSubPayloadChannel<TurtleMoveEventData>("moveEvent");
     public readonly turnEvent: PubSubPayloadChannel<number> = new PubSubPayloadChannel<number>("turnEvent");
 
     public get isVisible(): boolean {
@@ -210,4 +210,6 @@ export class TurtleLibrary implements LibraryTypeInstance {
         X: { getter: this.getX.bind(this), setter: this.setX.bind(this) },
         Y: { getter: this.getY.bind(this), setter: this.setY.bind(this) }
     };
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

@@ -44,6 +44,21 @@ describe("Compiler.Runtime.LibrariesMetadata", () => {
             });
 
             expect(Object.keys(libraryImplementation.properties).length).toBe(0);
+
+            CompilerUtils.values(library.events).forEach(event => {
+                expect(event.typeName.length).toBeGreaterThan(0);
+                expect(event.eventName.length).toBeGreaterThan(0);
+                expect(event.description.length).toBeGreaterThan(0);
+
+                const eventImplementation = libraryImplementation.events[event.eventName];
+                expect(eventImplementation.setSubModule).toBeDefined();
+                expect(eventImplementation.raise).toBeDefined();
+
+                delete (<any>libraryImplementation.events)[event.eventName];
+            });
+
+            expect(Object.keys(libraryImplementation.events).length).toBe(0);
+
             delete (<any>implementations)[library.typeName];
         });
 

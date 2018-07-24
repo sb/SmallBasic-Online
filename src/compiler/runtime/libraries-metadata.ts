@@ -3,7 +3,8 @@ import { DocumentationResources } from "../../strings/documentation";
 export enum ProgramKind {
     Any,
     TextWindow,
-    Turtle
+    Turtle,
+    Shapes
 }
 
 class MethodMetadata {
@@ -36,12 +37,24 @@ class PropertyMetadata {
     }
 }
 
+class EventMetadata {
+    public constructor(
+        public readonly typeName: string,
+        public readonly eventName: string) {
+    }
+
+    public get description(): string {
+        return DocumentationResources.get(`${this.typeName}_${this.eventName}`);
+    }
+}
+
 class TypeMetadata {
     public constructor(
         public readonly typeName: string,
         public readonly programKind: ProgramKind,
         public readonly methods: { readonly [name: string]: MethodMetadata },
-        public readonly properties: { readonly [name: string]: PropertyMetadata }) {
+        public readonly properties: { readonly [name: string]: PropertyMetadata },
+        public readonly events: { readonly [name: string]: EventMetadata }) {
     }
 
     public get description(): string {
@@ -62,6 +75,9 @@ export class LibrariesMetadata {
         },
         {
             // No Properties
+        },
+        {
+            // No Events
         });
 
     public readonly Clock: TypeMetadata = new TypeMetadata("Clock", ProgramKind.Any,
@@ -70,6 +86,33 @@ export class LibrariesMetadata {
         },
         {
             Time: new PropertyMetadata("Clock", "Time", true, false)
+        },
+        {
+            // No Events
+        });
+
+    public readonly Controls: TypeMetadata = new TypeMetadata("Controls", ProgramKind.Shapes,
+        {
+            AddButton: new MethodMetadata("Controls", "AddButton", true, ["Caption", "Left", "Top"]),
+            GetButtonCaption: new MethodMetadata("Controls", "GetButtonCaption", true, ["ButtonName"]),
+            SetButtonCaption: new MethodMetadata("Controls", "SetButtonCaption", false, ["ButtonName", "Caption"]),
+            AddTextBox: new MethodMetadata("Controls", "AddTextBox", true, ["Left", "Top"]),
+            AddMultiLineTextBox: new MethodMetadata("Controls", "AddMultiLineTextBox", true, ["Left", "Top"]),
+            GetTextBoxText: new MethodMetadata("Controls", "GetTextBoxText", true, ["TextBoxName"]),
+            SetTextBoxText: new MethodMetadata("Controls", "SetTextBoxText", true, ["TextBoxName", "Text"]),
+            Remove: new MethodMetadata("Controls", "Remove", false, ["ControlName"]),
+            Move: new MethodMetadata("Controls", "Move", false, ["Control", "X", "Y"]),
+            SetSize: new MethodMetadata("Controls", "SetSize", false, ["Control", "Width", "Height"]),
+            HideControl: new MethodMetadata("Controls", "HideControl", false, ["ControlName"]),
+            ShowControl: new MethodMetadata("Controls", "ShowControl", false, ["ControlName"])
+        },
+        {
+            LastClickedButton: new PropertyMetadata("Controls", "LastClickedButton", true, false),
+            LastTypedTextBox: new PropertyMetadata("Controls", "LastTypedTextBox", true, false)
+        },
+        {
+            ButtonClicked: new EventMetadata("Controls", "ButtonClicked"),
+            TextTyped: new EventMetadata("Controls", "TextTyped")
         });
 
     public readonly Math: TypeMetadata = new TypeMetadata("Math", ProgramKind.Any,
@@ -105,6 +148,9 @@ export class LibrariesMetadata {
         },
         {
             Pi: new PropertyMetadata("Math", "Pi", true, false)
+        },
+        {
+            // No Events
         });
 
     public readonly Program: TypeMetadata = new TypeMetadata("Program", ProgramKind.Any,
@@ -114,6 +160,9 @@ export class LibrariesMetadata {
         },
         {
             // No Properties
+        },
+        {
+            // No Events
         });
 
     public readonly Stack: TypeMetadata = new TypeMetadata("Stack", ProgramKind.Any,
@@ -124,6 +173,9 @@ export class LibrariesMetadata {
         },
         {
             // No Properties
+        },
+        {
+            // No Events
         });
 
     public readonly TextWindow: TypeMetadata = new TypeMetadata("TextWindow", ProgramKind.TextWindow,
@@ -137,6 +189,9 @@ export class LibrariesMetadata {
         {
             ForegroundColor: new PropertyMetadata("TextWindow", "ForegroundColor", true, true),
             BackgroundColor: new PropertyMetadata("TextWindow", "BackgroundColor", true, true)
+        },
+        {
+            // No Events
         });
 
     public readonly Turtle: TypeMetadata = new TypeMetadata("Turtle", ProgramKind.Turtle,
@@ -160,5 +215,8 @@ export class LibrariesMetadata {
 
             X: new PropertyMetadata("Turtle", "X", true, true),
             Y: new PropertyMetadata("Turtle", "Y", true, true)
+        },
+        {
+            // No Events
         });
 }
