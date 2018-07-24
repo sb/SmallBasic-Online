@@ -19,7 +19,9 @@ import {
     ParseTreeSyntax,
     EndSubCommandSyntax,
     IfHeaderSyntax,
-    BaseStatementSyntax
+    BaseStatementSyntax,
+    BaseCommandSyntax,
+    StatementBlockSyntax
 } from "./syntax-nodes";
 import { CompilerUtils } from "../utils/compiler-utils";
 
@@ -30,10 +32,10 @@ export class StatementsParser {
     private _subModules: SubModuleDeclarationSyntax[] = [];
 
     public get result(): ParseTreeSyntax {
-        return new ParseTreeSyntax(this._mainModule, this._subModules);
+        return new ParseTreeSyntax(new StatementBlockSyntax(this._mainModule), this._subModules);
     }
 
-    public constructor(private readonly _commands: ReadonlyArray<BaseStatementSyntax>, private readonly _diagnostics: Diagnostic[]) {
+    public constructor(private readonly _commands: ReadonlyArray<BaseCommandSyntax>, private readonly _diagnostics: Diagnostic[]) {
         let startModuleCommand: SubCommandSyntax | undefined;
         let currentModuleStatements: BaseStatementSyntax[] = [];
 
@@ -54,7 +56,11 @@ export class StatementsParser {
                 case SyntaxKind.EndSubCommand: {
                     if (startModuleCommand) {
                         const endModuleCommand = this.eat(current.kind) as EndSubCommandSyntax;
-                        this._subModules.push(new SubModuleDeclarationSyntax(startModuleCommand, currentModuleStatements, endModuleCommand));
+
+                        this._subModules.push(new SubModuleDeclarationSyntax(
+                            startModuleCommand,
+                            new StatementBlockSyntax(currentModuleStatements),
+                            endModuleCommand));
 
                         startModuleCommand = undefined;
                         currentModuleStatements = [];
@@ -83,7 +89,7 @@ export class StatementsParser {
 
             this._subModules.push(new SubModuleDeclarationSyntax(
                 startModuleCommand,
-                currentModuleStatements,
+                new StatementBlockSyntax(currentModuleStatements),
                 endModuleCommand as EndSubCommandSyntax));
         } else {
             this._mainModule.push(...currentModuleStatements);
@@ -200,7 +206,7 @@ export class StatementsParser {
         return new WhileStatementSyntax(whileCommand, statements, endWhileCommand);
     }
 
-    private parseStatementsExcept(...kinds: SyntaxKind[]): BaseSyntaxNode[] {
+    private parseStatementsExcept(...kinds: SyntaxKind[]): StatementBlockSyntax {
         const statements: BaseSyntaxNode[] = [];
 
         let next: BaseSyntaxNode | undefined;
@@ -211,7 +217,7 @@ export class StatementsParser {
             }
         }
 
-        return statements;
+        return new StatementBlockSyntax(statements);
     }
 
     private isNext(kind: SyntaxKind): boolean {

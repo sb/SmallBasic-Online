@@ -18,41 +18,46 @@ export module CompletionService {
         description: string;
     }
 
-    export function provideCompletion(text: string, position: CompilerPosition): Result[] {
-        const compilation = new Compilation(text);
-
+    export function provideCompletion(compilation: Compilation, position: CompilerPosition): Result[] {
         const objectAccessExpression = compilation.getSyntaxNode(position, SyntaxKind.ObjectAccessExpression);
         if (objectAccessExpression) {
-            const result = new CompletionVisitor().visit(objectAccessExpression);
-            if (result) {
-                return result;
-            }
+            const visitor = new CompletionVisitor();
+            visitor.visit(objectAccessExpression);
+            return visitor.results;
         }
 
         const identifierExpression = compilation.getSyntaxNode(position, SyntaxKind.IdentifierExpression);
         if (identifierExpression) {
-            const result = new CompletionVisitor().visit(identifierExpression);
-            if (result) {
-                return result;
-            }
+            const visitor = new CompletionVisitor();
+            visitor.visit(identifierExpression);
+            return visitor.results;
         }
 
         return [];
     }
 
-    class CompletionVisitor extends SyntaxNodeVisitor<Result[]> {
-        public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): Result[] | undefined {
+    class CompletionVisitor extends SyntaxNodeVisitor {
+        private _allResults: Result[] = [];
+
+        public get results(): Result[] {
+            return this._allResults;
+        }
+
+        private addResult(result: Result): void {
+            this._allResults.push(result);
+        }
+
+        public visitObjectAccessExpression(node: ObjectAccessExpressionSyntax): void {
             if (node.baseExpression.kind !== SyntaxKind.IdentifierExpression) {
-                return undefined;
+                return;
             }
 
             const libraryName = (node.baseExpression as IdentifierExpressionSyntax).identifierToken.token.text;
             const library = RuntimeLibraries.Metadata[libraryName];
             if (!library) {
-                return undefined;
+                return;
             }
 
-            const results: Result[] = [];
             let memberName = node.identifierToken.token.text;
             if (memberName === CommandsParser.MissingTokenText) {
                 memberName = "";
@@ -60,7 +65,7 @@ export module CompletionService {
 
             CompilerUtils.values(library.methods).forEach(method => {
                 if (CompilerUtils.stringStartsWith(method.methodName, memberName)) {
-                    results.push({
+                    this.addResult({
                         title: method.methodName,
                         description: method.description,
                         kind: ResultKind.Method
@@ -70,27 +75,26 @@ export module CompletionService {
 
             CompilerUtils.values(library.properties).forEach(property => {
                 if (CompilerUtils.stringStartsWith(property.propertyName, memberName)) {
-                    results.push({
+                    this.addResult({
                         title: property.propertyName,
                         description: property.description,
                         kind: ResultKind.Property
                     });
                 }
             });
-
-            return results;
         }
 
-        public visitIdentifierExpression(node: IdentifierExpressionSyntax): Result[] | undefined {
+        public visitIdentifierExpression(node: IdentifierExpressionSyntax): void {
             const libraryName = node.identifierToken.token.text;
-            return CompilerUtils.values(RuntimeLibraries.Metadata).filter(library => {
-                return CompilerUtils.stringStartsWith(library.typeName, libraryName);
-            }).map(library => {
-                return {
-                    title: library.typeName,
-                    description: library.description,
-                    kind: ResultKind.Class
-                };
+
+            CompilerUtils.values(RuntimeLibraries.Metadata).forEach(library => {
+                if (CompilerUtils.stringStartsWith(library.typeName, libraryName)) {
+                    this.addResult({
+                        title: library.typeName,
+                        description: library.description,
+                        kind: ResultKind.Class
+                    });
+                }
             });
         }
     }
