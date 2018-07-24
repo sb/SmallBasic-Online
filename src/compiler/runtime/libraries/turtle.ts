@@ -2,104 +2,99 @@ import { ValueKind, BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ExecutionEngine } from "../../execution-engine";
-import { PubSubPayloadChannel } from "../../utils/notifications";
 
-export interface TurtleMoveEventData {
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
+export interface TurtleLibraryPlugin {
+    getSpeed(): number;
+    setSpeed(speed: number): void;
+    getAngle(): number;
+    setAngle(angle: number): void;
+
+    setX(x: number): void;
+    getX(): number;
+    setY(y: number): void;
+    getY(): number;
+
+    setVisibility(isVisible: boolean): void;
+    setPenStatus(isWriting: boolean): void;
+
+    moveTo(x: number, y: number): void;
+    turn(angle: number): void;
 }
 
 export class TurtleLibrary implements LibraryTypeInstance {
-    private _speed: number = 5;
-    private _angle: number = 0;
+    private _pluginInstance: TurtleLibraryPlugin | undefined;
 
-    private _positionX: number = 250;
-    private _positionY: number = 250;
+    public get plugin(): TurtleLibraryPlugin {
+        if (!this._pluginInstance) {
+            throw new Error("Plugin is not set.");
+        }
 
-    private _isVisible: boolean = true;
-    private _isPenDown: boolean = true;
-
-    public readonly moveEvent: PubSubPayloadChannel<TurtleMoveEventData> = new PubSubPayloadChannel<TurtleMoveEventData>("moveEvent");
-    public readonly turnEvent: PubSubPayloadChannel<number> = new PubSubPayloadChannel<number>("turnEvent");
-
-    public get isVisible(): boolean {
-        return this._isVisible;
+        return this._pluginInstance;
     }
 
-    public get isPenDown(): boolean {
-        return this._isPenDown;
+    public set plugin(plugin: TurtleLibraryPlugin) {
+        this._pluginInstance = plugin;
     }
 
     private getSpeed(): BaseValue {
-        return new NumberValue(this._speed);
+        return new NumberValue(this.plugin.getSpeed());
     }
 
     private setSpeed(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            const newSpeed = (value as NumberValue).value;
+            let newSpeed = Math.round((value as NumberValue).value);
+
             if (newSpeed < 1) {
-                this._speed = 1;
+                newSpeed = 1;
             } else if (newSpeed > 10) {
-                this._speed = 10;
-            } else {
-                this._speed = newSpeed;
+                newSpeed = 10;
             }
+
+            this.plugin.setSpeed(newSpeed);
         }
     }
 
     private getAngle(): BaseValue {
-        return new NumberValue(this._angle);
+        return new NumberValue(this.plugin.getAngle());
     }
 
     private setAngle(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            this._angle = (value as NumberValue).value;
+            this.plugin.setAngle((value as NumberValue).value);
         }
     }
 
     private getX(): BaseValue {
-        return new NumberValue(this._positionX);
+        return new NumberValue(this.plugin.getX());
     }
 
     private setX(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            this._positionX = (value as NumberValue).value;
+            this.plugin.setX((value as NumberValue).value);
         }
     }
 
     private getY(): BaseValue {
-        return new NumberValue(this._positionY);
+        return new NumberValue(this.plugin.getY());
     }
 
     private setY(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            this._positionY = (value as NumberValue).value;
+            this.plugin.setY((value as NumberValue).value);
         }
     }
 
-    private executeShow(): boolean {
-        this._isVisible = true;
+    private executeSetVisibility(isVisible: boolean): boolean {
+        this.plugin.setVisibility(isVisible);
         return true;
     }
 
-    private executeHide(): boolean {
-        this._isVisible = false;
-        return true;
-    }
-
-    private executePenDown(): boolean {
-        this._isPenDown = true;
-        return true;
-    }
-
-    private executePenUp(): boolean {
-        this._isPenDown = false;
+    private executeSetPenStatus(isWriting: boolean): boolean {
+        this.plugin.setPenStatus(isWriting);
         return true;
     }
 
@@ -110,15 +105,12 @@ export class TurtleLibrary implements LibraryTypeInstance {
         }
 
         const distance = (distanceArg as NumberValue).value;
-        const turnDelta = this._angle / 180 * Math.PI;
+        const turnDelta = this.plugin.getAngle() / 180 * Math.PI;
 
-        const newY = this._positionY - distance * Math.cos(turnDelta);
-        const newX = this._positionX + distance * Math.sin(turnDelta);
+        const newY = this.plugin.getY() - distance * Math.cos(turnDelta);
+        const newX = this.plugin.getX() + distance * Math.sin(turnDelta);
 
-        this.moveEvent.publish({ x1: this._positionX, y1: this._positionY, x2: newX, y2: newY });
-        this._positionX = newX;
-        this._positionY = newY;
-
+        this.plugin.moveTo(newX, newY);
         return true;
     }
 
@@ -130,33 +122,28 @@ export class TurtleLibrary implements LibraryTypeInstance {
             return true;
         }
 
-        const newY = (yArg as NumberValue).value, newX = (xArg as NumberValue).value;
-        const distanceSquared = (newX - this._positionX) * (newX - this._positionX) + (newY - this._positionY) * (newY - this._positionY);
+        const newY = (yArg as NumberValue).value;
+        const newX = (xArg as NumberValue).value;
+        const distanceSquared = (newX - this.plugin.getX()) * (newX - this.plugin.getX()) + (newY - this.plugin.getY()) * (newY - this.plugin.getY());
 
         if (distanceSquared === 0) {
             return true;
         }
 
         const distance = Math.sqrt(distanceSquared);
-        let angle = Math.acos((this._positionY - newY) / distance) * 180 / Math.PI;
+        let angle = Math.acos((this.plugin.getY() - newY) / distance) * 180 / Math.PI;
 
-        if (newX < this._positionX) {
+        if (newX < this.plugin.getX()) {
             angle = 360 - angle;
         }
 
-        let turnDelta = angle - (this._angle % 360);
+        let turnDelta = angle - (this.plugin.getAngle() % 360);
         if (turnDelta > 180) {
             turnDelta = turnDelta - 360;
         }
 
-        const newAngle = this._angle + turnDelta;
-        this.turnEvent.publish(newAngle);
-        this._angle = newAngle;
-
-        this.moveEvent.publish({ x1: this._positionX, y1: this._positionY, x2: newX, y2: newY });
-        this._positionX = newX;
-        this._positionY = newY;
-
+        this.plugin.turn(turnDelta);
+        this.plugin.moveTo(newX, newY);
         return true;
     }
 
@@ -168,35 +155,26 @@ export class TurtleLibrary implements LibraryTypeInstance {
         }
 
         const turnDelta = (angleArg as NumberValue).value;
-
-        const newAngle = this._angle + turnDelta;
-        this.turnEvent.publish(newAngle);
-        this._angle = newAngle;
+        this.plugin.turn(turnDelta);
 
         return true;
     }
 
     private executeTurnLeft(): boolean {
-        const newAngle = this._angle - 90;
-        this.turnEvent.publish(newAngle);
-        this._angle = newAngle;
-
+        this.plugin.turn(-90);
         return true;
     }
 
     private executeTurnRight(): boolean {
-        const newAngle = this._angle + 90;
-        this.turnEvent.publish(newAngle);
-        this._angle = newAngle;
-
+        this.plugin.turn(90);
         return true;
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
-        Show: { execute: this.executeShow.bind(this) },
-        Hide: { execute: this.executeHide.bind(this) },
-        PenDown: { execute: this.executePenDown.bind(this) },
-        PenUp: { execute: this.executePenUp.bind(this) },
+        Show: { execute: () => this.executeSetVisibility.bind(true) },
+        Hide: { execute: () => this.executeSetVisibility.bind(false) },
+        PenDown: { execute: () => this.executeSetPenStatus(true) },
+        PenUp: { execute: () => this.executeSetPenStatus(false) },
         Move: { execute: this.executeMove.bind(this) },
         MoveTo: { execute: this.executeMoveTo.bind(this) },
         Turn: { execute: this.executeTurn.bind(this) },
