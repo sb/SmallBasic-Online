@@ -11,3 +11,82 @@
 .debugger-line-highlight {
     background: rgb(255, 255, 148);
 }
+
+.monaco-list > .monaco-scrollable-element {
+    background-color: rgb(224,237,243);
+}
+
+.monaco-editor .suggest-widget > .tree,
+.monaco-editor .suggest-widget > .tree .monaco-list,
+.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+    border-radius: 8px;
+}
+
+.monaco-editor .suggest-widget > .tree {
+    height: 160px !important;
+}
+
+.monaco-list.list_id_1 .monaco-list-row:hover, 
+.monaco-list.list_id_1 .monaco-list-row:focus,
+.monaco-list.list_id_1 .monaco-list-row.focused {
+    background-color: unset !important;
+}
+
+.monaco-list.list_id_1 .monaco-list-row .monaco-highlighted-label{
+    font-size: 16px;
+}
+
+.monaco-list.list_id_1 .monaco-list-row.focused .monaco-highlighted-label{
+    font-weight: bolder;
+    font-size: 18px;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
+    width: 250px;
+    height: 150px;
+    margin-left: 150px;
+    font-size: .7em;
+    line-height: 1.3em;
+    border-radius: 8px;
+    flex: unset;
+    text-align: left;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: fixed;
+    text-overflow: initial;
+    white-space: normal;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .readMore {
+    display: none;
+}
+
+.monaco-editor .suggest-widget.docs-below .details {
+    border-top-width: 0px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 260px;
+    min-height: 158px;
+    display: block;
+}
+
+/* update the style for screen size from 500px to max, if need add style for other screen size we can update below @media*/
+@media screen and (min-width: 905px) {
+    .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
+        top: 170px;
+    }
+}
+
+@media screen and (max-width: 904px) and (min-width: 584px) {
+    .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
+        top: 230px;
+    }
+}
+
+@media screen and (max-width: 583px) and (min-width: 500px) {
+    .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
+        top: 300px;
+    }
+}
