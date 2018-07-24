@@ -25,14 +25,15 @@ export abstract class Shape {
     }
     
     public remove(): void {
-        // TODO
+        this.instance.destroy();
     }
     
-    public move(): void {
-        // TODO
+    public move(x: number, y: number): void {
+        this.instance.x(x);
+        this.instance.x(y);
     }
     
-    public rotate(): void {
-        // TODO
+    public rotate(degrees: number): void {
+        this.instance.rotation(degrees);
     }
 }
