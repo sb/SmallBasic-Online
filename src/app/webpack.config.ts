@@ -11,7 +11,7 @@ export default function (env: any): webpack.Configuration {
         env: env,
         entryPath: {
             "monaco": "@timkendrick/monaco-editor/dist/standalone/index.js",
-            "app": path.resolve(__dirname, "prototype.ts")
+            "app": path.resolve(__dirname, "app.tsx")
         },
         outputRelativePath: "app",
         target: "web"

@@ -1,6 +1,7 @@
-import * as app from "./app";
-import {Observable} from "rxjs";
+import { Observable } from "rxjs";
+import * as angular from "angular";
 
+let appModule = angular.module("myApp", []);
 export class prototypeCtrl {
     public constructor() {
         let addEllipse: any = document.querySelector("#addEllipse");
@@ -9,4 +10,4 @@ export class prototypeCtrl {
         });
     }
 }
-app.appModule.controller("prototypeCtrl", prototypeCtrl);
+appModule.controller("prototypeCtrl", prototypeCtrl);

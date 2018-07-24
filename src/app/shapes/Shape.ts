@@ -1,7 +1,7 @@
 import * as Konva from "konva";
 
 export abstract class Shape {
-    public instance: Konva.Shape;
+    public instance: Konva.Shape = new Konva.Shape({});
     public name: string;
       
     // abstract methods

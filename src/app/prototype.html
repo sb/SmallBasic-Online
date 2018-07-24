@@ -4,17 +4,6 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <title>Page Title</title>
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <script type="text/javascript" src="../../node_modules/angular/angular.min.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/@reactivex/rxjs@5.3.0/dist/global/Rx.js"></script>
-        <script>
-            var app = angular.module('myApp', []);
-            app.controller('prototypeCtrl', function($scope) {
-            var addEllipse = document.querySelector("#addEllipse");
-            Rx.Observable.fromEvent(addEllipse, "click").subscribe(function () {
-                console.log("addEllipse");
-            });
-        });
-        </script>
     </head>
     <body>
         <div ng-app="myApp" ng-controller="prototypeCtrl as ctrl">
