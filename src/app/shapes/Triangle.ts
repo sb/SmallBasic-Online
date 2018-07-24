@@ -1,5 +1,5 @@
 import * as Konva from "konva"; 
-import {Shape} from "./Shape";
+import { Shape } from "./Shape";
 
 export class Triangle extends Shape {
     public instance: Konva.Line;
@@ -21,7 +21,7 @@ export class Triangle extends Shape {
         const triangle = new Konva.Line({
             points: [x1, y1, x2, y2, x3, y3],
             fill: "slateblue",
-            stroke: 'black',
+            stroke: "black",
             strokeWidth: 2,
             closed : true
           });
