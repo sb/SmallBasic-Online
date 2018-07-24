@@ -16,6 +16,11 @@ export class Triangle extends Shape {
     public getTop() : number{
         return Math.min(this.instance.points()[1], this.instance.points()[3], this.instance.points()[5]);
     }
+
+    public move(x: number, y: number): void {
+        this.instance.x(x);
+        this.instance.y(y);
+    }
    
     private addTriangle(x1:number, y1:number, x2:number, y2:number, x3:number, y3:number) : Konva.Line {
         const triangle = new Konva.Line({
