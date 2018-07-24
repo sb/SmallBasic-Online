@@ -6,19 +6,86 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script type="text/javascript" src="../../node_modules/angular/angular.min.js"></script>
         <script type="text/javascript" src="https://unpkg.com/@reactivex/rxjs@5.3.0/dist/global/Rx.js"></script>
+        <script src="https://cdn.rawgit.com/konvajs/konva/2.1.7/konva.min.js"></script>
         <script>
             var app = angular.module('myApp', []);
             app.controller('prototypeCtrl', function($scope) {
-            var addEllipse = document.querySelector("#addEllipse");
-            Rx.Observable.fromEvent(addEllipse, "click").subscribe(function () {
-                console.log("addEllipse");
-            });
-        });
+            var addEllipse = document.querySelector("#addRectangle");
+            var showRectangle = document.querySelector("#showRectangle");
+            var hideRectangle = document.querySelector("#hideRectangle");
+var stage = new Konva.Stage({
+      container: 'container',
+      width: 1000,
+      height: 1000
+    });
+
+    var layer = new Konva.Layer();
+	var strokeWidth = 2;
+    var shapeDict = {};
+
+	function getOpacity(shape){
+    	return shape.opacity();
+    }
+
+    var rectangleCounter = 1;
+	const addRectangle = function (name, width, height){
+      const rect = new Konva.Rect({
+        x: 0,
+        y: 0,
+        width: width - (2 * strokeWidth),
+        height: height - (2 * strokeWidth),
+        fill: 'slateBlue',
+        stroke: 'black',
+        strokeWidth: strokeWidth
+      });
+      shapeDict[name] = rect;
+      layer.add(rect);
+      stage.draw();
+      return rect;
+    }
+    
+    function hideShape(name){
+        const shape = shapeDict[name];
+    	shape.hide();
+        stage.draw();
+    }
+    
+    function showShape(name){
+        const shape = shapeDict[name];
+    	shape.show();
+        stage.draw();
+    }    
+    
+    //Rectangle
+    function getTop(shape){
+    	return shape.y();
+    }
+    //Rectangle
+    function getLeft(shape){
+    	return shape.x();
+    }
+		
+    // add the layer to the stage
+    stage.add(layer);
+
+    Rx.Observable.fromEvent(addEllipse, "click").subscribe(function () {
+        addRectangle("rectangle_name_1", 100, 100);
+    });
+    Rx.Observable.fromEvent(showRectangle, "click").subscribe(function () {
+        showShape("rectangle_name_1");
+    });
+    Rx.Observable.fromEvent(hideRectangle, "click").subscribe(function () {
+        hideShape("rectangle_name_1");
+    });
+    });            
         </script>
     </head>
     <body>
         <div ng-app="myApp" ng-controller="prototypeCtrl as ctrl">
-            <button id="addEllipse">add ellipse</button>
+            <button id="addRectangle">add ellipse</button>
+            <button id="showRectangle">show rectangle</button>
+            <button id="hideRectangle">hide rectangle</button>
         </div>
+        <div id="container"></div>
     </body>
 </html>
