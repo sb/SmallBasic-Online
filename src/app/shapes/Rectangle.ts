@@ -1,18 +1,18 @@
 import * as Konva from "konva";
-import {Shape} from "./Shape";
+import { Shape } from "./Shape";
 
 export class Rectangle extends Shape {
-  private width: number;
-  private height: number;
+    private width: number = 0;
+    private height: number = 0;
 
-  private strokeWidth: number = 2;
+    private strokeWidth: number = 2;
 
-  public constructor(name: string, width: number, height: number){
-    super(name);
-    this.width = width;
-    this.height = height;
-    this.instance = this.createKonvaRectangle(width, height);
-  }
+    public constructor(name: string, width: number, height: number){
+        super(name);
+        this.width = width;
+        this.height = height;
+        this.instance = this.createKonvaRectangle(width, height);
+    }
   
   public getLeft(): number {
     return this.instance.x();
