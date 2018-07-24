@@ -34,25 +34,6 @@ export class GraphicsWindowComponent extends React.Component<GraphicsWindowCompo
     const layer = new Konva.Layer();
     stage.add(layer);
 
-    const strokeWidth = 2;
-    const addRectangle = function (width: number, height: number): Konva.Rect {
-      const rect = new Konva.Rect({
-        x: 0,
-        y: 0,
-        width: width - (2 * strokeWidth),
-        height: height - (2 * strokeWidth),
-        fill: "slateblue",
-        stroke: "black",
-        strokeWidth: strokeWidth
-      });
-
-      layer.add(rect);
-      stage.draw();
-
-      return rect;
-    };
-    addRectangle(100, 100);
-
     this.setState({
       ...this.state,
       stage: stage,
