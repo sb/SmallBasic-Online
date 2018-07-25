@@ -8,6 +8,9 @@ import { AppState } from "../../store";
 import { Dispatch, connect } from "react-redux";
 import { ExecutionMode, ExecutionEngine } from "../../../compiler/execution-engine";
 import { TextWindowComponent } from "../common/text-window/index";
+import { GraphicsWindowComponent } from "../common/graphics-window/index";
+
+import "./style.css";
 
 const StopIcon = require("../../content/buttons/stop.png");
 
@@ -69,7 +72,14 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                         onClick={() => this.props.history.push("/editor")} />
                 ]}
                 masterContainer={
-                    <TextWindowComponent engine={this.state.engine} />
+                    <div className="column-layout">
+                        <div className="column-half">
+                            <TextWindowComponent engine={this.state.engine} />
+                        </div>
+                        <div className="column-half">
+                            <GraphicsWindowComponent engine={this.state.engine} />
+                        </div>
+                    </div>
                 }
             />
         );
