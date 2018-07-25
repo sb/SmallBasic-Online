@@ -22,8 +22,8 @@ export class ShapesComponent implements IShapesLibraryPlugin {
 
     public addRectangle(width: number, height: number): string {
         const name = this.generateName("Rectangle");
-        const rect = new Rectangle(name, width, height);
-        this.shapes[name] = rect;
+        const rectangle = new Rectangle(name, width, height);
+        this.shapes[name] = rectangle;
         return name;
     }
 
@@ -36,8 +36,8 @@ export class ShapesComponent implements IShapesLibraryPlugin {
 
     public addTriangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): string {
         const name = this.generateName("Triangle");
-        const tri = new Triangle(name, x1,y1,x2,y2,x3,y3);
-        this.shapes[name] = tri;
+        const triangle = new Triangle(name, x1,y1,x2,y2,x3,y3);
+        this.shapes[name] = triangle;
         return name;
     }
 
@@ -64,14 +64,14 @@ export class ShapesComponent implements IShapesLibraryPlugin {
     }
 
     public setText(shapeName: string, text: string): void {
-        const shp = this.shapes[shapeName];
-        if (shp !== undefined && shp instanceof TextShape) {
-            shp.setText(text);
+        const shape = this.shapes[shapeName];
+        if (shape !== undefined && shape instanceof TextShape) {
+            shape.setText(text);
         }
     }
 
     public remove(shapeName: string): void {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return;
         }
         this.shapes[shapeName].remove();
@@ -79,21 +79,21 @@ export class ShapesComponent implements IShapesLibraryPlugin {
     }
 
     public move(shapeName: string, x: number, y: number): void {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return;
         }
         this.shapes[shapeName].move(x,y);
     }
 
     public rotate(shapeName: string, angle: number): void {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return;
         }
         this.shapes[shapeName].rotate(angle);
     }
 
     public zoom(shapeName: string, scaleX: number, scaleY: number): void {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return;
         }
         this.shapes[shapeName].zoom(scaleX, scaleY);
@@ -105,28 +105,28 @@ export class ShapesComponent implements IShapesLibraryPlugin {
     }
     
     public getLeft(shapeName: string): number {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return -1;
         }
         return this.shapes[shapeName].getLeft();
     }
     
     public getTop(shapeName: string): number {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return -1;
         }
         return this.shapes[shapeName].getTop();
     }
 
     public getOpacity(shapeName: string): number {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return -1;
         }
         return this.shapes[shapeName].getOpacity() * 100;
     }
 
     public setOpacity(shapeName: string, level: number): void {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return;
         }
         if(level < 0) {
@@ -139,7 +139,7 @@ export class ShapesComponent implements IShapesLibraryPlugin {
     }
 
     public setVisibility(shapeName: string, isVisible: boolean): void {
-        if(this.shapes[shapeName] !== undefined){
+        if(this.shapes[shapeName] === undefined){
             return;
         }
         if(isVisible) {
