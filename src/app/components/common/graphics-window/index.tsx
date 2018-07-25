@@ -37,7 +37,7 @@ export class GraphicsWindowComponent extends React.Component<GraphicsWindowCompo
       layer: layer
     });
 
-    const plugin = new ShapesLibraryPlugin((shape) => layer.add(shape.instance), () => stage.draw());
+    const plugin = new ShapesLibraryPlugin(layer, stage);
     this.props.engine.libraries.Shapes.plugin = plugin;
   }
 

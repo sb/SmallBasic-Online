@@ -1,4 +1,5 @@
 import { IShapesLibraryPlugin } from "../../compiler/runtime/libraries/shapes";
+import * as Konva from "konva";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
 import { Ellipse } from "./Ellipse";
@@ -10,14 +11,14 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
     private nameGenerationCounter: number;
     private shapes: {[name: string] : Shape };
 
-    private addToScreenFunction: (shape: Shape) => void;
-    private updateScreenFunction: () => void;
+    private layer: Konva.Layer;
+    private stage: Konva.Stage;
 
-    public constructor(addToScreenFunction: (shape: Shape) => void, updateScreenFunction: () => void) {
+    public constructor(layer: Konva.Layer, stage: Konva.Stage) {
         this.nameGenerationCounter = 0;
         this.shapes = {};
-        this.addToScreenFunction = addToScreenFunction;
-        this.updateScreenFunction = updateScreenFunction;
+        this.layer = layer;
+        this.stage = stage;
     }
 
     private generateName(shapeType: string): string {
@@ -30,8 +31,8 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         const shape = shapeProvider(name);
         this.shapes[name] = shape;
 
-        this.addToScreenFunction(shape);
-        this.updateScreenFunction();
+        this.layer.add(shape.instance);
+        this.stage.draw();
 
         return name;
     }
@@ -67,7 +68,7 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         const shape = this.shapes[shapeName];
         if (shape !== undefined && shape instanceof TextShape) {
             shape.setText(text);
-            this.updateScreenFunction();
+            this.stage.draw();
         }
     }
 
@@ -78,7 +79,7 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         this.shapes[shapeName].remove();
         delete(this.shapes[shapeName]);
 
-        this.updateScreenFunction();
+        this.stage.draw();
     }
 
     public move(shapeName: string, x: number, y: number): void {
@@ -87,7 +88,7 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         }
         this.shapes[shapeName].move(x,y);
 
-        this.updateScreenFunction();
+        this.stage.draw();
     }
 
     public rotate(shapeName: string, angle: number): void {
@@ -96,7 +97,7 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         }
         this.shapes[shapeName].rotate(angle);
 
-        this.updateScreenFunction();
+        this.stage.draw();
     }
 
     public zoom(shapeName: string, scaleX: number, scaleY: number): void {
@@ -105,12 +106,16 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         }
         this.shapes[shapeName].zoom(scaleX, scaleY);
 
-        this.updateScreenFunction();
+        this.stage.draw();
     }
 
     public animate(shapeName: string, x: number, y: number, duration: number): void {
-        //TODO
-        //this.shapes[shapeName].zoom(x, y, duration);
+        if(this.shapes[shapeName] === undefined) {
+            return;
+        }
+        this.shapes[shapeName].animate(x, y, duration, this.layer);
+
+        this.stage.draw();
     }
     
     public getLeft(shapeName: string): number {
@@ -146,7 +151,7 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         }
         this.shapes[shapeName].setOpacity(level / 100);
 
-        this.updateScreenFunction();
+        this.stage.draw();
     }
 
     public setVisibility(shapeName: string, isVisible: boolean): void {
@@ -161,6 +166,6 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
             this.shapes[shapeName].hideShape();
         }
 
-        this.updateScreenFunction();
+        this.stage.draw();
     }
 }
