@@ -90,20 +90,17 @@ export class TurtleLibrary implements LibraryTypeInstance {
         }
     }
 
-    private executeSetVisibility(isVisible: boolean): boolean {
+    private executeSetVisibility(isVisible: boolean): void {
         this.plugin.setVisibility(isVisible);
-        return true;
     }
 
-    private executeSetPenStatus(isWriting: boolean): boolean {
+    private executeSetPenStatus(isWriting: boolean): void {
         this.plugin.setPenStatus(isWriting);
-        return true;
     }
 
-    private executeMove(engine: ExecutionEngine): boolean {
+    private executeMove(engine: ExecutionEngine): void {
         const distanceArg = engine.popEvaluationStack().tryConvertToNumber();
         if (distanceArg.kind !== ValueKind.Number) {
-            return false;
         }
 
         const distance = (distanceArg as NumberValue).value;
@@ -113,15 +110,14 @@ export class TurtleLibrary implements LibraryTypeInstance {
         const newX = this.plugin.getX() + distance * Math.sin(turnDelta);
 
         this.plugin.moveTo(newX, newY);
-        return true;
     }
 
-    private executeMoveTo(engine: ExecutionEngine): boolean {
+    private executeMoveTo(engine: ExecutionEngine): void {
         const yArg = engine.popEvaluationStack().tryConvertToNumber();
         const xArg = engine.popEvaluationStack().tryConvertToNumber();
 
         if (yArg.kind !== ValueKind.Number || xArg.kind !== ValueKind.Number) {
-            return true;
+            return;
         }
 
         const newY = (yArg as NumberValue).value;
@@ -129,7 +125,7 @@ export class TurtleLibrary implements LibraryTypeInstance {
         const distanceSquared = (newX - this.plugin.getX()) * (newX - this.plugin.getX()) + (newY - this.plugin.getY()) * (newY - this.plugin.getY());
 
         if (distanceSquared === 0) {
-            return true;
+            return;
         }
 
         const distance = Math.sqrt(distanceSquared);
@@ -146,30 +142,25 @@ export class TurtleLibrary implements LibraryTypeInstance {
 
         this.plugin.turn(turnDelta);
         this.plugin.moveTo(newX, newY);
-        return true;
     }
 
-    private executeTurn(engine: ExecutionEngine): boolean {
+    private executeTurn(engine: ExecutionEngine): void {
         const angleArg = engine.popEvaluationStack().tryConvertToNumber();
 
         if (angleArg.kind !== ValueKind.Number) {
-            return true;
+            return;
         }
 
         const turnDelta = (angleArg as NumberValue).value;
         this.plugin.turn(turnDelta);
-
-        return true;
     }
 
-    private executeTurnLeft(): boolean {
+    private executeTurnLeft(): void {
         this.plugin.turn(-90);
-        return true;
     }
 
-    private executeTurnRight(): boolean {
+    private executeTurnRight(): void {
         this.plugin.turn(90);
-        return true;
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {

@@ -39,7 +39,7 @@ export class ControlsLibrary implements LibraryTypeInstance {
         this._pluginInstance = plugin;
     }
 
-    private executeAddButton(engine: ExecutionEngine): boolean {
+    private executeAddButton(engine: ExecutionEngine): void {
         const top = engine.popEvaluationStack().tryConvertToNumber();
         const left = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -50,26 +50,23 @@ export class ControlsLibrary implements LibraryTypeInstance {
         const buttonName = this.plugin.addButton(caption, leftValue, topValue);
 
         engine.pushEvaluationStack(new StringValue(buttonName));
-        return true;
     }
 
-    private executeGetButtonCaption(engine: ExecutionEngine): boolean {
+    private executeGetButtonCaption(engine: ExecutionEngine): void {
         const buttonName = engine.popEvaluationStack().toValueString();
         const caption = this.plugin.getButtonCaption(buttonName);
 
         engine.pushEvaluationStack(new StringValue(caption));
-        return true;
     }
 
-    private executeSetButtonCaption(engine: ExecutionEngine): boolean {
+    private executeSetButtonCaption(engine: ExecutionEngine): void {
         const caption = engine.popEvaluationStack().toValueString();
         const buttonName = engine.popEvaluationStack().toValueString();
 
         this.plugin.setButtonCaption(buttonName, caption);
-        return true;
     }
 
-    private executeAddTextBox(engine: ExecutionEngine, isMultiLine: boolean): boolean {
+    private executeAddTextBox(engine: ExecutionEngine, isMultiLine: boolean): void {
         const top = engine.popEvaluationStack().tryConvertToNumber();
         const left = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -79,33 +76,29 @@ export class ControlsLibrary implements LibraryTypeInstance {
         const textBoxName = this.plugin.addTextBox(leftValue, topValue, isMultiLine);
 
         engine.pushEvaluationStack(new StringValue(textBoxName));
-        return true;
     }
 
-    private executeGetTextBoxText(engine: ExecutionEngine): boolean {
+    private executeGetTextBoxText(engine: ExecutionEngine): void {
         const textBoxName = engine.popEvaluationStack().toValueString();
         const text = this.plugin.getTextBoxText(textBoxName);
 
         engine.pushEvaluationStack(new StringValue(text));
-        return true;
     }
 
-    private executeSetTextBoxText(engine: ExecutionEngine): boolean {
+    private executeSetTextBoxText(engine: ExecutionEngine): void {
         const text = engine.popEvaluationStack().toValueString();
         const textBoxName = engine.popEvaluationStack().toValueString();
 
         this.plugin.setTextBoxText(textBoxName, text);
-        return true;
     }
 
-    private executeRemove(engine: ExecutionEngine): boolean {
+    private executeRemove(engine: ExecutionEngine): void {
         const controlName = engine.popEvaluationStack().toValueString();
 
         this.plugin.remove(controlName);
-        return true;
     }
 
-    private executeMove(engine: ExecutionEngine): boolean {
+    private executeMove(engine: ExecutionEngine): void {
         const yArg = engine.popEvaluationStack().tryConvertToNumber();
         const xArg = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -114,10 +107,9 @@ export class ControlsLibrary implements LibraryTypeInstance {
         const yValue = yArg.kind === ValueKind.Number ? (yArg as NumberValue).value : 0;
 
         this.plugin.move(controlName, xValue, yValue);
-        return true;
     }
 
-    private executeSetSize(engine: ExecutionEngine): boolean {
+    private executeSetSize(engine: ExecutionEngine): void {
         const heightArg = engine.popEvaluationStack().tryConvertToNumber();
         const widthArg = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -126,14 +118,11 @@ export class ControlsLibrary implements LibraryTypeInstance {
         const heightValue = heightArg.kind === ValueKind.Number ? (heightArg as NumberValue).value : 0;
 
         this.plugin.setSize(controlName, widthValue, heightValue);
-        return true;
     }
 
-    private executeSetVisibility(engine: ExecutionEngine, isVisible: boolean): boolean {
+    private executeSetVisibility(engine: ExecutionEngine, isVisible: boolean): void {
         const controlName = engine.popEvaluationStack().toValueString();
-
         this.plugin.setVisibility(controlName, isVisible);
-        return true;
     }
 
     private getLastClickedButton(): BaseValue {

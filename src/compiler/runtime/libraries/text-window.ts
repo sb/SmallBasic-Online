@@ -50,9 +50,7 @@ export class TextWindowLibrary implements LibraryTypeInstance {
         this._pluginInstance = plugin;
     }
 
-    // TODO: if we can get rid of this state, we can remove the return bool from all executioners (instructions and libraries)
-
-    private executeReadMethod(engine: ExecutionEngine, kind: ValueKind): boolean {
+    private executeReadMethod(engine: ExecutionEngine, kind: ValueKind): void {
         const bufferValue = this.plugin.checkInputBuffer();
         if (bufferValue) {
             if (bufferValue.kind !== kind) {
@@ -61,18 +59,15 @@ export class TextWindowLibrary implements LibraryTypeInstance {
 
             engine.pushEvaluationStack(bufferValue);
             engine.state = ExecutionState.Running;
-            return true;
         } else {
             engine.state = ExecutionState.BlockedOnInput;
             this.plugin.inputIsNeeded(kind);
-            return false;
         }
     }
 
-    private executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): boolean {
+    private executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): void {
         const value = engine.popEvaluationStack().toValueString();
         this.plugin.writeText(value, appendNewLine);
-        return true;
     }
 
     private tryParseColorValue(value: BaseValue): TextWindowColor | undefined {
