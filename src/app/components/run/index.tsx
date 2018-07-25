@@ -77,7 +77,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                             <TextWindowComponent engine={this.state.engine} />
                         </div>
                         <div className="column-half">
-                            <GraphicsWindowComponent />
+                            <GraphicsWindowComponent engine={this.state.engine} />
                         </div>
                     </div>
                 }

@@ -29,6 +29,11 @@ export class Line extends Shape {
   public getTop(): number {
     return Math.min(this.y1, this.y2);
   }
+
+  public move(x: number, y: number): void {
+    this.instance.x(x);
+    this.instance.y(y);
+  }
   
   private createKonvaLine(x1: number, y1: number, x2: number, y2: number): Konva.Line {
     return new Konva.Line({
