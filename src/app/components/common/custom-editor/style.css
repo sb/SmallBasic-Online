@@ -13,50 +13,45 @@
 }
 
 /****Below code is override existing style****/
-.monaco-list > .monaco-scrollable-element {
+.chrome .monaco-list > .monaco-scrollable-element {
     background: rgb(224,237,243) url("./images/setupBanner.png") left bottom no-repeat;
-    
-    /* this will show the background image created by Nancy
-    background: rgb(224,237,243) url("./images/bg.png") -240px 0px repeat-y;
-    */
-
 }
 
-.monaco-editor .suggest-widget > .tree,
-.monaco-editor .suggest-widget > .tree .monaco-list,
-.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows,
-.monaco-list > .monaco-scrollable-element {
+.chrome .monaco-editor .suggest-widget > .tree,
+.chrome .monaco-editor .suggest-widget > .tree .monaco-list,
+.chrome .monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows,
+.chrome .monaco-list > .monaco-scrollable-element {
     border-radius: 8px;
 }
 
-.monaco-editor .suggest-widget > .tree,
-.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+.chrome .monaco-editor .suggest-widget > .tree,
+.chrome .monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
     height: 170px !important;
 }
 
-.monaco-list.list_id_1 .monaco-list-row:hover, 
-.monaco-list.list_id_1 .monaco-list-row:focus,
-.monaco-list.list_id_1 .monaco-list-row.focused {
+.chrome .monaco-list.list_id_1 .monaco-list-row:hover, 
+.chrome .monaco-list.list_id_1 .monaco-list-row:focus,
+.chrome .monaco-list.list_id_1 .monaco-list-row.focused {
     background-color: unset !important;
 }
 
-.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+.chrome .monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
     top: unset !important;
 }
 
-.monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+.chrome .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
     position: initial;
 }
 
-.monaco-list.list_id_1 .monaco-list-row .monaco-highlighted-label{
+.chrome .monaco-list.list_id_1 .monaco-list-row .monaco-highlighted-label {
     font-size: 16px;
 }
 
-.monaco-list.list_id_1 .monaco-list-row.focused .monaco-highlighted-label{
+.chrome .monaco-list.list_id_1 .monaco-list-row.focused .monaco-highlighted-label {
     font-weight: bolder;
 }
 
-.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
+.chrome .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
     width: 248px;
     height: 150px;
     margin-left: 150px;
@@ -74,11 +69,11 @@
     top: 5px;
 }
 
-.monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .readMore {
+.chrome .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .readMore {
     display: none;
 }
 
-.monaco-editor .suggest-widget.docs-below .details {
+.chrome .monaco-editor .suggest-widget.docs-below .details {
     border-top-width: 0px;
     position: absolute;
     top: 0;
@@ -88,12 +83,12 @@
     display: block;
 }
 
-.monaco-scrollable-element > .scrollbar,
-.monaco-scrollable-element > .vertical,
-.monaco-scrollable-element > .invisible {
+.chrome .monaco-scrollable-element > .scrollbar,
+.chrome .monaco-scrollable-element > .vertical,
+.chrome .monaco-scrollable-element > .invisible {
     height: 144px !important;
 }
 
-.vs .monaco-scrollable-element > .scrollbar > .slider {
+.chrome .vs .monaco-scrollable-element > .scrollbar > .slider {
     display: none;
 }
