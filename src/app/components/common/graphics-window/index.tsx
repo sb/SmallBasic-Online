@@ -1,10 +1,12 @@
 import * as React from "react";
 import * as Konva from "konva";
+import { ExecutionEngine } from "../../../../compiler/execution-engine";
+import { ShapesLibraryPlugin } from "../../../shapes/ShapesLibraryPlugin";
 
 import "./style.css";
 
 interface GraphicsWindowComponentProps {
-
+  engine: ExecutionEngine;
 }
 
 interface GraphicsWindowComponentState {
@@ -13,19 +15,14 @@ interface GraphicsWindowComponentState {
 }
 
 export class GraphicsWindowComponent extends React.Component<GraphicsWindowComponentProps, GraphicsWindowComponentState> {
-  private isAlreadyMounted: boolean;
-  private tokens: string[] = [];
 
   public constructor(props: GraphicsWindowComponentProps) {
     super(props);
-    this.isAlreadyMounted = false;
 
     this.state = {};
   }
 
   public componentDidMount(): void {
-    this.tokens = [];
-
     const stage = new Konva.Stage({
       container: "graphics-container",
       width: document.getElementById("graphics-container")!.offsetWidth,
@@ -40,12 +37,8 @@ export class GraphicsWindowComponent extends React.Component<GraphicsWindowCompo
       layer: layer
     });
 
-    this.isAlreadyMounted = true;
-  }
-
-  public componentWillUnmount(): void {
-    this.tokens.forEach(PubSub.unsubscribe);
-    this.isAlreadyMounted = false;
+    const plugin = new ShapesLibraryPlugin((shape) => layer.add(shape.instance), () => stage.draw());
+    this.props.engine.libraries.Shapes.plugin = plugin;
   }
 
   public render(): JSX.Element {

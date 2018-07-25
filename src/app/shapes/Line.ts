@@ -19,6 +19,11 @@ export class Line extends Shape {
   public getTop(): number {
     return this.instance.y();
   }
+
+  public move(x: number, y: number): void {
+    this.instance.x(x);
+    this.instance.y(y);
+  }
   
   private createKonvaLine(x1: number, y1: number, x2: number, y2: number): Konva.Line {
     const leftShift = Math.min(x1, x2);
