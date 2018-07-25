@@ -1,43 +1,29 @@
 import "jasmine";
 import { Compilation } from "../../../../src/compiler/compilation";
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../../../src/compiler/execution-engine";
-import { verifyRuntimeResult } from "../../helpers";
+import { verifyRuntimeResult, TextWindowTestBuffer } from "../../helpers";
 
 describe("Compiler.Runtime.Libraries.Program", () => {
     it("pauses when asked", () => {
         const compilation = new Compilation(`
-For i = 1 To 3
-    If i = 2 Then
-        Program.Pause()
-    EndIf
-    TextWindow.WriteLine(i)
-EndFor`);
+TextWindow.WriteLine("before")
+Program.Pause()
+TextWindow.WriteLine("after")`);
 
+        const buffer = new TextWindowTestBuffer([], ["before", "after"]);
         const engine = new ExecutionEngine(compilation);
-
-        engine.execute(ExecutionMode.Debug);
-        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        let value = engine.libraries.TextWindow.readValueFromBuffer();
-        expect(value.appendNewLine).toBe(true);
-        expect(value.value.toValueString()).toBe("1");
-
+        
+        engine.libraries.TextWindow.plugin = buffer;
+        expect(buffer.outputIndex).toBe(0);
+        
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.Paused);
-        
-        engine.execute(ExecutionMode.Debug);
-        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        value = engine.libraries.TextWindow.readValueFromBuffer();
-        expect(value.appendNewLine).toBe(true);
-        expect(value.value.toValueString()).toBe("2");
-        
-        engine.execute(ExecutionMode.Debug);
-        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        value = engine.libraries.TextWindow.readValueFromBuffer();
-        expect(value.appendNewLine).toBe(true);
-        expect(value.value.toValueString()).toBe("3");
+        expect(buffer.outputIndex).toBe(1);
         
         engine.execute(ExecutionMode.Debug);
         expect(engine.state).toBe(ExecutionState.Terminated);
+        expect(buffer.outputIndex).toBe(2);
+
         expect(engine.exception).toBeUndefined();
     });
     

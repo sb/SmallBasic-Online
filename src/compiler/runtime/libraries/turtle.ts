@@ -1,193 +1,178 @@
 import { ValueKind, BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
-import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance } from "../libraries";
-import { Animation } from "../../utils/animation";
+import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ExecutionEngine } from "../../execution-engine";
-import { PubSubPayloadChannel } from "../../utils/notifications";
 
-interface MoveAnimationData {
-    finalX: number;
-    finalY: number;
-}
+// TODO: add tests
 
-interface TurnAnimationData {
-    finalAngle: number;
-}
+export interface ITurtleLibraryPlugin {
+    getSpeed(): number;
+    setSpeed(speed: number): void;
+    getAngle(): number;
+    setAngle(angle: number): void;
 
-export interface TurtleLine {
-    x1: number;
-    y1: number;
-    x2: number;
-    y2: number;
+    setX(x: number): void;
+    getX(): number;
+    setY(y: number): void;
+    getY(): number;
+
+    setVisibility(isVisible: boolean): void;
+    setPenStatus(isWriting: boolean): void;
+
+    moveTo(x: number, y: number): void;
+    turn(angle: number): void;
 }
 
 export class TurtleLibrary implements LibraryTypeInstance {
-    private _speed: number = 5;
-    private _angle: number = 0;
+    private _pluginInstance: ITurtleLibraryPlugin | undefined;
 
-    private _positionX: number = 250;
-    private _positionY: number = 250;
+    public get plugin(): ITurtleLibraryPlugin {
+        if (!this._pluginInstance) {
+            throw new Error("Plugin is not set.");
+        }
 
-    private _isVisible: boolean = true;
-    private _isPenDown: boolean = true;
+        return this._pluginInstance;
+    }
 
-    private _moveAnimation: Animation<MoveAnimationData> = new Animation(this._createMoveAnimation.bind(this), this._updateMoveAnimation.bind(this));
-    private _turnAnimation: Animation<TurnAnimationData> = new Animation(this._createTurnAnimation.bind(this), this._updateTurnAnimation.bind(this));
-
-    public readonly drawLine: PubSubPayloadChannel<TurtleLine> = new PubSubPayloadChannel<TurtleLine>("drawLine");
-
-    public get isVisible(): boolean {
-        return this._isVisible;
+    public set plugin(plugin: ITurtleLibraryPlugin) {
+        this._pluginInstance = plugin;
     }
 
     private getSpeed(): BaseValue {
-        return new NumberValue(this._speed);
+        return new NumberValue(this.plugin.getSpeed());
     }
 
     private setSpeed(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            const newSpeed = (value as NumberValue).value;
+            let newSpeed = Math.round((value as NumberValue).value);
+
             if (newSpeed < 1) {
-                this._speed = 1;
+                newSpeed = 1;
             } else if (newSpeed > 10) {
-                this._speed = 10;
-            } else {
-                this._speed = newSpeed;
+                newSpeed = 10;
             }
+
+            this.plugin.setSpeed(newSpeed);
         }
     }
 
     private getAngle(): BaseValue {
-        return new NumberValue(this._angle);
+        return new NumberValue(this.plugin.getAngle());
     }
 
     private setAngle(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            this._angle = (value as NumberValue).value;
+            this.plugin.setAngle((value as NumberValue).value);
         }
     }
 
     private getX(): BaseValue {
-        return new NumberValue(this._positionX);
+        return new NumberValue(this.plugin.getX());
     }
 
     private setX(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            this._positionX = (value as NumberValue).value;
+            this.plugin.setX((value as NumberValue).value);
         }
     }
 
     private getY(): BaseValue {
-        return new NumberValue(this._positionY);
+        return new NumberValue(this.plugin.getY());
     }
 
     private setY(value: BaseValue): void {
         value = value.tryConvertToNumber();
         if (value.kind === ValueKind.Number) {
-            this._positionY = (value as NumberValue).value;
+            this.plugin.setY((value as NumberValue).value);
         }
     }
 
-    private executeShow(): boolean {
-        this._isVisible = true;
-        return true;
+    private executeSetVisibility(isVisible: boolean): void {
+        this.plugin.setVisibility(isVisible);
     }
 
-    private executeHide(): boolean {
-        this._isVisible = false;
-        return true;
+    private executeSetPenStatus(isWriting: boolean): void {
+        this.plugin.setPenStatus(isWriting);
     }
 
-    private executePenDown(): boolean {
-        this._isPenDown = true;
-        return true;
-    }
-
-    private executePenUp(): boolean {
-        this._isPenDown = false;
-        return true;
-    }
-
-    private _createMoveAnimation(engine: ExecutionEngine): { duration: number; data: MoveAnimationData; } {
-        const distanceArgument = engine.popEvaluationStack().tryConvertToNumber();
-
-        if (distanceArgument.kind !== ValueKind.Number) {
-            return {
-                duration: 0,
-                data: {
-                    finalX: this._positionX,
-                    finalY: this._positionY
-                }
-            };
+    private executeMove(engine: ExecutionEngine): void {
+        const distanceArg = engine.popEvaluationStack().tryConvertToNumber();
+        if (distanceArg.kind !== ValueKind.Number) {
         }
 
-        const distance = (distanceArgument as NumberValue).value;
-        const direction = this._angle / 180 * Math.PI;
-        const speed = this._speed;
+        const distance = (distanceArg as NumberValue).value;
+        const turnDelta = this.plugin.getAngle() / 180 * Math.PI;
 
-        return {
-            duration: speed === 10 ? 0 : Math.abs(distance * 320 / (speed * speed)),
-            data: {
-                finalX: Math.round(this._positionX + distance * Math.sin(direction)),
-                finalY: Math.round(this._positionY - distance * Math.cos(direction))
-            }
-        };
+        const newY = this.plugin.getY() - distance * Math.cos(turnDelta);
+        const newX = this.plugin.getX() + distance * Math.sin(turnDelta);
+
+        this.plugin.moveTo(newX, newY);
     }
 
-    private _updateMoveAnimation(percentage: number, data: MoveAnimationData): void {
-        const newX = Math.round(this._positionX + (data.finalX - this._positionX) * percentage);
-        const newY = Math.round(this._positionY + (data.finalY - this._positionY) * percentage);
+    private executeMoveTo(engine: ExecutionEngine): void {
+        const yArg = engine.popEvaluationStack().tryConvertToNumber();
+        const xArg = engine.popEvaluationStack().tryConvertToNumber();
 
-        if (this._isPenDown) {
-            this.drawLine.publish({
-                x1: this._positionX,
-                y1: this._positionY,
-                x2: newX,
-                y2: newY
-            });
+        if (yArg.kind !== ValueKind.Number || xArg.kind !== ValueKind.Number) {
+            return;
         }
 
-        this._positionX = newX;
-        this._positionY = newY;
-    }
+        const newY = (yArg as NumberValue).value;
+        const newX = (xArg as NumberValue).value;
+        const distanceSquared = (newX - this.plugin.getX()) * (newX - this.plugin.getX()) + (newY - this.plugin.getY()) * (newY - this.plugin.getY());
 
-    private _createTurnAnimation(engine: ExecutionEngine): { duration: number; data: TurnAnimationData; } {
-        const angleArgument = engine.popEvaluationStack().tryConvertToNumber();
-        if (angleArgument.kind !== ValueKind.Number) {
-            return {
-                duration: 0,
-                data: {
-                    finalAngle: 0
-                }
-            };
+        if (distanceSquared === 0) {
+            return;
         }
 
-        const angle = (angleArgument as NumberValue).value;
-        return {
-            duration: this._speed === 10 ? 5 : Math.abs(angle * 200 / (this._speed * this._speed)),
-            data: {
-                finalAngle: this._angle + angle
-            }
-        };
+        const distance = Math.sqrt(distanceSquared);
+        let angle = Math.acos((this.plugin.getY() - newY) / distance) * 180 / Math.PI;
+
+        if (newX < this.plugin.getX()) {
+            angle = 360 - angle;
+        }
+
+        let turnDelta = angle - (this.plugin.getAngle() % 360);
+        if (turnDelta > 180) {
+            turnDelta = turnDelta - 360;
+        }
+
+        this.plugin.turn(turnDelta);
+        this.plugin.moveTo(newX, newY);
     }
 
-    private _updateTurnAnimation(percentage: number, data: TurnAnimationData): void {
-        this._angle = Math.round(this._angle + (data.finalAngle - this._angle) * percentage);
+    private executeTurn(engine: ExecutionEngine): void {
+        const angleArg = engine.popEvaluationStack().tryConvertToNumber();
+
+        if (angleArg.kind !== ValueKind.Number) {
+            return;
+        }
+
+        const turnDelta = (angleArg as NumberValue).value;
+        this.plugin.turn(turnDelta);
+    }
+
+    private executeTurnLeft(): void {
+        this.plugin.turn(-90);
+    }
+
+    private executeTurnRight(): void {
+        this.plugin.turn(90);
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
-        Show: { execute: this.executeShow.bind(this) },
-        Hide: { execute: this.executeHide.bind(this) },
-        PenDown: { execute: this.executePenDown.bind(this) },
-        PenUp: { execute: this.executePenUp.bind(this) },
-        Move: { execute: engine => this._moveAnimation.execute(engine) },
-        Turn: { execute: engine => this._turnAnimation.execute(engine) },
-        MoveTo: { execute: () => { throw new Error("Should be rewritten into Turn() then Move()"); } },
-        TurnLeft: { execute: () => { throw new Error("Should be rewritten into Turn()"); } },
-        TurnRight: { execute: () => { throw new Error("Should be rewritten into Turn()"); } }
+        Show: { execute: () => this.executeSetVisibility.bind(true) },
+        Hide: { execute: () => this.executeSetVisibility.bind(false) },
+        PenDown: { execute: () => this.executeSetPenStatus(true) },
+        PenUp: { execute: () => this.executeSetPenStatus(false) },
+        Move: { execute: this.executeMove.bind(this) },
+        MoveTo: { execute: this.executeMoveTo.bind(this) },
+        Turn: { execute: this.executeTurn.bind(this) },
+        TurnLeft: { execute: this.executeTurnLeft.bind(this) },
+        TurnRight: { execute: this.executeTurnRight.bind(this) }
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
@@ -196,4 +181,6 @@ export class TurtleLibrary implements LibraryTypeInstance {
         X: { getter: this.getX.bind(this), setter: this.setX.bind(this) },
         Y: { getter: this.getY.bind(this), setter: this.setY.bind(this) }
     };
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

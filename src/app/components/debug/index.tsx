@@ -54,7 +54,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
     public componentDidMount(): void {
         this.isAlreadyMounted = true;
-        this.execute();
+        setTimeout(this.execute.bind(this));
     }
 
     public componentWillUnmount(): void {

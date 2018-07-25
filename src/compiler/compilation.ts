@@ -6,20 +6,34 @@ import { ModulesBinder } from "./binding/modules-binder";
 import { Scanner } from "./syntax/scanner";
 import { Token } from "./syntax/tokens";
 import { StatementsParser } from "./syntax/statements-parser";
-import { BaseSyntaxNode, ParseTreeSyntax, SyntaxKind } from "./syntax/syntax-nodes";
+import { BaseSyntaxNode, ParseTreeSyntax, SyntaxKind, SyntaxNodeVisitor, IdentifierExpressionSyntax } from "./syntax/syntax-nodes";
 import { BoundStatementBlock } from "./binding/bound-nodes";
 import { CompilerPosition } from "./syntax/ranges";
-import { ProgramKind } from "./runtime/libraries-metadata";
+
+export interface CompilationKind {
+    writesToTextWindow(): boolean;
+    drawsShapes(): boolean;
+}
 
 export class Compilation {
+    private _outputKindDetector?: OutputKindDetector;
+
     public readonly tokens: ReadonlyArray<Token>;
     public readonly parseTree: ParseTreeSyntax;
     public readonly boundSubModules: { [name: string]: BoundStatementBlock };
     public readonly diagnostics: Diagnostic[] = [];
-    public readonly programKind: ProgramKind;
 
     public get isReadyToRun(): boolean {
         return !!this.text.trim() && !this.diagnostics.length;
+    }
+
+    public get kind(): CompilationKind {
+        if (!this._outputKindDetector) {
+            this._outputKindDetector = new OutputKindDetector();
+            this._outputKindDetector.visit(this.parseTree);
+        }
+
+        return this._outputKindDetector;
     }
 
     public constructor(public readonly text: string) {
@@ -33,7 +47,6 @@ export class Compilation {
 
         const binder = new ModulesBinder(this.parseTree, this.diagnostics);
         this.boundSubModules = binder.boundModules;
-        this.programKind = binder.programKind;
     }
 
     public emit(): { readonly [name: string]: ReadonlyArray<BaseInstruction> } {
@@ -74,5 +87,31 @@ export class Compilation {
             child.parentOpt = node;
             this.setParentNode(child);
         });
+    }
+}
+
+class OutputKindDetector extends SyntaxNodeVisitor implements CompilationKind {
+    private _writesToTextWindow: boolean = false;
+    private _drawsShapes: boolean = false;
+
+    public writesToTextWindow(): boolean {
+        return this._writesToTextWindow;
+    }
+
+    public drawsShapes(): boolean {
+        return this._drawsShapes;
+    }
+
+    public visitIdentifierExpression(node: IdentifierExpressionSyntax): void {
+        switch (node.identifierToken.token.text) {
+            case "TextWindow":
+                this._writesToTextWindow = true;
+                break;
+            case "Shapes":
+            case "Controls":
+            case "Turtle":
+                this._drawsShapes = true;
+                break;
+        }
     }
 }

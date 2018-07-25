@@ -12,12 +12,15 @@ export enum ValueKind {
     Array
 }
 
+// TODO: review all throws into a helper?
+
 export abstract class BaseValue {
     public abstract toBoolean(): boolean;
     public abstract toDebuggerString(): string;
     public abstract toValueString(): string;
     public abstract get kind(): ValueKind;
 
+    // TODO: add another helper that just returns a number and review callers?
     public abstract tryConvertToNumber(): BaseValue;
 
     public abstract isEqualTo(other: BaseValue): boolean;

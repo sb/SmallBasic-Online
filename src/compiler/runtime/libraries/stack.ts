@@ -1,4 +1,4 @@
-import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
@@ -8,7 +8,7 @@ import { CompilerRange } from "../../syntax/ranges";
 export class StackLibrary implements LibraryTypeInstance {
     private _stacks: { [name: string]: BaseValue[] } = {};
 
-    private executePushValue(engine: ExecutionEngine): boolean {
+    private executePushValue(engine: ExecutionEngine): void {
         const value = engine.popEvaluationStack();
         const stackName = engine.popEvaluationStack().toValueString();
 
@@ -17,18 +17,16 @@ export class StackLibrary implements LibraryTypeInstance {
         }
 
         this._stacks[stackName].push(value);
-        return true;
     }
 
-    private executeGetCount(engine: ExecutionEngine): boolean {
+    private executeGetCount(engine: ExecutionEngine): void {
         const stackName = engine.popEvaluationStack().toValueString();
         const count = this._stacks[stackName] ? this._stacks[stackName].length : 0;
 
         engine.pushEvaluationStack(new NumberValue(count));
-        return true;
     }
 
-    private executePopValue(engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange): boolean {
+    private executePopValue(engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange): void {
         const stackName = engine.popEvaluationStack().toValueString();
 
         if (this._stacks[stackName] && this._stacks[stackName].length) {
@@ -36,8 +34,6 @@ export class StackLibrary implements LibraryTypeInstance {
         } else {
             engine.terminate(new Diagnostic(ErrorCode.PoppingAnEmptyStack, range));
         }
-
-        return true;
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
@@ -46,6 +42,7 @@ export class StackLibrary implements LibraryTypeInstance {
         PopValue: { execute: this.executePopValue.bind(this) }
     };
 
-    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-    };
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {};
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

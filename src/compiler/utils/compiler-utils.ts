@@ -1,6 +1,5 @@
 import { SyntaxKind } from "../syntax/syntax-nodes";
 import { TokenKind } from "../syntax/tokens";
-import { ProgramKind } from "../runtime/libraries-metadata";
 import { CompilerResources } from "../../strings/compiler";
 
 export module CompilerUtils {
@@ -89,14 +88,6 @@ export module CompilerUtils {
             case TokenKind.Comment: return CompilerResources.SyntaxNodes_Comment;
 
             default: throw new Error(`Unrecognized token kind: ${TokenKind[kind]}`);
-        }
-    }
-
-    export function programKindToDisplayString(kind: ProgramKind): string {
-        switch (kind) {
-            case ProgramKind.TextWindow: return CompilerResources.ProgramKind_TextWindow;
-            case ProgramKind.Turtle: return CompilerResources.ProgramKind_Turtle;
-            default: throw new Error(`Unexpected program kind: ${ProgramKind[kind]}`);
         }
     }
 }

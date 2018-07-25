@@ -3,26 +3,24 @@ import { StringValue } from "../values/string-value";
 import { ArrayValue } from "../values/array-value";
 import { NumberValue } from "../values/number-value";
 import { ExecutionEngine } from "../../execution-engine";
-import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryMethodInstance, LibraryTypeInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 
 export class ArrayLibrary implements LibraryTypeInstance {
-    private executeIsArray(engine: ExecutionEngine): boolean {
+    private executeIsArray(engine: ExecutionEngine): void {
         const value = engine.popEvaluationStack();
         engine.pushEvaluationStack(new StringValue(value.kind === ValueKind.Array ? Constants.True : Constants.False));
-        return true;
     }
 
-    private executeGetItemCount(engine: ExecutionEngine): boolean {
+    private executeGetItemCount(engine: ExecutionEngine): void {
         const array = engine.popEvaluationStack();
         const itemCount = array.kind === ValueKind.Array
             ? Object.keys((array as ArrayValue).values).length
             : 0;
 
         engine.pushEvaluationStack(new NumberValue(itemCount));
-        return true;
     }
 
-    private executeGetAllIndices(engine: ExecutionEngine): boolean {
+    private executeGetAllIndices(engine: ExecutionEngine): void {
         const array = engine.popEvaluationStack();
         const newArray: { [key: string]: BaseValue } = {};
 
@@ -33,10 +31,9 @@ export class ArrayLibrary implements LibraryTypeInstance {
         }
 
         engine.pushEvaluationStack(new ArrayValue(newArray));
-        return true;
     }
 
-    private executeContainsValue(engine: ExecutionEngine): boolean {
+    private executeContainsValue(engine: ExecutionEngine): void {
         const value = engine.popEvaluationStack();
         const array = engine.popEvaluationStack();
         let result = Constants.False;
@@ -52,10 +49,9 @@ export class ArrayLibrary implements LibraryTypeInstance {
         }
 
         engine.pushEvaluationStack(new StringValue(result));
-        return true;
     }
 
-    private executeContainsIndex(engine: ExecutionEngine): boolean {
+    private executeContainsIndex(engine: ExecutionEngine): void {
         const index = engine.popEvaluationStack().tryConvertToNumber();
         const array = engine.popEvaluationStack();
         let result = Constants.False;
@@ -68,7 +64,6 @@ export class ArrayLibrary implements LibraryTypeInstance {
         }
 
         engine.pushEvaluationStack(new StringValue(result));
-        return true;
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
@@ -79,6 +74,7 @@ export class ArrayLibrary implements LibraryTypeInstance {
         ContainsIndex: { execute: this.executeContainsIndex.bind(this) }
     };
 
-    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-    };
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {};
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

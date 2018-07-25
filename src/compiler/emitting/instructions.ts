@@ -1,4 +1,4 @@
-import { ExecutionEngine, ExecutionMode, StackFrame } from "../execution-engine";
+import { ExecutionEngine, ExecutionMode, StackFrame, ExecutionState } from "../execution-engine";
 import { StringValue } from "../runtime/values/string-value";
 import { ValueKind, BaseValue, Constants } from "../runtime/values/base-value";
 import { NumberValue } from "../runtime/values/number-value";
@@ -303,9 +303,17 @@ export class MethodInvocationInstruction extends BaseInstruction {
     }
 
     public execute(engine: ExecutionEngine, mode: ExecutionMode, frame: StackFrame): void {
-        const shouldContinue = engine.libraries[this.library].methods[this.method].execute(engine, mode, this.sourceRange);
-        if (shouldContinue) {
-            frame.instructionIndex++;
+        engine.libraries[this.library].methods[this.method].execute(engine, mode, this.sourceRange);
+        switch (engine.state) {
+            case ExecutionState.BlockedOnInput:
+                break;
+            case ExecutionState.Paused:
+            case ExecutionState.Terminated:
+            case ExecutionState.Running:
+                frame.instructionIndex++;
+                break;
+            default:
+                throw new Error(`Unexpected execution state '${ExecutionState[engine.state]}'`);
         }
     }
 }

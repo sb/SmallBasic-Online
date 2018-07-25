@@ -1,4 +1,4 @@
-import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { BaseValue, ValueKind } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
 import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../execution-engine";
@@ -10,7 +10,7 @@ export class MathLibrary implements LibraryTypeInstance {
         return new NumberValue(Math.PI);
     }
 
-    private executeCalculation(engine: ExecutionEngine, calculation: (...values: number[]) => number): boolean {
+    private executeCalculation(engine: ExecutionEngine, calculation: (...values: number[]) => number): void {
         const args: number[] = new Array(calculation.length);
         for (let i = args.length - 1; i >= 0; i--) {
             const value = engine.popEvaluationStack().tryConvertToNumber();
@@ -19,7 +19,7 @@ export class MathLibrary implements LibraryTypeInstance {
                 args[i] = (value as NumberValue).value;
             } else {
                 engine.pushEvaluationStack(new NumberValue(0));
-                return true;
+                return;
             }
         }
 
@@ -27,11 +27,9 @@ export class MathLibrary implements LibraryTypeInstance {
         if (engine.state !== ExecutionState.Terminated) {
             engine.pushEvaluationStack(new NumberValue(result));
         }
-
-        return true;
     }
 
-    private executeRemainder(engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange): boolean {
+    private executeRemainder(engine: ExecutionEngine, _: ExecutionMode, range: CompilerRange): void {
         return this.executeCalculation(engine, (dividend, divisor) => {
             if (divisor === 0) {
                 engine.terminate(new Diagnostic(ErrorCode.CannotDivideByZero, range));
@@ -76,4 +74,6 @@ export class MathLibrary implements LibraryTypeInstance {
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
         Pi: { getter: this.getPi.bind(this) }
     };
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }
