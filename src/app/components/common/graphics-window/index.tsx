@@ -15,19 +15,14 @@ interface GraphicsWindowComponentState {
 }
 
 export class GraphicsWindowComponent extends React.Component<GraphicsWindowComponentProps, GraphicsWindowComponentState> {
-  private isAlreadyMounted: boolean;
-  private tokens: string[] = [];
 
   public constructor(props: GraphicsWindowComponentProps) {
     super(props);
-    this.isAlreadyMounted = false;
 
     this.state = {};
   }
 
   public componentDidMount(): void {
-    this.tokens = [];
-
     const stage = new Konva.Stage({
       container: "graphics-container",
       width: document.getElementById("graphics-container")!.offsetWidth,
@@ -44,13 +39,6 @@ export class GraphicsWindowComponent extends React.Component<GraphicsWindowCompo
 
     const plugin = new ShapesPlugin((shape) => layer.add(shape.instance), () => stage.draw());
     this.props.engine.libraries.Shapes.plugin = plugin;
-
-    this.isAlreadyMounted = true;
-  }
-
-  public componentWillUnmount(): void {
-    this.tokens.forEach(PubSub.unsubscribe);
-    this.isAlreadyMounted = false;
   }
 
   public render(): JSX.Element {
