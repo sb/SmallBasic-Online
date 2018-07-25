@@ -1,4 +1,4 @@
-import { BaseInstruction, InstructionKind, TempLabelInstruction, TempJumpInstruction, JumpInstruction, TempConditionalJumpInstruction, ConditionalJumpInstruction } from "../instructions";
+import { BaseInstruction, InstructionKind, TempLabelInstruction, TempJumpInstruction, JumpInstruction, TempConditionalJumpInstruction, ConditionalJumpInstruction } from "./instructions";
 
 export module TempLabelsRemover {
     export function remove(instructions: BaseInstruction[]): void {

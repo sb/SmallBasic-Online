@@ -118,9 +118,12 @@ export function verifyRuntimeResult(text: string, input?: (string | number)[], o
     }
 }
 
-export function verifyCompilationErrors(text: string, ...expected: Diagnostic[]): void {
-    const actual = new Compilation(text).diagnostics;
+export function verifyCompilationErrors(text: string, ...expected: Diagnostic[]): Compilation {
+    const compilation = new Compilation(text);
+    const actual = compilation.diagnostics;
+
     verifyErrors(text, actual, expected);
+    return compilation;
 }
 
 export function verifyErrors(text: string, actual: ReadonlyArray<Diagnostic>, expected: Diagnostic[]): void {
