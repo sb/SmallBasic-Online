@@ -23,6 +23,10 @@ export abstract class Shape {
     public showShape(): void {
         this.instance.show();
     }
+
+    public zoom(x: number, y: number): void {
+        this.instance.scale({x: x, y: y});
+    }
     
     public remove(): void {
         // TODO
