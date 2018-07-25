@@ -19,7 +19,8 @@ export class Ellipse extends Shape{
   }
 
   public move(x: number, y: number): void {
-      // TODO
+    this.instance.y(y + this.instance.radius().y());
+    this.instance.x(x + this.instance.radius().x());
   }
   
   //Need to factor strokewidth into the size of the shape to have 
