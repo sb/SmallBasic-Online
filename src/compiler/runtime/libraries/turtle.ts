@@ -5,7 +5,7 @@ import { ExecutionEngine } from "../../execution-engine";
 
 // TODO: add tests
 
-export interface TurtleLibraryPlugin {
+export interface ITurtleLibraryPlugin {
     getSpeed(): number;
     setSpeed(speed: number): void;
     getAngle(): number;
@@ -24,9 +24,9 @@ export interface TurtleLibraryPlugin {
 }
 
 export class TurtleLibrary implements LibraryTypeInstance {
-    private _pluginInstance: TurtleLibraryPlugin | undefined;
+    private _pluginInstance: ITurtleLibraryPlugin | undefined;
 
-    public get plugin(): TurtleLibraryPlugin {
+    public get plugin(): ITurtleLibraryPlugin {
         if (!this._pluginInstance) {
             throw new Error("Plugin is not set.");
         }
@@ -34,7 +34,7 @@ export class TurtleLibrary implements LibraryTypeInstance {
         return this._pluginInstance;
     }
 
-    public set plugin(plugin: TurtleLibraryPlugin) {
+    public set plugin(plugin: ITurtleLibraryPlugin) {
         this._pluginInstance = plugin;
     }
 

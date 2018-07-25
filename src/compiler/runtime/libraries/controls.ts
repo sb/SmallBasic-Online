@@ -6,7 +6,7 @@ import { StringValue } from "../values/string-value";
 
 // TODO: add tests
 
-interface ControlsLibraryPlugin {
+export interface IControlsLibraryPlugin {
     addButton(caption: string, left: number, top: number): string;
     getButtonCaption(buttonName: string): string;
     setButtonCaption(buttonName: string, caption: string): void;
@@ -25,9 +25,9 @@ interface ControlsLibraryPlugin {
 }
 
 export class ControlsLibrary implements LibraryTypeInstance {
-    private _pluginInstance: ControlsLibraryPlugin | undefined;
+    private _pluginInstance: IControlsLibraryPlugin | undefined;
 
-    public get plugin(): ControlsLibraryPlugin {
+    public get plugin(): IControlsLibraryPlugin {
         if (!this._pluginInstance) {
             throw new Error("Plugin is not set.");
         }
@@ -35,7 +35,7 @@ export class ControlsLibrary implements LibraryTypeInstance {
         return this._pluginInstance;
     }
 
-    public set plugin(plugin: ControlsLibraryPlugin) {
+    public set plugin(plugin: IControlsLibraryPlugin) {
         this._pluginInstance = plugin;
     }
 

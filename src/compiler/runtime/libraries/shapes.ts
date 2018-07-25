@@ -6,7 +6,7 @@ import { StringValue } from "../values/string-value";
 
 // TODO: add tests
 
-interface ShapesLibraryPlugin {
+export interface IShapesLibraryPlugin {
     addRectangle(width: number, height: number): string;
     addEllipse(width: number, height: number): string;
     addTriangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): string;
@@ -27,9 +27,9 @@ interface ShapesLibraryPlugin {
 }
 
 export class ShapesLibrary implements LibraryTypeInstance {
-    private _pluginInstance: ShapesLibraryPlugin | undefined;
+    private _pluginInstance: IShapesLibraryPlugin | undefined;
 
-    public get plugin(): ShapesLibraryPlugin {
+    public get plugin(): IShapesLibraryPlugin {
         if (!this._pluginInstance) {
             throw new Error("Plugin is not set.");
         }
@@ -37,7 +37,7 @@ export class ShapesLibrary implements LibraryTypeInstance {
         return this._pluginInstance;
     }
 
-    public set plugin(plugin: ShapesLibraryPlugin) {
+    public set plugin(plugin: IShapesLibraryPlugin) {
         this._pluginInstance = plugin;
     }
 
