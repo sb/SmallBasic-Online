@@ -10,11 +10,11 @@ export class Triangle extends Shape {
     }
   
     public getLeft(): number{
-        return this.instance.x() + Math.min(this.instance.points()[0], this.instance.points()[2], this.instance.points()[4]);
+        return this.instance.x();
     }
    
     public getTop() : number{
-        return this.instance.y() + Math.min(this.instance.points()[1], this.instance.points()[3], this.instance.points()[5]);
+        return this.instance.y();
     }
 
     public move(x: number, y: number): void {
@@ -23,8 +23,12 @@ export class Triangle extends Shape {
     }
    
     private addTriangle(x1:number, y1:number, x2:number, y2:number, x3:number, y3:number) : Konva.Line {
+        const leftShift = Math.min(x1, x2, x3);
+        const topShift = Math.min(y1, y2, y3);
         const triangle = new Konva.Line({
-            points: [x1, y1, x2, y2, x3, y3],
+            points: [x1 - leftShift, y1 - topShift, x2 - leftShift, y2 - topShift, x3 - leftShift, y3 - topShift],
+            x: leftShift,
+            y: topShift,
             fill: "slateblue",
             stroke: "black",
             strokeWidth: 2,
