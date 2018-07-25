@@ -43,8 +43,8 @@ export class ShapesComponent implements IShapesLibraryPlugin {
 
     public addLine(x1: number, y1: number, x2: number, y2: number): string {
         const name = this.generateName("Line");
-        const obj = new Line(name, x1, y1, x2, y2);
-        this.shapes[name] = obj;
+        const line = new Line(name, x1, y1, x2, y2);
+        this.shapes[name] = line;
         return name;
     }
     
