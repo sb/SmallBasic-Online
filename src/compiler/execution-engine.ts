@@ -21,10 +21,8 @@ export enum ExecutionMode {
 export enum ExecutionState {
     Running,
     Paused,
-    Terminated,
-    BlockedOnNumberInput,
-    BlockedOnStringInput,
-    BlockedOnOutput
+    BlockedOnInput,
+    Terminated
 }
 
 export class ExecutionEngine {
@@ -116,19 +114,14 @@ export class ExecutionEngine {
             instruction.execute(this, mode, frame);
 
             switch (this.state) {
-                case ExecutionState.BlockedOnNumberInput:
-                case ExecutionState.BlockedOnStringInput:
-                    if (!this.libraries.TextWindow.bufferHasValue()) {
-                        return;
-                    }
-                    break;
-                case ExecutionState.BlockedOnOutput:
-                    if (this.libraries.TextWindow.bufferHasValue()) {
-                        return;
-                    }
+                case ExecutionState.Running:
                     break;
                 case ExecutionState.Paused:
+                case ExecutionState.Terminated:
+                case ExecutionState.BlockedOnInput:
                     return;
+                default:
+                    throw new Error(`Unexpected execution state: '${ExecutionState[this.state]}'`);
             }
         }
     }

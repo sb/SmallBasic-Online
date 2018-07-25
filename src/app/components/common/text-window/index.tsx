@@ -2,18 +2,13 @@ import * as React from "react";
 
 import "./style.css";
 import { Scanner } from "../../../../compiler/syntax/scanner";
-import { TextWindowColor } from "../../../../compiler/runtime/libraries/text-window";
+import { TextWindowColor, ITextWindowLibraryPlugin } from "../../../../compiler/runtime/libraries/text-window";
 import { ValueKind, BaseValue } from "../../../../compiler/runtime/values/base-value";
-import { NumberValue } from "../../../../compiler/runtime/values/number-value";
-import { StringValue } from "../../../../compiler/runtime/values/string-value";
 import { EditorResources } from "../../../../strings/editor";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
-
-interface OutputChunk {
-    text: string;
-    color: TextWindowColor;
-    appendNewLine: boolean;
-}
+import { EditorUtils } from "../../../editor-utils";
+import { StringValue } from "../../../../compiler/runtime/values/string-value";
+import { NumberValue } from "../../../../compiler/runtime/values/number-value";
 
 interface TextWindowComponentProps {
     engine: ExecutionEngine;
@@ -26,35 +21,21 @@ interface TextWindowComponentState {
     background: TextWindowColor;
 
     inputBuffer: string;
-    inputKind?: ValueKind;
+    inputKind: ValueKind | undefined;
 
+    inputLines: BaseValue[];
     outputLines: OutputChunk[];
 }
 
 const inputColor: TextWindowColor = TextWindowColor.Gray;
 
-function textWindowColorToCssColor(color: TextWindowColor): string {
-    switch (color) {
-        case TextWindowColor.Black: return "rgb(0, 0, 0)";
-        case TextWindowColor.DarkBlue: return "rgb(0, 0, 128)";
-        case TextWindowColor.DarkGreen: return "rgb(0, 128, 0)";
-        case TextWindowColor.DarkCyan: return "rgb(0, 128, 128)";
-        case TextWindowColor.DarkRed: return "rgb(128, 0, 0)";
-        case TextWindowColor.DarkMagenta: return "rgb(128, 0, 128)";
-        case TextWindowColor.DarkYellow: return "rgb(128, 128, 0)";
-        case TextWindowColor.Gray: return "rgb(128, 128, 128)";
-        case TextWindowColor.DarkGray: return "rgb(64, 64, 64)";
-        case TextWindowColor.Blue: return "rgb(0, 0, 255)";
-        case TextWindowColor.Green: return "rgb(0, 255, 0)";
-        case TextWindowColor.Cyan: return "rgb(0, 255, 255)";
-        case TextWindowColor.Red: return "rgb(255, 0, 0)";
-        case TextWindowColor.Magenta: return "rgb(255, 0, 255)";
-        case TextWindowColor.Yellow: return "rgb(255, 255, 0)";
-        case TextWindowColor.White: return "rgb(255, 255, 255)";
-    }
+interface OutputChunk {
+    text: string;
+    color: TextWindowColor;
+    appendNewLine: boolean;
 }
 
-export class TextWindowComponent extends React.Component<TextWindowComponentProps, TextWindowComponentState> {
+export class TextWindowComponent extends React.Component<TextWindowComponentProps, TextWindowComponentState> implements ITextWindowLibraryPlugin {
     private isAlreadyMounted: boolean;
     private tokens: string[] = [];
     private inputDiv?: HTMLDivElement;
@@ -66,41 +47,21 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.state = {
             isCursorVisible: true,
 
-            foreground: this.props.engine.libraries.TextWindow.foreground,
-            background: this.props.engine.libraries.TextWindow.background,
+            foreground: TextWindowColor.White,
+            background: TextWindowColor.Black,
 
             inputBuffer: "",
             inputKind: undefined,
 
+            inputLines: [],
             outputLines: []
         };
+
+        this.props.engine.libraries.TextWindow.plugin = this;
     }
 
     public componentDidMount(): void {
         this.tokens = [
-            this.props.engine.libraries.TextWindow.backgroundColorChanged.subscribe(color => {
-                this.setState({
-                    background: color
-                });
-            }),
-            this.props.engine.libraries.TextWindow.foregroundColorChanged.subscribe(color => {
-                this.setState({
-                    foreground: color
-                });
-            }),
-            this.props.engine.libraries.TextWindow.blockedOnInput.subscribe(kind => {
-                this.setState({
-                    inputKind: kind
-                });
-            }),
-            this.props.engine.libraries.TextWindow.producedOutput.subscribe(() => {
-                const value = this.props.engine.libraries.TextWindow.readValueFromBuffer();
-                this.appendOutput({
-                    text: value.value.toValueString(),
-                    color: this.state.foreground,
-                    appendNewLine: value.appendNewLine
-                });
-            }),
             this.props.engine.programTerminated.subscribe(exception => {
                 this.appendOutput(exception
                     ? {
@@ -130,14 +91,14 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
                 className="text-window"
                 onKeyDown={this.onKeyPress.bind(this)}
                 tabIndex={0}
-                style={{ backgroundColor: textWindowColorToCssColor(this.state.background) }}>
+                style={{ backgroundColor: EditorUtils.textWindowColorToCssColor(this.state.background) }}>
 
                 {this.state.outputLines.map((line, i) => [
-                    <span key={`span_${i}`} style={{ color: textWindowColorToCssColor(line.color) }}>{line.text}</span>,
+                    <span key={`span_${i}`} style={{ color: EditorUtils.textWindowColorToCssColor(line.color) }}>{line.text}</span>,
                     line.appendNewLine ? <br key={`br_${i}`} /> : null
                 ])}
 
-                <div style={{ color: textWindowColorToCssColor(inputColor) }} ref={inputDiv => this.inputDiv = inputDiv!}>
+                <div style={{ color: EditorUtils.textWindowColorToCssColor(inputColor) }} ref={inputDiv => this.inputDiv = inputDiv!}>
                     <span>{this.state.inputBuffer}</span>
                     <span style={{ visibility: this.state.isCursorVisible ? "visible" : "hidden" }}>&#x2588;</span>
                 </div>
@@ -162,14 +123,17 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
             });
         } else if (e.key === "Enter") {
             if (this.state.inputBuffer) {
-                let input: BaseValue;
                 switch (this.state.inputKind) {
-                    case ValueKind.String: input = new StringValue(this.state.inputBuffer); break;
-                    case ValueKind.Number: input = new NumberValue(parseFloat(this.state.inputBuffer)); break;
-                    default: return;
+                    case ValueKind.String:
+                        this.state.inputLines.push(new StringValue(this.state.inputBuffer));
+                        break;
+                    case ValueKind.Number:
+                        this.state.inputLines.push(new NumberValue(parseFloat(this.state.inputBuffer)));
+                        break;
+                    default:
+                        throw new Error(`Unexpected value kind: '${ValueKind[this.state.inputKind!]}'`);
                 }
 
-                this.props.engine.libraries.TextWindow.writeValueToBuffer(input, true);
                 this.setState({
                     inputBuffer: "",
                     inputKind: undefined
@@ -207,13 +171,59 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         }
     }
 
-    private appendOutput(output: OutputChunk): void {
+    public appendOutput(output: OutputChunk): void {
         this.setState({
             outputLines: this.state.outputLines.concat([output])
         });
 
         this.inputDiv!.scrollIntoView({
             behavior: "smooth"
+        });
+    }
+
+    public inputIsNeeded(kind: ValueKind): void {
+        this.setState({
+            inputKind: kind
+        });
+    }
+
+    public checkInputBuffer(): BaseValue | undefined {
+        const first = this.state.inputLines.shift();
+
+        if (first) {
+            this.setState({
+                inputLines: this.state.inputLines
+            });
+        }
+
+        return first;
+    }
+
+    public writeText(value: string, appendNewLine: boolean): void {
+        this.appendOutput({
+            text: value,
+            color: this.getForegroundColor(),
+            appendNewLine: appendNewLine
+        });
+    }
+
+    public getForegroundColor(): TextWindowColor {
+        return this.state.foreground;
+    }
+
+    public setForegroundColor(color: TextWindowColor): void {
+        this.setState({
+            foreground: color
+        });
+    }
+
+    public getBackgroundColor(): TextWindowColor {
+        return this.state.background;
+    }
+
+    public setBackgroundColor(color: TextWindowColor): void {
+        this.setState({
+            background: color
         });
     }
 }

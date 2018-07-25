@@ -19,7 +19,7 @@ export interface LibraryTypeInstance {
 }
 
 export interface LibraryMethodInstance {
-    readonly execute: (engine: ExecutionEngine, mode: ExecutionMode, range: CompilerRange) => boolean;
+    readonly execute: (engine: ExecutionEngine, mode: ExecutionMode, range: CompilerRange) => void;
 }
 
 export interface LibraryPropertyInstance {

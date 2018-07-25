@@ -6,7 +6,7 @@ import { StringValue } from "../values/string-value";
 
 // TODO: add tests
 
-interface ShapesLibraryPlugin {
+export interface IShapesLibraryPlugin {
     addRectangle(width: number, height: number): string;
     addEllipse(width: number, height: number): string;
     addTriangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): string;
@@ -27,9 +27,9 @@ interface ShapesLibraryPlugin {
 }
 
 export class ShapesLibrary implements LibraryTypeInstance {
-    private _pluginInstance: ShapesLibraryPlugin | undefined;
+    private _pluginInstance: IShapesLibraryPlugin | undefined;
 
-    public get plugin(): ShapesLibraryPlugin {
+    public get plugin(): IShapesLibraryPlugin {
         if (!this._pluginInstance) {
             throw new Error("Plugin is not set.");
         }
@@ -37,11 +37,11 @@ export class ShapesLibrary implements LibraryTypeInstance {
         return this._pluginInstance;
     }
 
-    public set plugin(plugin: ShapesLibraryPlugin) {
+    public set plugin(plugin: IShapesLibraryPlugin) {
         this._pluginInstance = plugin;
     }
 
-    private executeAddRectangle(engine: ExecutionEngine): boolean {
+    private executeAddRectangle(engine: ExecutionEngine): void {
         const heightArg = engine.popEvaluationStack().tryConvertToNumber();
         const widthArg = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -50,11 +50,9 @@ export class ShapesLibrary implements LibraryTypeInstance {
 
         const rectangleName = this.plugin.addRectangle(widthValue, heightValue);
         engine.pushEvaluationStack(new StringValue(rectangleName));
-
-        return true;
     }
 
-    private executeAddEllipse(engine: ExecutionEngine): boolean {
+    private executeAddEllipse(engine: ExecutionEngine): void {
         const heightArg = engine.popEvaluationStack().tryConvertToNumber();
         const widthArg = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -63,11 +61,9 @@ export class ShapesLibrary implements LibraryTypeInstance {
 
         const rectangleName = this.plugin.addEllipse(widthValue, heightValue);
         engine.pushEvaluationStack(new StringValue(rectangleName));
-
-        return true;
     }
 
-    private executeAddTriangle(engine: ExecutionEngine): boolean {
+    private executeAddTriangle(engine: ExecutionEngine): void {
         const y3Arg = engine.popEvaluationStack().tryConvertToNumber();
         const x3Arg = engine.popEvaluationStack().tryConvertToNumber();
         const y2Arg = engine.popEvaluationStack().tryConvertToNumber();
@@ -84,11 +80,9 @@ export class ShapesLibrary implements LibraryTypeInstance {
 
         const triangleName = this.plugin.addTriangle(x1Value, y1Value, x2Value, y2Value, x3Value, y3Value);
         engine.pushEvaluationStack(new StringValue(triangleName));
-
-        return true;
     }
 
-    private executeAddLine(engine: ExecutionEngine): boolean {
+    private executeAddLine(engine: ExecutionEngine): void {
         const y2Arg = engine.popEvaluationStack().tryConvertToNumber();
         const x2Arg = engine.popEvaluationStack().tryConvertToNumber();
         const y1Arg = engine.popEvaluationStack().tryConvertToNumber();
@@ -101,34 +95,28 @@ export class ShapesLibrary implements LibraryTypeInstance {
 
         const triangleName = this.plugin.addLine(x1Value, y1Value, x2Value, y2Value);
         engine.pushEvaluationStack(new StringValue(triangleName));
-
-        return true;
     }
 
-    private executeAddText(engine: ExecutionEngine): boolean {
+    private executeAddText(engine: ExecutionEngine): void {
         const text = engine.popEvaluationStack().toValueString();
         const shapeName = this.plugin.addText(text);
 
         engine.pushEvaluationStack(new StringValue(shapeName));
-        return true;
     }
 
-    private executeSetText(engine: ExecutionEngine): boolean {
+    private executeSetText(engine: ExecutionEngine): void {
         const text = engine.popEvaluationStack().toValueString();
         const shapeName = engine.popEvaluationStack().toValueString();
 
         this.plugin.setText(shapeName, text);
-        return true;
     }
 
-    private executeRemove(engine: ExecutionEngine): boolean {
+    private executeRemove(engine: ExecutionEngine): void {
         const shapeName = engine.popEvaluationStack().toValueString();
-
         this.plugin.remove(shapeName);
-        return true;
     }
 
-    private executeMove(engine: ExecutionEngine): boolean {
+    private executeMove(engine: ExecutionEngine): void {
         const yArg = engine.popEvaluationStack().tryConvertToNumber();
         const xArg = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -137,20 +125,18 @@ export class ShapesLibrary implements LibraryTypeInstance {
         const yValue = yArg.kind === ValueKind.Number ? (yArg as NumberValue).value : 0;
 
         this.plugin.move(shapeName, xValue, yValue);
-        return true;
     }
 
-    private executeRotate(engine: ExecutionEngine): boolean {
+    private executeRotate(engine: ExecutionEngine): void {
         const angleArg = engine.popEvaluationStack().tryConvertToNumber();
 
         const shapeName = engine.popEvaluationStack().toValueString();
         const angleValue = angleArg.kind === ValueKind.Number ? (angleArg as NumberValue).value : 0;
 
         this.plugin.rotate(shapeName, angleValue);
-        return true;
     }
 
-    private executeZoom(engine: ExecutionEngine): boolean {
+    private executeZoom(engine: ExecutionEngine): void {
         const scaleYArg = engine.popEvaluationStack().tryConvertToNumber();
         const scaleXArg = engine.popEvaluationStack().tryConvertToNumber();
 
@@ -159,10 +145,9 @@ export class ShapesLibrary implements LibraryTypeInstance {
         const scaleY = scaleYArg.kind === ValueKind.Number ? (scaleYArg as NumberValue).value : 0;
 
         this.plugin.zoom(shapeName, scaleX, scaleY);
-        return true;
     }
 
-    private executeAnimate(engine: ExecutionEngine): boolean {
+    private executeAnimate(engine: ExecutionEngine): void {
         const durationArg = engine.popEvaluationStack().tryConvertToNumber();
         const yArg = engine.popEvaluationStack().tryConvertToNumber();
         const xArg = engine.popEvaluationStack().tryConvertToNumber();
@@ -173,47 +158,41 @@ export class ShapesLibrary implements LibraryTypeInstance {
         const durationValue = durationArg.kind === ValueKind.Number ? (durationArg as NumberValue).value : 0;
 
         this.plugin.animate(shapeName, xValue, yValue, durationValue);
-        return true;
     }
 
-    private executeGetLeft(engine: ExecutionEngine): boolean {
+    private executeGetLeft(engine: ExecutionEngine): void {
         const shapeName = engine.popEvaluationStack().toValueString();
         const leftValue = this.plugin.getLeft(shapeName);
 
         engine.pushEvaluationStack(new NumberValue(leftValue));
-        return true;
     }
 
-    private executeGetTop(engine: ExecutionEngine): boolean {
+    private executeGetTop(engine: ExecutionEngine): void {
         const shapeName = engine.popEvaluationStack().toValueString();
         const topValue = this.plugin.getTop(shapeName);
 
         engine.pushEvaluationStack(new NumberValue(topValue));
-        return true;
     }
 
-    private executeGetOpacity(engine: ExecutionEngine): boolean {
+    private executeGetOpacity(engine: ExecutionEngine): void {
         const shapeName = engine.popEvaluationStack().toValueString();
         const opacityValue = this.plugin.getOpacity(shapeName);
 
         engine.pushEvaluationStack(new NumberValue(opacityValue));
-        return true;
     }
 
-    private executeSetOpacity(engine: ExecutionEngine): boolean {
+    private executeSetOpacity(engine: ExecutionEngine): void {
         const levelArg = engine.popEvaluationStack().tryConvertToNumber();
 
         const shapeName = engine.popEvaluationStack().toValueString();
         const levelValue = levelArg.kind === ValueKind.Number ? (levelArg as NumberValue).value : 0;
 
         this.plugin.setOpacity(shapeName, levelValue);
-        return true;
     }
 
-    private executeSetVisibility(engine: ExecutionEngine, isVisible: boolean): boolean {
+    private executeSetVisibility(engine: ExecutionEngine, isVisible: boolean): void {
         const shapeName = engine.popEvaluationStack().toValueString();
         this.plugin.setVisibility(shapeName, isVisible);
-        return true;
     }
 
     // TODO: implement missing method
