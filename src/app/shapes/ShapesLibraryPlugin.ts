@@ -6,7 +6,7 @@ import { Triangle } from "./Triangle";
 import { Line } from "./Line";
 import { TextShape } from "./TextShape";
 
-export class ShapesPlugin implements IShapesLibraryPlugin {
+export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
     private nameGenerationCounter: number;
     private shapes: {[name: string] : Shape };
 

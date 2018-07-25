@@ -1,7 +1,7 @@
 import * as React from "react";
 import * as Konva from "konva";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
-import { ShapesPlugin } from "../../../shapes/ShapesPlugin";
+import { ShapesLibraryPlugin } from "../../../shapes/ShapesLibraryPlugin";
 
 import "./style.css";
 
@@ -37,7 +37,7 @@ export class GraphicsWindowComponent extends React.Component<GraphicsWindowCompo
       layer: layer
     });
 
-    const plugin = new ShapesPlugin((shape) => layer.add(shape.instance), () => stage.draw());
+    const plugin = new ShapesLibraryPlugin((shape) => layer.add(shape.instance), () => stage.draw());
     this.props.engine.libraries.Shapes.plugin = plugin;
   }
 
