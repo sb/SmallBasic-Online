@@ -17,7 +17,7 @@ interface PropsFromReact {
     sideBar?: JSX.Element;
 }
 
-const isChrome = navigator.userAgent.indexOf("Chrome")!==-1 || navigator.userAgent.indexOf("Firefox") != -1;
+const isChrome = navigator.userAgent.indexOf("Chrome")!==-1 || navigator.userAgent.indexOf("Firefox") !== -1;
 
 type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact & RouteComponentProps<PropsFromReact>;
 
