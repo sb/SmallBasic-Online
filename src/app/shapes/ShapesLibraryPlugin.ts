@@ -1,5 +1,6 @@
 import { IShapesLibraryPlugin } from "../../compiler/runtime/libraries/shapes";
-import * as Konva from "konva";import { Shape } from "./Shape";
+import * as Konva from "konva";
+import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
 import { Ellipse } from "./Ellipse";
 import { Triangle } from "./Triangle";
