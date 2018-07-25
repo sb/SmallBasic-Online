@@ -17,6 +17,10 @@ export abstract class Shape {
         return this.instance.opacity();
     }
 
+    public setOpacity(opacity: number): void {
+        this.instance.opacity(opacity);
+    }
+
     public hideShape(): void {
         this.instance.hide();
     }
