@@ -12,18 +12,26 @@
     background: rgb(255, 255, 148);
 }
 
+/****Below code is override existing style****/
 .monaco-list > .monaco-scrollable-element {
-    background-color: rgb(224,237,243);
+    background: rgb(224,237,243) url("./images/setupBanner.png") left bottom no-repeat;
+    
+    /* this will show the background image created by Nancy
+    background: rgb(224,237,243) url("./images/bg.png") -240px 0px repeat-y;
+    */
+
 }
 
 .monaco-editor .suggest-widget > .tree,
 .monaco-editor .suggest-widget > .tree .monaco-list,
-.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows,
+.monaco-list > .monaco-scrollable-element {
     border-radius: 8px;
 }
 
-.monaco-editor .suggest-widget > .tree {
-    height: 160px !important;
+.monaco-editor .suggest-widget > .tree,
+.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+    height: 170px !important;
 }
 
 .monaco-list.list_id_1 .monaco-list-row:hover, 
@@ -32,20 +40,27 @@
     background-color: unset !important;
 }
 
+.monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+    top: unset !important;
+}
+
+.monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+    position: initial;
+}
+
 .monaco-list.list_id_1 .monaco-list-row .monaco-highlighted-label{
     font-size: 16px;
 }
 
 .monaco-list.list_id_1 .monaco-list-row.focused .monaco-highlighted-label{
     font-weight: bolder;
-    font-size: 18px;
 }
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
-    width: 250px;
+    width: 248px;
     height: 150px;
     margin-left: 150px;
-    font-size: .7em;
+    font-size: .8em;
     line-height: 1.3em;
     border-radius: 8px;
     flex: unset;
@@ -53,9 +68,10 @@
     display: block;
     overflow-y: auto;
     overflow-x: hidden;
-    position: fixed;
+    position: absolute;
     text-overflow: initial;
     white-space: normal;
+    top: 5px;
 }
 
 .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .readMore {
@@ -72,21 +88,12 @@
     display: block;
 }
 
-/* update the style for screen size from 500px to max, if need add style for other screen size we can update below @media*/
-@media screen and (min-width: 905px) {
-    .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
-        top: 170px;
-    }
+.monaco-scrollable-element > .scrollbar,
+.monaco-scrollable-element > .vertical,
+.monaco-scrollable-element > .invisible {
+    height: 144px !important;
 }
 
-@media screen and (max-width: 904px) and (min-width: 584px) {
-    .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
-        top: 230px;
-    }
-}
-
-@media screen and (max-width: 583px) and (min-width: 500px) {
-    .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
-        top: 300px;
-    }
+.vs .monaco-scrollable-element > .scrollbar > .slider {
+    display: none;
 }
