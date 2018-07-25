@@ -6,7 +6,7 @@ import { Triangle } from "../../../shapes/Triangle";
 import { Line } from "../../../shapes/Line";
 import { TextShape } from "../../../shapes/Text";
 
-export class ShapesComponent /*extends React.Component<Props, State>*/ implements IShapesLibraryPlugin {
+export class ShapesComponent implements IShapesLibraryPlugin {
     private nameGenerationCounter: number;
     private shapes: {[name: string] : Shape };
 
@@ -93,8 +93,10 @@ export class ShapesComponent /*extends React.Component<Props, State>*/ implement
     }
 
     public zoom(shapeName: string, scaleX: number, scaleY: number): void {
-        //TODO
-        //this.shapes[shapeName].zoom(scaleX, scaleY);
+        if(this.shapes[shapeName] !== undefined){
+            return;
+        }
+        this.shapes[shapeName].zoom(scaleX, scaleY);
     }
 
     public animate(shapeName: string, x: number, y: number, duration: number): void {
@@ -104,7 +106,7 @@ export class ShapesComponent /*extends React.Component<Props, State>*/ implement
     
     public getLeft(shapeName: string): number {
         if(this.shapes[shapeName] !== undefined){
-            return ;
+            return -1;
         }
         return this.shapes[shapeName].getLeft();
     }
