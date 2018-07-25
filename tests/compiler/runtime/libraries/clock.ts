@@ -5,17 +5,14 @@ import { ExecutionEngine, ExecutionMode, ExecutionState } from "../../../../src/
 describe("Compiler.Runtime.Libraries.Clock", () => {
     it("can retreive current time", () => {
         const compilation = new Compilation(`
-TextWindow.WriteLine(Clock.Time)`);
+x = Clock.Time`);
 
         const engine = new ExecutionEngine(compilation);
-
         engine.execute(ExecutionMode.RunToEnd);
-        expect(engine.state).toBe(ExecutionState.BlockedOnOutput);
-        const value = engine.libraries.TextWindow.readValueFromBuffer();
-        expect(value.appendNewLine).toBe(true);
-        expect(value.value.toValueString()).toMatch(/[0-9]{2}:[0-9]{2}:[0-9]{2}/);
 
-        engine.execute(ExecutionMode.RunToEnd);
+        const value = engine.memory.values["x"];
+        expect(value.toValueString()).toMatch(/[0-9]{2}:[0-9]{2}:[0-9]{2}/);
+
         expect(engine.state).toBe(ExecutionState.Terminated);
         expect(engine.exception).toBeUndefined();
     });

@@ -12,6 +12,8 @@ export enum ValueKind {
     Array
 }
 
+// TODO: review all throws into a helper?
+
 export abstract class BaseValue {
     public abstract toBoolean(): boolean;
     public abstract toDebuggerString(): string;

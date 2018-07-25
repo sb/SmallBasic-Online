@@ -6,6 +6,8 @@ import { NumberValue } from "../../src/compiler/runtime/values/number-value";
 import { StringValue } from "../../src/compiler/runtime/values/string-value";
 import { CompilerPosition, CompilerRange } from "../../src/compiler/syntax/ranges";
 import { TokenKind } from "../../src/compiler/syntax/tokens";
+import { ITextWindowLibraryPlugin, TextWindowColor } from "../../src/compiler/runtime/libraries/text-window";
+import { BaseValue } from "../../src/compiler/runtime/values/base-value";
 
 export function getMarkerPosition(text: string, marker: string): CompilerPosition {
     expect(marker.length).toBe(1);
@@ -35,10 +37,6 @@ export function verifyRuntimeError(text: string, exception: Diagnostic): void {
 
     while (engine.state !== ExecutionState.Terminated) {
         engine.execute(ExecutionMode.RunToEnd);
-
-        if (engine.state === ExecutionState.BlockedOnOutput) {
-            engine.libraries.TextWindow.readValueFromBuffer();
-        }
     }
 
     expect(engine.state).toBe(ExecutionState.Terminated);
@@ -50,68 +48,19 @@ export function verifyRuntimeError(text: string, exception: Diagnostic): void {
 }
 
 export function verifyRuntimeResult(text: string, input?: (string | number)[], output?: string[]): void {
-    input = input || [];
-    output = output || [];
-
     const compilation = new Compilation(text);
     verifyErrors(text, compilation.diagnostics, []);
 
-    let outputIndex = 0, inputIndex = 0;
+    const buffer = new TextWindowTestBuffer(input || [], output || []);
     const engine = new ExecutionEngine(compilation);
+    engine.libraries.TextWindow.plugin = buffer;
 
     while (engine.state !== ExecutionState.Terminated) {
-        switch (engine.state) {
-            case ExecutionState.BlockedOnNumberInput: {
-                if (inputIndex >= input.length) {
-                    throw new Error("Blocked on number input while none available");
-                } else if (typeof input[inputIndex] !== "number") {
-                    throw new Error(`Expected input entry '${input[inputIndex]} to be a number`);
-                } else {
-                    engine.libraries.TextWindow.writeValueToBuffer(new NumberValue(input[inputIndex++] as number), true);
-                    break;
-                }
-            }
-            case ExecutionState.BlockedOnStringInput: {
-                if (inputIndex >= input.length) {
-                    throw new Error("Blocked on string input while none available");
-                } else if (typeof input[inputIndex] !== "string") {
-                    throw new Error(`Expected input entry '${input[inputIndex]} to be a string`);
-                } else {
-                    engine.libraries.TextWindow.writeValueToBuffer(new StringValue(input[inputIndex++] as string), true);
-                    break;
-                }
-            }
-            case ExecutionState.BlockedOnOutput: {
-                if (outputIndex >= output.length) {
-                    throw new Error("Blocked on output while none expected");
-                } else if (typeof output[outputIndex] !== "string") {
-                    throw new Error(`Expected output entry '${output[outputIndex]} to be a string`);
-                } else {
-                    const value = engine.libraries.TextWindow.readValueFromBuffer();
-                    expect(value.appendNewLine).toBe(true);
-                    expect((value.value as StringValue).value).toBe(output[outputIndex++]);
-                    break;
-                }
-            }
-            case ExecutionState.Paused: {
-                throw new Error("Engine is paused, even though no debugging is expected");
-            }
-            case ExecutionState.Running: {
-                break;
-            }
-            default: {
-                throw new Error(`Unexpected execution state: ${engine.state ? ExecutionState[engine.state] : undefined}`);
-            }
-        }
-
         engine.execute(ExecutionMode.RunToEnd);
     }
 
-    expect(engine.state).toBe(ExecutionState.Terminated);
     expect(engine.evaluationStack.length).toBe(0);
-
-    expect(inputIndex).toBe(input.length, "Expected number of input entries to match");
-    expect(outputIndex).toBe(output.length, "Expected number of output entries to match");
+    buffer.assertBufferIsEmpty();
 
     if (engine.exception) {
         verifyErrors(text, [engine.exception], []);
@@ -142,4 +91,74 @@ export function verifyErrors(text: string, actual: ReadonlyArray<Diagnostic>, ex
     }).join(",") + "\n";
 
     expect(serializeErrors(actual)).toBe(serializeErrors(expected));
+}
+
+export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
+    private currentPartialLine: string = "";
+
+    public inputIndex: number = 0;
+    public outputIndex: number = 0;
+
+    private foreground: TextWindowColor = TextWindowColor.White;
+    private background: TextWindowColor = TextWindowColor.Black;
+
+    public constructor(
+        private readonly input: (string | number)[],
+        private readonly output: string[]) {
+    }
+
+    public inputIsNeeded(): void {
+        // Nothing for now
+    }
+
+    public checkInputBuffer(): BaseValue | undefined {
+        if (this.inputIndex < this.input.length) {
+            const value = this.input[this.inputIndex++];
+            switch (typeof value) {
+                case "string": return new StringValue(value as string);
+                case "number": return new NumberValue(value as number);
+                default: throw new Error("impossible to reach here");
+            }
+        }
+
+        return undefined;
+    }
+
+    public writeText(value: string, appendNewLine: boolean): void {
+        if (this.outputIndex < this.output.length) {
+            this.currentPartialLine += value;
+            if (appendNewLine) {
+                const line = this.output[this.outputIndex++];
+                expect(this.currentPartialLine).toBe(line);
+                this.currentPartialLine = "";
+            }
+        } else {
+            throw new Error("not expecting any more output");
+        }
+    }
+
+    public getForegroundColor(): TextWindowColor {
+        return this.foreground;
+    }
+
+    public setForegroundColor(color: TextWindowColor): void {
+        this.foreground = color;
+    }
+
+    public getBackgroundColor(): TextWindowColor {
+        return this.background;
+    }
+
+    public setBackgroundColor(color: TextWindowColor): void {
+        this.background = color;
+    }
+
+    public assertBufferIsEmpty(): void {
+        expect(this.inputIndex).toBe(this.input.length);
+
+        if (this.outputIndex !== this.output.length) {
+            expect(this.outputIndex).toBe(this.output.length - 1);
+            expect(this.currentPartialLine).toBe(this.output[this.outputIndex]);
+        }
+    }
 }

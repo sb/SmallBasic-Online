@@ -3,9 +3,6 @@ import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
 import { ExecutionState, ExecutionEngine } from "../../execution-engine";
-import { PubSubPayloadChannel, PubSubChannel } from "../../utils/notifications";
-
-// TODO: refactor into a plugin?
 
 export enum TextWindowColor {
     Black = 0,
@@ -26,60 +23,51 @@ export enum TextWindowColor {
     White = 15
 }
 
-const defaultForegroundColor = TextWindowColor.White;
-const defaultBackgroundColor = TextWindowColor.Black;
+export interface ITextWindowLibraryPlugin {
+    inputIsNeeded(kind: ValueKind): void;
 
-export interface BufferValue {
-    value: BaseValue;
-    appendNewLine: boolean;
+    checkInputBuffer(): BaseValue | undefined;
+    writeText(value: string, appendNewLine: boolean): void;
+
+    getForegroundColor(): TextWindowColor;
+    setForegroundColor(color: TextWindowColor): void;
+    getBackgroundColor(): TextWindowColor;
+    setBackgroundColor(color: TextWindowColor): void;
 }
 
 export class TextWindowLibrary implements LibraryTypeInstance {
-    private _buffer?: BufferValue;
-    private _foregroundValue: TextWindowColor = defaultForegroundColor;
-    private _backgroundValue: TextWindowColor = defaultBackgroundColor;
+    private _pluginInstance: ITextWindowLibraryPlugin | undefined;
 
-    public readonly blockedOnInput: PubSubPayloadChannel<ValueKind> = new PubSubPayloadChannel<ValueKind>("blockedOnInput");
-    public readonly producedOutput: PubSubChannel = new PubSubChannel("producedOutput");
+    public get plugin(): ITextWindowLibraryPlugin {
+        if (!this._pluginInstance) {
+            throw new Error("Plugin is not set.");
+        }
 
-    public readonly backgroundColorChanged: PubSubPayloadChannel<TextWindowColor> = new PubSubPayloadChannel<TextWindowColor>("backgroundColorChanged");
-    public readonly foregroundColorChanged: PubSubPayloadChannel<TextWindowColor> = new PubSubPayloadChannel<TextWindowColor>("foregroundColorChanged");
+        return this._pluginInstance;
+    }
 
-    private executeReadMethod(engine: ExecutionEngine, valueKind: ValueKind, blockedState: ExecutionState): boolean {
-        if (this.bufferHasValue()) {
-            const value = this.readValueFromBuffer();
-            if (value.value.kind !== valueKind) {
-                throw new Error(`Unexpected value kind: ${ValueKind[value.value.kind]}`);
+    public set plugin(plugin: ITextWindowLibraryPlugin) {
+        this._pluginInstance = plugin;
+    }
+
+    private executeReadMethod(engine: ExecutionEngine, kind: ValueKind): void {
+        const bufferValue = this.plugin.checkInputBuffer();
+        if (bufferValue) {
+            if (bufferValue.kind !== kind) {
+                throw new Error(`Expecting input kind '${ValueKind[kind]}' but buffer has kind '${ValueKind[bufferValue.kind]}'`);
             }
 
-            engine.pushEvaluationStack(value.value);
+            engine.pushEvaluationStack(bufferValue);
             engine.state = ExecutionState.Running;
-            return true;
         } else {
-            engine.state = blockedState;
-            this.blockedOnInput.publish(valueKind);
-            return false;
+            engine.state = ExecutionState.BlockedOnInput;
+            this.plugin.inputIsNeeded(kind);
         }
     }
 
-    private executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): boolean {
-        if (engine.state === ExecutionState.BlockedOnOutput) {
-            if (!this.bufferHasValue()) {
-                engine.state = ExecutionState.Running;
-                return true;
-            }
-        } else {
-            const value = new StringValue(engine.popEvaluationStack().toValueString());
-            this.writeValueToBuffer(value, appendNewLine);
-            engine.state = ExecutionState.BlockedOnOutput;
-            this.producedOutput.publish();
-        }
-
-        return false;
-    }
-
-    private getColor(color: TextWindowColor): BaseValue {
-        return new StringValue(TextWindowColor[color]);
+    private executeWriteMethod(engine: ExecutionEngine, appendNewLine: boolean): void {
+        const value = engine.popEvaluationStack().toValueString();
+        this.plugin.writeText(value, appendNewLine);
     }
 
     private tryParseColorValue(value: BaseValue): TextWindowColor | undefined {
@@ -106,58 +94,37 @@ export class TextWindowLibrary implements LibraryTypeInstance {
     }
 
     private setForegroundColor(value: BaseValue): void {
-        this._foregroundValue = this.tryParseColorValue(value) || defaultForegroundColor;
-        this.foregroundColorChanged.publish(this._foregroundValue);
+        const color = this.tryParseColorValue(value);
+        if (color) {
+            this.plugin.setForegroundColor(color);
+        }
     }
 
     private setBackgroundColor(value: BaseValue): void {
-        this._backgroundValue = this.tryParseColorValue(value) || defaultBackgroundColor;
-        this.backgroundColorChanged.publish(this._backgroundValue);
-    }
-
-    public get foreground(): TextWindowColor {
-        return this._foregroundValue;
-    }
-
-    public get background(): TextWindowColor {
-        return this._backgroundValue;
-    }
-
-    public bufferHasValue(): boolean {
-        return !!this._buffer;
-    }
-
-    public writeValueToBuffer(value: BaseValue, appendNewLine: boolean): void {
-        if (this._buffer) {
-            throw new Error(`Existing value not read yet`);
+        const color = this.tryParseColorValue(value);
+        if (color) {
+            this.plugin.setBackgroundColor(color);
         }
-
-        this._buffer = {
-            value: value,
-            appendNewLine: appendNewLine
-        };
     }
 
-    public readValueFromBuffer(): BufferValue {
-        if (!this._buffer) {
-            throw new Error(`No value exists in buffer`);
-        }
+    private getForegroundColor(): BaseValue {
+        return new StringValue(TextWindowColor[this.plugin.getForegroundColor()]);
+    }
 
-        const value = this._buffer;
-        this._buffer = undefined;
-        return value;
+    private getBackgroundColor(): BaseValue {
+        return new StringValue(TextWindowColor[this.plugin.getBackgroundColor()]);
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
-        Read: { execute: engine => this.executeReadMethod(engine, ValueKind.String, ExecutionState.BlockedOnStringInput) },
-        ReadNumber: { execute: engine => this.executeReadMethod(engine, ValueKind.Number, ExecutionState.BlockedOnNumberInput) },
+        Read: { execute: engine => this.executeReadMethod(engine, ValueKind.String) },
+        ReadNumber: { execute: engine => this.executeReadMethod(engine, ValueKind.Number) },
         Write: { execute: engine => this.executeWriteMethod(engine, false) },
         WriteLine: { execute: engine => this.executeWriteMethod(engine, true) }
     };
 
     public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-        ForegroundColor: { getter: () => this.getColor(this._foregroundValue), setter: this.setForegroundColor.bind(this) },
-        BackgroundColor: { getter: () => this.getColor(this._backgroundValue), setter: this.setBackgroundColor.bind(this) }
+        ForegroundColor: { getter: this.getForegroundColor.bind(this), setter: this.setForegroundColor.bind(this) },
+        BackgroundColor: { getter: this.getBackgroundColor.bind(this), setter: this.setBackgroundColor.bind(this) }
     };
 
     public readonly events: { readonly [name: string]: LibraryEventInstance } = {};

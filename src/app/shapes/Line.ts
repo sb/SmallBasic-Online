@@ -6,28 +6,18 @@ export class Line extends Shape {
   private strokeWidth: number = 2;
   private static DEFAULT_COLOR: string = "black";
 
-  private x1: number;
-  private y1: number;
-  private x2: number;
-  private y2: number;
-  
   public constructor(name: string, x1: number, y1: number, x2: number, y2: number) {
     super(name);
-
-    this.x1 = x1;
-    this.y1 = y1;
-    this.x2 = x2;
-    this.y2 = y2;
 
     this.instance = this.createKonvaLine(x1, y1, x2, y2);
   }
   
   public getLeft(): number {
-    return Math.min(this.x1, this.x2);
+    return this.instance.x();
   }
   
   public getTop(): number {
-    return Math.min(this.y1, this.y2);
+    return this.instance.y();
   }
 
   public move(x: number, y: number): void {
@@ -36,8 +26,13 @@ export class Line extends Shape {
   }
   
   private createKonvaLine(x1: number, y1: number, x2: number, y2: number): Konva.Line {
+    const leftShift = Math.min(x1, x2);
+    const topShift = Math.min(y1, y2);
+    
     return new Konva.Line({
-      points: [ x1, y1, x2, y2 ],
+      points: [ x1 - leftShift, y1 - topShift, x2 - leftShift, y2 - topShift ],
+      x: leftShift,
+      y: topShift,
       stroke: Line.DEFAULT_COLOR,
       strokeWidth: this.strokeWidth
     });
