@@ -53,11 +53,10 @@ export class ShapesLibraryPlugin implements IShapesLibraryPlugin {
         return this.addShape("Line", (name) => new Line(name, x1, y1, x2, y2));
     }
     
-    public addImage(imageName: string): string {
-        const name = this.generateName("Image");
+    public addImage(): string {
+        throw new Error("Not Implemented Yet");
         //TODO
         //return this.addShape("Image", (name) => new Image(name, ...))
-        return name;
     }
 
     public addText(text: string): string {
