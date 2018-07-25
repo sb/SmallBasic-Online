@@ -1,9 +1,11 @@
-import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ValueKind, BaseValue } from "../values/base-value";
 import { StringValue } from "../values/string-value";
 import { NumberValue } from "../values/number-value";
 import { ExecutionState, ExecutionEngine } from "../../execution-engine";
 import { PubSubPayloadChannel, PubSubChannel } from "../../utils/notifications";
+
+// TODO: refactor into a plugin?
 
 export enum TextWindowColor {
     Black = 0,
@@ -157,4 +159,6 @@ export class TextWindowLibrary implements LibraryTypeInstance {
         ForegroundColor: { getter: () => this.getColor(this._foregroundValue), setter: this.setForegroundColor.bind(this) },
         BackgroundColor: { getter: () => this.getColor(this._backgroundValue), setter: this.setBackgroundColor.bind(this) }
     };
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

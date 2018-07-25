@@ -29,7 +29,6 @@ import "./runtime/libraries/math";
 import "./runtime/libraries/program";
 import "./runtime/libraries/stack";
 import "./runtime/libraries/text-window";
-import "./runtime/libraries/turtle";
 
 import "./runtime/statements/for-loop";
 import "./runtime/statements/if-statements";

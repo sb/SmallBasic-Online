@@ -7,6 +7,7 @@ export abstract class Shape {
     // abstract methods
     public abstract getLeft(): number;
     public abstract getTop(): number;
+    public abstract move(x: number, y: number): void;
 
     public constructor(name: string){
         this.name = name;
@@ -29,14 +30,10 @@ export abstract class Shape {
     }
     
     public remove(): void {
-        // TODO
+        this.instance.destroy();
     }
     
-    public move(): void {
-        // TODO
-    }
-    
-    public rotate(): void {
-        // TODO
+    public rotate(degrees: number): void {
+        this.instance.rotation(degrees);
     }
 }

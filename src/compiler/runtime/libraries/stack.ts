@@ -1,4 +1,4 @@
-import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance } from "../libraries";
+import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { ExecutionEngine, ExecutionMode } from "../../execution-engine";
 import { BaseValue } from "../values/base-value";
 import { NumberValue } from "../values/number-value";
@@ -46,6 +46,7 @@ export class StackLibrary implements LibraryTypeInstance {
         PopValue: { execute: this.executePopValue.bind(this) }
     };
 
-    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {
-    };
+    public readonly properties: { readonly [name: string]: LibraryPropertyInstance } = {};
+
+    public readonly events: { readonly [name: string]: LibraryEventInstance } = {};
 }

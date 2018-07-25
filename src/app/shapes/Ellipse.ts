@@ -17,6 +17,11 @@ export class Ellipse extends Shape{
   public getTop(): number {
     return this.instance.y() - this.instance.radius().y();
   }
+
+  public move(x: number, y: number): void {
+    this.instance.y(y + this.instance.radius().y());
+    this.instance.x(x + this.instance.radius().x());
+  }
   
   //Need to factor strokewidth into the size of the shape to have 
   //parity with the desktop version. Konva counts the stroke width separately.

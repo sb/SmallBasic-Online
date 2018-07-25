@@ -26,7 +26,6 @@ export module DiagnosticsResources {
     export const LibraryMemberNotFound = "The library '{0}' has no member named '{1}'.";
     export const ValueIsNotANumber = "The value '{0}' is not a valid number.";
     export const ValueIsNotAssignable = "You cannot assign to this expression. Did you mean to use a variable instead?";
-    export const ProgramKindChanged = "You already used libraries of type '{0}', so you cannot use a library of type '{1}' in the same program.";
     export const CannotUseAnArrayAsAnIndexToAnotherArray = "You cannot use an array as an index to access another array. Did you mean to use a string or a number instead?";
     export const CannotUseOperatorWithAnArray = "You cannot use the operator '{0}' with an array value";
     export const CannotUseOperatorWithAString = "You cannot use the operator '{0}' with a string value";

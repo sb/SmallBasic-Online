@@ -574,13 +574,4 @@ x = (5).Value`,
             // You can only use dot access with a library. Did you mean to use an existing library instead?
             new Diagnostic(ErrorCode.UnsupportedDotBaseExpression, CompilerRange.fromValues(1, 4, 1, 7)));
     });
-
-    it("reports errors on mixing program kinds (TextWindow/Turtle)", () => {
-        verifyCompilationErrors(`
-TextWindow.WriteLine(Turtle.Speed)`,
-            // TextWindow.WriteLine(Turtle.Speed)
-            //                      ^^^^^^
-            // You already used libraries of type 'Text Window', so you cannot use a library of type 'Turtle' in the same program.
-            new Diagnostic(ErrorCode.ProgramKindChanged, CompilerRange.fromValues(1, 21, 1, 27), "Text Window", "Turtle"));
-    });
 });
