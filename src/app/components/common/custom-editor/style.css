@@ -11,3 +11,84 @@
 .debugger-line-highlight {
     background: rgb(255, 255, 148);
 }
+
+/****Below code is override existing style****/
+.new-style .monaco-list > .monaco-scrollable-element {
+    background: rgb(224,237,243) url("./images/setupBanner.png") left bottom no-repeat;
+}
+
+.new-style .monaco-editor .suggest-widget > .tree,
+.new-style .monaco-editor .suggest-widget > .tree .monaco-list,
+.new-style .monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows,
+.new-style .monaco-list > .monaco-scrollable-element {
+    border-radius: 8px;
+}
+
+.new-style .monaco-editor .suggest-widget > .tree,
+.new-style .monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+    height: 170px !important;
+}
+
+.new-style .monaco-list.list_id_1 .monaco-list-row:hover, 
+.new-style .monaco-list.list_id_1 .monaco-list-row:focus,
+.new-style .monaco-list.list_id_1 .monaco-list-row.focused {
+    background-color: unset !important;
+}
+
+.new-style .monaco-editor .suggest-widget > .tree .monaco-list .monaco-list-rows {
+    top: unset !important;
+}
+
+.new-style .monaco-editor .suggest-widget .monaco-list .monaco-list-row {
+    position: initial;
+}
+
+.new-style .monaco-list.list_id_1 .monaco-list-row .monaco-highlighted-label{
+    font-size: 16px;
+}
+
+.new-style .monaco-list.list_id_1 .monaco-list-row.focused .monaco-highlighted-label{
+    font-weight: bolder;
+}
+
+.new-style .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .type-label {
+    width: 248px;
+    height: 150px;
+    margin-left: 150px;
+    font-size: .8em;
+    line-height: 1.3em;
+    border-radius: 8px;
+    flex: unset;
+    text-align: left;
+    display: block;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: absolute;
+    text-overflow: initial;
+    white-space: normal;
+    top: 5px;
+}
+
+.new-style .monaco-editor .suggest-widget .monaco-list .monaco-list-row.focused > .contents > .main > .readMore {
+    display: none;
+}
+
+.new-style .monaco-editor .suggest-widget.docs-below .details {
+    border-top-width: 0px;
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 260px;
+    min-height: 158px;
+    display: block;
+}
+
+.new-style .monaco-scrollable-element > .scrollbar,
+.new-style .monaco-scrollable-element > .vertical,
+.new-style .monaco-scrollable-element > .invisible {
+    height: 144px !important;
+}
+
+.new-style .vs .monaco-scrollable-element > .scrollbar > .slider {
+    display: none;
+}
