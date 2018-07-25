@@ -1,9 +1,9 @@
 import * as React from "react";
 import * as Konva from "konva";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
+import { ShapesPlugin } from "../../../shapes/ShapesPlugin";
 
 import "./style.css";
-import { ShapesPlugin } from "../../../shapes/ShapesPlugin";
 
 interface GraphicsWindowComponentProps {
   engine: ExecutionEngine;

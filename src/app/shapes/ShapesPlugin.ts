@@ -1,4 +1,4 @@
-import { ShapesLibraryPlugin } from "../../compiler/runtime/libraries/shapes";
+import { IShapesLibraryPlugin } from "../../compiler/runtime/libraries/shapes";
 import { Shape } from "./Shape";
 import { Rectangle } from "./Rectangle";
 import { Ellipse } from "./Ellipse";
@@ -6,7 +6,7 @@ import { Triangle } from "./Triangle";
 import { Line } from "./Line";
 import { TextShape } from "./TextShape";
 
-export class ShapesPlugin implements ShapesLibraryPlugin {
+export class ShapesPlugin implements IShapesLibraryPlugin {
     private nameGenerationCounter: number;
     private shapes: {[name: string] : Shape };
 
