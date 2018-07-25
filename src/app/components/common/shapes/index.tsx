@@ -17,33 +17,33 @@ export class ShapesComponent /*extends React.Component<Props, State>*/ implement
 
     private generateName(shapeType: string): string {
         this.nameGenerationCounter ++;
-        return shapeType + this.nameGenerationCounter.toString;
+        return shapeType + this.nameGenerationCounter.toString();
     }
 
     public addRectangle(width: number, height: number): string {
         const name = this.generateName("Rectangle");
-        let obj = new Rectangle(name, width, height);
-        this.shapes[name] = obj;
+        const rect = new Rectangle(name, width, height);
+        this.shapes[name] = rect;
         return name;
     }
 
     public addEllipse(width: number, height: number): string {
         const name = this.generateName("Ellipse");
-        let obj = new Ellipse(name, width, height);
-        this.shapes[name] = obj;
+        const ellipse = new Ellipse(name, width, height);
+        this.shapes[name] = ellipse;
         return name;
     }
 
     public addTriangle(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number): string {
         const name = this.generateName("Triangle");
-        let obj = new Triangle(name, x1,y1,x2,y2,x3,y3);
-        this.shapes[name] = obj;
+        const tri = new Triangle(name, x1,y1,x2,y2,x3,y3);
+        this.shapes[name] = tri;
         return name;
     }
 
     public addLine(x1: number, y1: number, x2: number, y2: number): string {
         const name = this.generateName("Line");
-        let obj = new Line(name, x1, y1, x2, y2);
+        const obj = new Line(name, x1, y1, x2, y2);
         this.shapes[name] = obj;
         return name;
     }
@@ -51,34 +51,44 @@ export class ShapesComponent /*extends React.Component<Props, State>*/ implement
     public addImage(imageName: string): string {
         const name = this.generateName("Image");
         //TODO
-        //let obj = new Image(name, );
-        //this.shapes[name] = obj;
+        //const img = new Image(name, );
+        //this.shapes[name] = img;
         return name;
     }
 
     public addText(text: string): string {
         const name = this.generateName("Text");
-        let obj = new TextShape(name, text);
-        this.shapes[name] = obj;
+        const txt = new TextShape(name, text);
+        this.shapes[name] = txt;
         return name;
     }
 
     public setText(shapeName: string, text: string): void {
-        let obj = this.shapes[shapeName];
-        if (obj instanceof TextShape) {
-            obj.setText(text);
+        const shp = this.shapes[shapeName];
+        if (shp !== undefined && shp instanceof TextShape) {
+            shp.setText(text);
         }
     }
 
     public remove(shapeName: string): void {
+        if(this.shapes[shapeName] !== undefined){
+            return;
+        }
         this.shapes[shapeName].remove();
+        delete(this.shapes[shapeName]);
     }
 
     public move(shapeName: string, x: number, y: number): void {
+        if(this.shapes[shapeName] !== undefined){
+            return;
+        }
         this.shapes[shapeName].move(x,y);
     }
 
     public rotate(shapeName: string, angle: number): void {
+        if(this.shapes[shapeName] !== undefined){
+            return;
+        }
         this.shapes[shapeName].rotate(angle);
     }
 
@@ -93,22 +103,43 @@ export class ShapesComponent /*extends React.Component<Props, State>*/ implement
     }
     
     public getLeft(shapeName: string): number {
+        if(this.shapes[shapeName] !== undefined){
+            return ;
+        }
         return this.shapes[shapeName].getLeft();
     }
     
     public getTop(shapeName: string): number {
+        if(this.shapes[shapeName] !== undefined){
+            return -1;
+        }
         return this.shapes[shapeName].getTop();
     }
 
     public getOpacity(shapeName: string): number {
-        return this.shapes[shapeName].getOpacity();
+        if(this.shapes[shapeName] !== undefined){
+            return -1;
+        }
+        return this.shapes[shapeName].getOpacity() * 100;
     }
 
     public setOpacity(shapeName: string, level: number): void {
-        this.shapes[shapeName].setOpacity(level);
+        if(this.shapes[shapeName] !== undefined){
+            return;
+        }
+        if(level < 0) {
+            level = 0;
+        }
+        else if (level > 100) {
+            level = 100;
+        }
+        this.shapes[shapeName].setOpacity(level / 100);
     }
 
     public setVisibility(shapeName: string, isVisible: boolean): void {
+        if(this.shapes[shapeName] !== undefined){
+            return;
+        }
         if(isVisible) {
             this.shapes[shapeName].showShape();
         }
