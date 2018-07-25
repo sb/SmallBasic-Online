@@ -1,5 +1,7 @@
 import * as PubSub from "pubsub-js";
 
+// TODO: evaluate current usage and remove if not necessary
+
 export class PubSubChannel {
     private id: string;
     public constructor(name: string) {
