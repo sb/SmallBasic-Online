@@ -1,16 +1,28 @@
+import { detect } from "detect-browser";
 import * as React from "react";
 import { Diagnostic } from "../../../../compiler/utils/diagnostics";
-
-import "./style.css";
 import { EditorUtils } from "../../../editor-utils";
 import { CompilerRange } from "../../../../compiler/syntax/ranges";
 import { CompletionService } from "../../../../compiler/services/completion-service";
 import { HoverService } from "../../../../compiler/services/hover-service";
 import { Compilation } from "../../../../compiler/compilation";
 
+import "./styles/style.css";
+import "./styles/monaco-override.css";
+
 interface CustomEditorProps {
     readOnly: boolean;
     initialValue: string;
+}
+
+// TODO: review and fix for all browsers
+const browser = detect();
+let displayNewStyle = false;
+switch(browser && browser.name) {
+    case "chrome":
+    case "firefox":
+        displayNewStyle = true;
+        break;
 }
 
 export class CustomEditor extends React.Component<CustomEditorProps> {
@@ -21,7 +33,10 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
     private decorations: string[] = [];
 
     public render(): JSX.Element {
-        return <div ref={div => this.editorDiv = div!} style={{ height: "100%", width: "100%" }} />;
+        return <div
+            className={displayNewStyle ? "new-style" : ""}
+            ref={div => this.editorDiv = div!}
+            style={{ height: "100%", width: "100%" }} />;
     }
 
     public componentDidMount(): void {

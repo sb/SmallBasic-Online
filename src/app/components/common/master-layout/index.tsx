@@ -17,8 +17,6 @@ interface PropsFromReact {
     sideBar?: JSX.Element;
 }
 
-const isChrome = navigator.userAgent.indexOf("Chrome")!==-1 || navigator.userAgent.indexOf("Firefox") !== -1;
-
 type PresentationalComponentProps = PropsFromState & PropsFromDispatch & PropsFromReact & RouteComponentProps<PropsFromReact>;
 
 class PresentationalComponent extends React.Component<PresentationalComponentProps> {
@@ -27,10 +25,8 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
     }
 
     public render(): JSX.Element {
-        const classNameWithChrome = isChrome? "content new-style" : "content";
-
         return (
-            <div className={classNameWithChrome}>
+            <div className="content">
                 <div className="toolbar body-box">
                     <div className="toolbar-buttons">
                         {this.props.toolbar.map((item, i) => <div key={i}>{item}</div>)}

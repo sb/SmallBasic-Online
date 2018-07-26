@@ -1,0 +1,13 @@
+.wavy-line {
+    display: inline-block;
+    position: relative;
+    background: url("../images/wavy-line.gif") bottom repeat-x;
+}
+
+.error-line-glyph {
+    background: red;
+}
+
+.debugger-line-highlight {
+    background: rgb(255, 255, 148);
+}
