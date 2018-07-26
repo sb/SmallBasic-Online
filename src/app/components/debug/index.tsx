@@ -13,6 +13,7 @@ import { MemoryComponent } from "./memory/index";
 import { CustomEditor } from "../common/custom-editor/index";
 
 import "./style.css";
+import { GraphicsWindowComponent } from "../common/graphics-window";
 
 const RunIcon = require("../../content/buttons/run.png");
 const StepIcon = require("../../content/buttons/step.png");
@@ -20,6 +21,7 @@ const StopIcon = require("../../content/buttons/stop.png");
 
 interface PropsFromState {
     compilation: Compilation;
+    appInsights: Microsoft.ApplicationInsights.IAppInsights;
 }
 
 interface PropsFromDispatch {
@@ -54,6 +56,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
     public componentDidMount(): void {
         this.isAlreadyMounted = true;
+        this.props.appInsights.trackPageView("DebugPage");
         setTimeout(this.execute.bind(this));
     }
 
@@ -87,7 +90,22 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                             <CustomEditor initialValue={this.props.compilation.text} readOnly={true} ref={editor => this.editor = editor!} />
                         </div>
                         <div className="text-window-container">
-                            <TextWindowComponent engine={this.state.engine} />
+                            {
+                                this.props.compilation.kind.drawsShapes
+                                    ?
+                                    <div className="container-column">
+                                        <div className="container-half-column">
+                                            <TextWindowComponent engine={this.state.engine} />
+                                        </div>
+                                        <div className="container-half-column">
+                                            <GraphicsWindowComponent engine={this.state.engine} />
+                                        </div>
+                                    </div>
+                                    :
+                                    <div className="container-column">
+                                        <TextWindowComponent engine={this.state.engine} />
+                                    </div>
+                            }
                         </div>
                     </div>
                 }
@@ -140,7 +158,8 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
 function mapStateToProps(state: AppState): PropsFromState {
     return {
-        compilation: state.compilation
+        compilation: state.compilation,
+        appInsights: state.appInsights
     };
 }
 

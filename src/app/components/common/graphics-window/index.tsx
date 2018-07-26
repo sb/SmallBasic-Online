@@ -1,52 +1,49 @@
 import * as React from "react";
 import * as Konva from "konva";
 import { ExecutionEngine } from "../../../../compiler/execution-engine";
-import { ShapesLibraryPlugin } from "../../../shapes/ShapesLibraryPlugin";
+import { ShapesLibraryPlugin } from "../shapes/shapes-plugin";
 
 import "./style.css";
 
 interface GraphicsWindowComponentProps {
-  engine: ExecutionEngine;
+    engine: ExecutionEngine;
 }
 
 interface GraphicsWindowComponentState {
-  stage?: Konva.Stage;
-  layer?: Konva.Layer;
+    stage?: Konva.Stage;
+    layer?: Konva.Layer;
 }
 
 export class GraphicsWindowComponent extends React.Component<GraphicsWindowComponentProps, GraphicsWindowComponentState> {
+    public constructor(props: GraphicsWindowComponentProps) {
+        super(props);
+    }
 
-  public constructor(props: GraphicsWindowComponentProps) {
-    super(props);
+    public componentDidMount(): void {
+        const stage = new Konva.Stage({
+            container: "graphics-container",
+            width: document.getElementById("graphics-container")!.offsetWidth,
+            height: document.getElementById("graphics-container")!.offsetHeight
+        });
 
-    this.state = {};
-  }
+        const layer = new Konva.Layer();
+        stage.add(layer);
 
-  public componentDidMount(): void {
-    const stage = new Konva.Stage({
-      container: "graphics-container",
-      width: document.getElementById("graphics-container")!.offsetWidth,
-      height: document.getElementById("graphics-container")!.offsetHeight
-    });
-    const layer = new Konva.Layer();
-    stage.add(layer);
+        this.setState({
+            stage: stage,
+            layer: layer
+        });
 
-    this.setState({
-      ...this.state,
-      stage: stage,
-      layer: layer
-    });
+        const plugin = new ShapesLibraryPlugin(layer, stage);
+        this.props.engine.libraries.Shapes.plugin = plugin;
+    }
 
-    const plugin = new ShapesLibraryPlugin(layer, stage);
-    this.props.engine.libraries.Shapes.plugin = plugin;
-  }
-
-  public render(): JSX.Element {
-      return (
-        <div className="graphics-window">
-          <div id="graphics-container"></div>
-        </div>
-      );
-  }
+    public render(): JSX.Element {
+        return (
+            <div className="graphics-window">
+                <div id="graphics-container"></div>
+            </div>
+        );
+    }
 
 }

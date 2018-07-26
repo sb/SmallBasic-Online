@@ -6,9 +6,7 @@ import { ArrayLibrary } from "./libraries/array";
 import { StackLibrary } from "./libraries/stack";
 import { BaseValue } from "./values/base-value";
 import { LibrariesMetadata } from "./libraries-metadata";
-import { TurtleLibrary } from "./libraries/turtle";
 import { MathLibrary } from "./libraries/math";
-import { ControlsLibrary } from "./libraries/controls";
 import { CompilerRange } from "../syntax/ranges";
 import { ShapesLibrary } from "./libraries/shapes";
 
@@ -39,11 +37,11 @@ export class RuntimeLibraries {
 
     public readonly Array: ArrayLibrary = new ArrayLibrary();
     public readonly Clock: ClockLibrary = new ClockLibrary();
-    public readonly Controls: ControlsLibrary = new ControlsLibrary();
+    // TODO: public readonly Controls: ControlsLibrary = new ControlsLibrary();
     public readonly Math: MathLibrary = new MathLibrary();
     public readonly Program: ProgramLibrary = new ProgramLibrary();
     public readonly Shapes: ShapesLibrary = new ShapesLibrary();
     public readonly Stack: StackLibrary = new StackLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
-    public readonly Turtle: TurtleLibrary = new TurtleLibrary();
+    // TODO: public readonly Turtle: TurtleLibrary = new TurtleLibrary();
 }

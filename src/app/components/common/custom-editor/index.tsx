@@ -1,17 +1,31 @@
+import { detect } from "detect-browser";
 import * as React from "react";
 import { Diagnostic } from "../../../../compiler/utils/diagnostics";
-
-import "./style.css";
 import { EditorUtils } from "../../../editor-utils";
 import { CompilerRange } from "../../../../compiler/syntax/ranges";
-import { CompletionService } from "../../../../compiler/services/completion-service";
-import { HoverService } from "../../../../compiler/services/hover-service";
-import { Compilation } from "../../../../compiler/compilation";
+
+import "./styles/style.css";
+import "./styles/monaco-override.css";
+import { EditorCompletionService } from "./services/completion-service";
+import { EditorHoverService } from "./services/hover-service";
 
 interface CustomEditorProps {
     readOnly: boolean;
     initialValue: string;
 }
+
+// TODO: review and fix for all browsers
+const browser = detect();
+let displayNewStyle = false;
+switch (browser && browser.name) {
+    case "chrome":
+    case "firefox":
+        displayNewStyle = true;
+        break;
+}
+
+monaco.languages.registerCompletionItemProvider("sb", new EditorCompletionService());
+monaco.languages.registerHoverProvider("sb", new EditorHoverService());
 
 export class CustomEditor extends React.Component<CustomEditorProps> {
     public editor?: monaco.editor.IStandaloneCodeEditor;
@@ -21,7 +35,10 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
     private decorations: string[] = [];
 
     public render(): JSX.Element {
-        return <div ref={div => this.editorDiv = div!} style={{ height: "100%", width: "100%" }} />;
+        return <div
+            className={displayNewStyle ? "new-style" : ""}
+            ref={div => this.editorDiv = div!}
+            style={{ height: "100%", width: "100%" }} />;
     }
 
     public componentDidMount(): void {
@@ -40,9 +57,6 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
 
         this.editor = (window as any).monaco.editor.create(this.editorDiv, options);
 
-        monaco.languages.registerCompletionItemProvider("sb", new EditorCompletionService());
-        monaco.languages.registerHoverProvider("sb", new EditorHoverService());
-
         this.onResize = () => {
             this.editor!.layout();
         };
@@ -51,6 +65,7 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
     }
 
     public componentWillUnmount(): void {
+        this.editor!.dispose();
         window.removeEventListener("resize", this.onResize!);
     }
 
@@ -85,44 +100,5 @@ export class CustomEditor extends React.Component<CustomEditorProps> {
         }]);
 
         this.editor!.revealLine(range.startLineNumber);
-    }
-}
-
-class EditorCompletionService implements monaco.languages.CompletionItemProvider {
-    public readonly triggerCharacters: string[] = [
-        "."
-    ];
-
-    public provideCompletionItems(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.CompletionItem[] {
-        return CompletionService.provideCompletion(new Compilation(model.getValue()), EditorUtils.editorPositionToCompilerPosition(position)).map(item => {
-            let kind: monaco.languages.CompletionItemKind;
-            switch (item.kind) {
-                case CompletionService.ResultKind.Class: kind = monaco.languages.CompletionItemKind.Class; break;
-                case CompletionService.ResultKind.Method: kind = monaco.languages.CompletionItemKind.Method; break;
-                case CompletionService.ResultKind.Property: kind = monaco.languages.CompletionItemKind.Property; break;
-                default: throw new Error(`Unrecognized CompletionService.CompletionItemKind '${CompletionService.ResultKind[item.kind]}'`);
-            }
-
-            return {
-                label: item.title,
-                kind: kind,
-                detail: item.description,
-                insertText: item.title
-            };
-        });
-    }
-}
-
-class EditorHoverService implements monaco.languages.HoverProvider {
-    public provideHover(model: monaco.editor.IReadOnlyModel, position: monaco.Position): monaco.languages.Hover {
-        const result = HoverService.provideHover(new Compilation(model.getValue()), EditorUtils.editorPositionToCompilerPosition(position));
-        if (result) {
-            return {
-                contents: result.text,
-                range: EditorUtils.compilerRangeToEditorRange(result.range)
-            };
-        } else {
-            return null as any;
-        }
     }
 }

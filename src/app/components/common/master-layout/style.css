@@ -81,3 +81,13 @@ body {
     line-height: 50px;
     margin-left: 10px;
 }
+
+.container-column {
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.container-half-column {
+    width: 50%;
+}
