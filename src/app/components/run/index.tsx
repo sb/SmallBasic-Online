@@ -14,6 +14,7 @@ const StopIcon = require("../../content/buttons/stop.png");
 
 interface PropsFromState {
     compilation: Compilation;
+    appInsights: Microsoft.ApplicationInsights.IAppInsights;
 }
 
 interface PropsFromDispatch {
@@ -45,6 +46,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
     public componentDidMount(): void {
         this.isAlreadyMounted = true;
+        this.props.appInsights.trackPageView("RunPage");
         setTimeout(this.execute.bind(this));
     }
 
@@ -92,7 +94,8 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
 function mapStateToProps(state: AppState): PropsFromState {
     return {
-        compilation: state.compilation
+        compilation: state.compilation,
+        appInsights: state.appInsights
     };
 }
 

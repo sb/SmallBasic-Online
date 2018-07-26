@@ -22,6 +22,7 @@ const DebugIcon = require("../../content/buttons/debug.png");
 
 interface PropsFromState {
     storeCompilation: Compilation;
+    appInsights: Microsoft.ApplicationInsights.IAppInsights;
 }
 
 interface PropsFromDispatch {
@@ -124,6 +125,7 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
     public componentDidMount(): void {
         this.editor!.setDiagnostics(this.state.compilation.diagnostics);
+        this.props.appInsights.trackPageView("EditorPage");
 
         this.editor!.editor!.onDidChangeModelContent(() => {
             const code = this.editor!.editor!.getValue();
@@ -176,7 +178,8 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
 
 function mapStateToProps(state: AppState): PropsFromState {
     return {
-        storeCompilation: state.compilation
+        storeCompilation: state.compilation,
+        appInsights: state.appInsights
     };
 }
 
