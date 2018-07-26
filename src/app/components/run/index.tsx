@@ -10,8 +10,6 @@ import { ExecutionMode, ExecutionEngine } from "../../../compiler/execution-engi
 import { TextWindowComponent } from "../common/text-window/index";
 import { GraphicsWindowComponent } from "../common/graphics-window/index";
 
-import "./style.css";
-
 const StopIcon = require("../../content/buttons/stop.png");
 
 interface PropsFromState {
@@ -33,17 +31,17 @@ interface PresentationalComponentState {
 class PresentationalComponent extends React.Component<PresentationalComponentProps, PresentationalComponentState> {
     private isAlreadyMounted: boolean = false;
 
-        public constructor(props: PresentationalComponentProps) {
-            super(props);
+    public constructor(props: PresentationalComponentProps) {
+        super(props);
 
-            if (!this.props.compilation.isReadyToRun) {
-                this.props.history.push("/editor");
-            }
-
-            this.state = {
-                engine: new ExecutionEngine(this.props.compilation)
-            };
+        if (!this.props.compilation.isReadyToRun) {
+            this.props.history.push("/editor");
         }
+
+        this.state = {
+            engine: new ExecutionEngine(this.props.compilation)
+        };
+    }
 
     public componentDidMount(): void {
         this.isAlreadyMounted = true;
@@ -72,14 +70,20 @@ class PresentationalComponent extends React.Component<PresentationalComponentPro
                         onClick={() => this.props.history.push("/editor")} />
                 ]}
                 masterContainer={
-                    <div className="column-layout">
-                        <div className="column-half">
+                    this.props.compilation.kind.drawsShapes
+                        ?
+                        <div className="container-column">
+                            <div className="container-half-column">
+                                <TextWindowComponent engine={this.state.engine} />
+                            </div>
+                            <div className="container-half-column">
+                                <GraphicsWindowComponent engine={this.state.engine} />
+                            </div>
+                        </div>
+                        :
+                        <div className="container-column">
                             <TextWindowComponent engine={this.state.engine} />
                         </div>
-                        <div className="column-half">
-                            <GraphicsWindowComponent engine={this.state.engine} />
-                        </div>
-                    </div>
                 }
             />
         );
