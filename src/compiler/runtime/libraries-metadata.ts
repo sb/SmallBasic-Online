@@ -83,6 +83,7 @@ export class LibrariesMetadata {
             // No Events
         });
 
+        /* // TODO: 
     public readonly Controls: TypeMetadata = new TypeMetadata("Controls",
         {
             AddButton: new MethodMetadata("Controls", "AddButton", true, ["Caption", "Left", "Top"]),
@@ -106,6 +107,7 @@ export class LibrariesMetadata {
             ButtonClicked: new EventMetadata("Controls", "ButtonClicked"),
             TextTyped: new EventMetadata("Controls", "TextTyped")
         });
+        */
 
     public readonly Math: TypeMetadata = new TypeMetadata("Math",
         {
@@ -214,6 +216,7 @@ export class LibrariesMetadata {
             // No Events
         });
 
+        /* // TODO: 
     public readonly Turtle: TypeMetadata = new TypeMetadata("Turtle",
         {
             Show: new MethodMetadata("Turtle", "Show", false, []),
@@ -239,4 +242,5 @@ export class LibrariesMetadata {
         {
             // No Events
         });
+        */
 }

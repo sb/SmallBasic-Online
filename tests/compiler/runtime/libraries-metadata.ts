@@ -82,6 +82,7 @@ TextWindow.WriteLine(x)`);
         expect(compilation.kind.drawsShapes()).toBe(false);
     });
 
+    /* TODO: reenable
     it("has drawsShapes kind if there were calls to Turtle", () => {
         const compilation = verifyCompilationErrors(`
 Turtle.TurnLeft()`);
@@ -97,6 +98,7 @@ Controls.AddButton("value", 0, 0)`);
         expect(compilation.kind.writesToTextWindow()).toBe(false);
         expect(compilation.kind.drawsShapes()).toBe(true);
     });
+*/
 
     it("has drawsShapes kind if there were calls to Shapes", () => {
         const compilation = verifyCompilationErrors(`
