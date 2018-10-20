@@ -9,6 +9,7 @@ import { LibrariesMetadata } from "./libraries-metadata";
 import { MathLibrary } from "./libraries/math";
 import { CompilerRange } from "../syntax/ranges";
 import { ShapesLibrary } from "./libraries/shapes";
+import { FlickrLibrary } from "./libraries/flickr";
 
 export interface LibraryTypeInstance {
     readonly methods: { readonly [name: string]: LibraryMethodInstance };
@@ -44,4 +45,5 @@ export class RuntimeLibraries {
     public readonly Stack: StackLibrary = new StackLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
     // TODO: public readonly Turtle: TurtleLibrary = new TurtleLibrary();
+    public readonly Flickr: FlickrLibrary = new FlickrLibrary();
 }

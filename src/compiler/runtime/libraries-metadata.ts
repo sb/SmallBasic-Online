@@ -83,6 +83,18 @@ export class LibrariesMetadata {
             // No Events
         });
 
+        public readonly Flickr: TypeMetadata = new TypeMetadata("Flickr",
+        {
+            GetPictureOfMoment: new MethodMetadata("Flickr", "GetPictureOfMoment", true, []),
+            GetRandomPicture: new MethodMetadata("Flickr", "GetRandomPicture", true, ["tag"]),
+        },
+        {
+            // No Properties
+        },
+        {
+            // No Events
+        });
+
         /* // TODO: 
     public readonly Controls: TypeMetadata = new TypeMetadata("Controls",
         {
