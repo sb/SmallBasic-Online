@@ -77,13 +77,23 @@ export class LibrariesMetadata {
             // No Methods
         },
         {
-            Time: new PropertyMetadata("Clock", "Time", true, false)
+            Time: new PropertyMetadata("Clock", "Time", true, false),
+            Date: new PropertyMetadata("Clock", "Date", true, false),
+            Year: new PropertyMetadata("Clock", "Year", true, false),
+            Month: new PropertyMetadata("Clock", "Month", true, false),
+            Day: new PropertyMetadata("Clock", "Day", true, false),
+            WeekDay: new PropertyMetadata("Clock", "WeekDay", true, false),
+            Hour: new PropertyMetadata("Clock", "Hour", true, false),
+            Minute: new PropertyMetadata("Clock", "Minute", true, false),
+            Second: new PropertyMetadata("Clock", "Second", true, false),
+            Millisecond: new PropertyMetadata("Clock", "Millisecond", true, false),
+            ElapsedMilliseconds: new PropertyMetadata("Clock", "ElapsedMilliseconds", true, false)
         },
         {
             // No Events
         });
 
-        /* // TODO: 
+        /* // TODO:
     public readonly Controls: TypeMetadata = new TypeMetadata("Controls",
         {
             AddButton: new MethodMetadata("Controls", "AddButton", true, ["Caption", "Left", "Top"]),
