@@ -200,6 +200,18 @@ export class LibrariesMetadata {
             // No Events
         });
 
+    public readonly Text: TypeMetadata = new TypeMetadata("Text",
+        {
+            Append: new MethodMetadata("Text", "Append", true, ["Text1", "Text2"]),
+            GetLength: new MethodMetadata("Text", "GetLength", true, ["Text"])
+        },
+        {
+            // No Properties
+        },
+        {
+            // No Events
+        });
+
     public readonly TextWindow: TypeMetadata = new TypeMetadata("TextWindow",
         {
             Read: new MethodMetadata("TextWindow", "Read", true, []),

@@ -9,6 +9,7 @@ import { LibrariesMetadata } from "./libraries-metadata";
 import { MathLibrary } from "./libraries/math";
 import { CompilerRange } from "../syntax/ranges";
 import { ShapesLibrary } from "./libraries/shapes";
+import { TextLibrary } from "./libraries/text";
 
 export interface LibraryTypeInstance {
     readonly methods: { readonly [name: string]: LibraryMethodInstance };
@@ -42,6 +43,7 @@ export class RuntimeLibraries {
     public readonly Program: ProgramLibrary = new ProgramLibrary();
     public readonly Shapes: ShapesLibrary = new ShapesLibrary();
     public readonly Stack: StackLibrary = new StackLibrary();
+    public readonly Text: TextLibrary = new TextLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
     // TODO: public readonly Turtle: TurtleLibrary = new TurtleLibrary();
 }
