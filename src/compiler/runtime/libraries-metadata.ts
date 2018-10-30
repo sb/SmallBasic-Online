@@ -187,6 +187,18 @@ export class LibrariesMetadata {
             // No Events
         });
 
+    public readonly Sound: TypeMetadata = new TypeMetadata("Sound",
+        {
+            PlayClick: new MethodMetadata("Sound", "PlayClick", false, []),
+            PlayClickAndWait: new MethodMetadata("Sound", "PlayClickAndWait", false, [])
+        },
+        {
+            // No Properties
+        },
+        {
+            // No Events
+        });
+
     public readonly Stack: TypeMetadata = new TypeMetadata("Stack",
         {
             PushValue: new MethodMetadata("Stack", "PushValue", false, ["StackName", "Value"]),
