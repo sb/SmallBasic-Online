@@ -159,6 +159,8 @@
     "Shapes_HideShape_ShapeName": "The name of the shape.",
     "Shapes_ShowShape": "Shows a previously hidden shape.",
     "Shapes_ShowShape_ShapeName": "The name of the shape.",
+    "Sound": "The Sound object provides operations that allow the playback of sounds. Some sample sounds are provided along with the library.",
+    "Sound_PlayClick" : "Plays the Click Sound.",
     "Stack": "This object provides a way of storing values just like stacking up a plate. You can push a value to the top of the stack and pop it off. You can only pop the values one by one off the stack and the last pushed value will be the first one to pop out.",
     "Stack_PushValue": "Pushes a value to the specified stack.",
     "Stack_PushValue_StackName": "The name of the stack.",

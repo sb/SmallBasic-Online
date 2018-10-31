@@ -161,6 +161,8 @@ export module DocumentationResources {
     export const Shapes_HideShape_ShapeName = "The name of the shape.";
     export const Shapes_ShowShape = "Shows a previously hidden shape.";
     export const Shapes_ShowShape_ShapeName = "The name of the shape.";
+    export const Sound = "The Sound object provides operations that allow the playback of sounds. Some sample sounds are provided along with the library.";
+    export const Sound_PlayClick = "Plays the Click Sound.";
     export const Stack = "This object provides a way of storing values just like stacking up a plate. You can push a value to the top of the stack and pop it off. You can only pop the values one by one off the stack and the last pushed value will be the first one to pop out.";
     export const Stack_PushValue = "Pushes a value to the specified stack.";
     export const Stack_PushValue_StackName = "The name of the stack.";
