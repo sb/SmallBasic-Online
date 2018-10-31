@@ -3,6 +3,7 @@ import { TextWindowLibrary } from "./libraries/text-window";
 import { ProgramLibrary } from "./libraries/program";
 import { ClockLibrary } from "./libraries/clock";
 import { ArrayLibrary } from "./libraries/array";
+import { SoundLibrary } from "./libraries/sound";
 import { StackLibrary } from "./libraries/stack";
 import { BaseValue } from "./values/base-value";
 import { LibrariesMetadata } from "./libraries-metadata";
@@ -41,6 +42,7 @@ export class RuntimeLibraries {
     public readonly Math: MathLibrary = new MathLibrary();
     public readonly Program: ProgramLibrary = new ProgramLibrary();
     public readonly Shapes: ShapesLibrary = new ShapesLibrary();
+    public readonly Sound: SoundLibrary = new SoundLibrary();
     public readonly Stack: StackLibrary = new StackLibrary();
     public readonly TextWindow: TextWindowLibrary = new TextWindowLibrary();
     // TODO: public readonly Turtle: TurtleLibrary = new TurtleLibrary();

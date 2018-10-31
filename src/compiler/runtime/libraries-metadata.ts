@@ -189,8 +189,7 @@ export class LibrariesMetadata {
 
     public readonly Sound: TypeMetadata = new TypeMetadata("Sound",
         {
-            PlayClick: new MethodMetadata("Sound", "PlayClick", false, []),
-            PlayClickAndWait: new MethodMetadata("Sound", "PlayClickAndWait", false, [])
+            PlayClick: new MethodMetadata("Sound", "PlayClick", false, [])
         },
         {
             // No Properties
