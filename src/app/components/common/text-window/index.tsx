@@ -69,7 +69,6 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
     }
 
     public componentDidMount(): void {
-        this.inputDiv!.focus();
         this.tokens = [
             this.props.engine.programTerminated.subscribe(exception => {
                 this.appendOutput(exception
