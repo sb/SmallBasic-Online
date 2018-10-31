@@ -189,7 +189,19 @@ export class LibrariesMetadata {
 
     public readonly Sound: TypeMetadata = new TypeMetadata("Sound",
         {
-            PlayClick: new MethodMetadata("Sound", "PlayClick", false, [])
+            PlayClick: new MethodMetadata("Sound", "PlayClick", false, []),
+            PlayClickAndWait: new MethodMetadata("Sound", "PlayClickAndWait", false, []),
+            PlayChime: new MethodMetadata("Sound", "PlayChime", false, []),
+            PlayChimeAndWait: new MethodMetadata("Sound", "PlayChimeAndWait", false, []),
+            PlayChimes: new MethodMetadata("Sound", "PlayChimes", false, []),
+            PlayChimesAndWait: new MethodMetadata("Sound", "PlayChimesAndWait", false, []),
+            PlayBellRing: new MethodMetadata("Sound", "PlayBellRing", false, []),
+            PlayBellRingAndWait: new MethodMetadata("Sound", "PlayBellRingAndWait", false, []),
+            PlayMusic: new MethodMetadata("Sound", "PlayMusic", false, ["Notes"]),
+            Play: new MethodMetadata("Sound", "Play", false, ["FilePath"]),
+            PlayAndWait: new MethodMetadata("Sound", "PlayAndWait", false, ["FilePath"]),
+            Pause: new MethodMetadata("Sound", "Pause", false, ["FilePath"]),
+            Stop: new MethodMetadata("Sound", "Stop", false, ["FilePath"])
         },
         {
             // No Properties
