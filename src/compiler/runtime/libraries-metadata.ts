@@ -202,15 +202,26 @@ export class LibrariesMetadata {
 
     public readonly TextWindow: TypeMetadata = new TypeMetadata("TextWindow",
         {
+            Hide: new MethodMetadata("TextWindow", "Hide", false, []),
+
+            Clear: new MethodMetadata("TextWindow", "Clear", false, []),
+
             Read: new MethodMetadata("TextWindow", "Read", true, []),
             ReadNumber: new MethodMetadata("TextWindow", "ReadNumber", true, []),
 
             Write: new MethodMetadata("TextWindow", "Write", false, ["Data"]),
-            WriteLine: new MethodMetadata("TextWindow", "WriteLine", false, ["Data"])
+            WriteLine: new MethodMetadata("TextWindow", "WriteLine", false, ["Data"]),
+
+            Pause: new MethodMetadata("TextWindow", "Pause", false, []),
+            PauseIfVisible: new MethodMetadata("TextWindow", "PauseIfVisible", false, []),
+            PauseWithoutMessage: new MethodMetadata("TextWindow", "PauseWithoutMessage", false, []),
+
+            Show: new MethodMetadata("TextWindow", "Show", false, [])
         },
         {
             ForegroundColor: new PropertyMetadata("TextWindow", "ForegroundColor", true, true),
-            BackgroundColor: new PropertyMetadata("TextWindow", "BackgroundColor", true, true)
+            BackgroundColor: new PropertyMetadata("TextWindow", "BackgroundColor", true, true),
+            Title: new PropertyMetadata("TextWindow", "Title", true, true)
         },
         {
             // No Events
