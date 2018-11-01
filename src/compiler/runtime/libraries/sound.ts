@@ -1,9 +1,10 @@
 import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
+import { SoundLibraryPlugin } from "../../../app/components/common/sound-plugin";
 
-const ClickSound = require("../../../app/content/sounds/click.wav");
-const ChimeSound = require("../../../app/content/sounds/chime.wav");
-const ChimesSound = require("../../../app/content/sounds/pause.wav");
-const BellRingSound = require("../../../app/content/sounds/bellring.wav");
+export const ClickSound = require("../../../app/content/sounds/click.wav");
+export const ChimeSound = require("../../../app/content/sounds/chime.wav");
+export const ChimesSound = require("../../../app/content/sounds/pause.wav");
+export const BellRingSound = require("../../../app/content/sounds/bellring.wav");
 
 enum Sound {
     Click,
@@ -12,8 +13,25 @@ enum Sound {
     BellRing
 }
 
+export interface ISoundLibraryPlugin {
+    playAudio(audioFile : string): void;
+}
+
 export class SoundLibrary implements LibraryTypeInstance {
-    
+    private _pluginInstance: ISoundLibraryPlugin | undefined;
+
+    public get plugin(): ISoundLibraryPlugin {
+        if (!this._pluginInstance) {
+            this._pluginInstance = new SoundLibraryPlugin();
+        }
+
+        return this._pluginInstance;
+    }
+
+    public set plugin(plugin: ISoundLibraryPlugin) {
+        this._pluginInstance = plugin;
+    }
+
     private executePlayStockSound(soundName: Sound): void {
         let audioFile : string = "";
         switch (soundName) {
@@ -31,11 +49,7 @@ export class SoundLibrary implements LibraryTypeInstance {
                 break;
         }
 
-        if (audioFile !== "")
-        {
-            let audio = new Audio(audioFile);
-            audio.play();
-        }
+        this.plugin.playAudio(audioFile);
     }
 
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
