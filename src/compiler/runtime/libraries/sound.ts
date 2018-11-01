@@ -1,5 +1,7 @@
 import { LibraryTypeInstance, LibraryMethodInstance, LibraryPropertyInstance, LibraryEventInstance } from "../libraries";
 import { SoundLibraryPlugin } from "../../../app/components/common/sound-plugin";
+import { ExecutionEngine } from "../../execution-engine";
+import { ValueKind } from "../values/base-value";
 
 export const ClickSound = require("../../../app/content/sounds/click.wav");
 export const ChimeSound = require("../../../app/content/sounds/chime.wav");
@@ -14,7 +16,9 @@ enum Sound {
 }
 
 export interface ISoundLibraryPlugin {
+    midiEnabled(): boolean;
     playAudio(audioFile : string): void;
+    playNotes(notes: string): void;
 }
 
 export class SoundLibrary implements LibraryTypeInstance {
@@ -52,6 +56,15 @@ export class SoundLibrary implements LibraryTypeInstance {
         this.plugin.playAudio(audioFile);
     }
 
+    private executePlayMusic(engine : ExecutionEngine): void {
+        if (this.plugin.midiEnabled()) {
+            const notes = engine.popEvaluationStack();
+            if (notes.kind === ValueKind.String) {
+                this.plugin.playNotes(notes.toValueString());
+            }
+        }
+    }
+
     public readonly methods: { readonly [name: string]: LibraryMethodInstance } = {
         PlayClick: { execute: this.executePlayStockSound.bind(this, Sound.Click) },
         PlayClickAndWait: { execute: () => { throw new Error("Not Implemented yet."); } },
@@ -61,7 +74,7 @@ export class SoundLibrary implements LibraryTypeInstance {
         PlayChimesAndWait: { execute: () => { throw new Error("Not Implemented yet."); } },
         PlayBellRing: { execute: this.executePlayStockSound.bind(this, Sound.BellRing) },
         PlayBellRingAndWait: { execute: () => { throw new Error("Not Implemented yet."); } },
-        PlayMusic: { execute: () => { throw new Error("Not Implemented yet."); } },
+        PlayMusic: { execute: engine => this.executePlayMusic(engine) },
         Play: { execute: () => { throw new Error("Not Implemented yet."); } },
         PlayAndWait: { execute: () => { throw new Error("Not Implemented yet."); } },
         Pause: { execute: () => { throw new Error("Not Implemented yet."); } },

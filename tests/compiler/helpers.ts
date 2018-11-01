@@ -165,8 +165,11 @@ export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
 }
 
 export class TestSoundLibraryPlugin implements ISoundLibraryPlugin {
-
     private lastAudioPlayed : string = "";
+
+    public midiEnabled(): boolean {
+        throw new Error("Method not implemented.");
+    }
 
     public getLastAudioPlayed() : string {
         return this.lastAudioPlayed;
@@ -174,5 +177,9 @@ export class TestSoundLibraryPlugin implements ISoundLibraryPlugin {
 
     public playAudio(audioFile: string): void {
         this.lastAudioPlayed = audioFile;
+    }
+
+    public playNotes(notes: string): void {
+        throw new Error("Method not implemented. Trying to play \"" + notes + "\"");
     }
 }

@@ -30,6 +30,7 @@
     "@types/redux": "3.6.0",
     "@types/rimraf": "2.0.2",
     "@types/source-map-support": "0.4.0",
+    "@types/webmidi": "^2.0.2",
     "@types/webpack": "3.0.12",
     "applicationinsights-js": "1.0.18",
     "awesome-typescript-loader": "3.2.3",
