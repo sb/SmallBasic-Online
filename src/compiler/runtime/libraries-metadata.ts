@@ -149,6 +149,7 @@ export class LibrariesMetadata {
 
     public readonly Program: TypeMetadata = new TypeMetadata("Program",
         {
+            Delay: new MethodMetadata("Program", "Delay", false, ["milliSeconds"]),
             Pause: new MethodMetadata("Program", "Pause", false, []),
             End: new MethodMetadata("Program", "End", false, [])
         },
