@@ -59,8 +59,8 @@ export class ShapesLibrary implements LibraryTypeInstance {
         const widthValue = widthArg.kind === ValueKind.Number ? (widthArg as NumberValue).value : 0;
         const heightValue = heightArg.kind === ValueKind.Number ? (heightArg as NumberValue).value : 0;
 
-        const rectangleName = this.plugin.addEllipse(widthValue, heightValue);
-        engine.pushEvaluationStack(new StringValue(rectangleName));
+        const ellipseName = this.plugin.addEllipse(widthValue, heightValue);
+        engine.pushEvaluationStack(new StringValue(ellipseName));
     }
 
     private executeAddTriangle(engine: ExecutionEngine): void {
@@ -93,8 +93,8 @@ export class ShapesLibrary implements LibraryTypeInstance {
         const x2Value = x2Arg.kind === ValueKind.Number ? (x2Arg as NumberValue).value : 0;
         const y2Value = y2Arg.kind === ValueKind.Number ? (y2Arg as NumberValue).value : 0;
 
-        const triangleName = this.plugin.addLine(x1Value, y1Value, x2Value, y2Value);
-        engine.pushEvaluationStack(new StringValue(triangleName));
+        const lineName = this.plugin.addLine(x1Value, y1Value, x2Value, y2Value);
+        engine.pushEvaluationStack(new StringValue(lineName));
     }
 
     private executeAddText(engine: ExecutionEngine): void {

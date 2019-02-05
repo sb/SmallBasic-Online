@@ -17,15 +17,15 @@ export class EllipseShape extends BaseShape<Konva.Ellipse> {
     }
 
     public getLeft(): number {
-        return this.instance.x() - this.instance.radius().x();
+        return this.instance.x() - this.instance.radiusX();
     }
 
     public getTop(): number {
-        return this.instance.y() - this.instance.radius().y();
+        return this.instance.y() - this.instance.radiusY();
     }
 
     public move(x: number, y: number): void {
-        this.instance.y(y + this.instance.radius().y());
-        this.instance.x(x + this.instance.radius().x());
+        this.instance.y(y + this.instance.radiusY());
+        this.instance.x(x + this.instance.radiusX());
     }
 }
