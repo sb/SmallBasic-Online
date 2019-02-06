@@ -1,10 +1,5 @@
 import * as Konva from "konva";
 
-// TODO:
-// Need to factor strokewidth into the size of the shape to have 
-// parity with the desktop version. Konva counts the stroke width separately.
-// Ex: to achieve a total width of 20, radius is (20 - (2*2))/2 = 16/2 = 8 pix.
-// Then 8 pix + 2 pix is 10 pix which is half the desired width.
 export const strokeWidth: number = 2;
 
 export enum ShapeKind {
