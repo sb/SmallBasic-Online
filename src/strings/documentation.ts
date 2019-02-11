@@ -16,6 +16,16 @@ export module DocumentationResources {
     export const Array_IsArray_Value = "The value to check.";
     export const Clock = "This class provides access to the system clock.";
     export const Clock_Time = "Gets the current system time.";
+    export const Clock_Date = "Gets the current system date.";
+    export const Clock_Year = "Gets the current year.";
+    export const Clock_Month = "Gets the current Month.";
+    export const Clock_Day = "Gets the current day of the month.";
+    export const Clock_WeekDay = "Gets the current day of the week.";
+    export const Clock_Hour = "Gets the current Hour.";
+    export const Clock_Minute = "Gets the current Minute.";
+    export const Clock_Second = "Gets the current Second.";
+    export const Clock_Millisecond = "Gets the current Millisecond.";
+    export const Clock_ElapsedMilliseconds = "Gets the number of milliseconds that have elapsed since 1900.";
     export const Controls = "The Controls object allows you to add, move and interact with controls.";
     export const Controls_LastClickedButton = "Gets the last Button that was clicked on the Graphics Window.";
     export const Controls_LastTypedTextBox = "Gets the last TextBox, text was typed into.";
