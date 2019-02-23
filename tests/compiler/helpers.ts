@@ -8,6 +8,7 @@ import { CompilerPosition, CompilerRange } from "../../src/compiler/syntax/range
 import { TokenKind } from "../../src/compiler/syntax/tokens";
 import { ITextWindowLibraryPlugin, TextWindowColor } from "../../src/compiler/runtime/libraries/text-window";
 import { BaseValue } from "../../src/compiler/runtime/values/base-value";
+import { ISoundLibraryPlugin } from "../../src/compiler/runtime/libraries/sound";
 
 export function getMarkerPosition(text: string, marker: string): CompilerPosition {
     expect(marker.length).toBe(1);
@@ -160,5 +161,18 @@ export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
             expect(this.outputIndex).toBe(this.output.length - 1);
             expect(this.currentPartialLine).toBe(this.output[this.outputIndex]);
         }
+    }
+}
+
+export class TestSoundLibraryPlugin implements ISoundLibraryPlugin {
+
+    private lastAudioPlayed : string = "";
+
+    public getLastAudioPlayed() : string {
+        return this.lastAudioPlayed;
+    }
+
+    public playAudio(audioFile: string): void {
+        this.lastAudioPlayed = audioFile;
     }
 }

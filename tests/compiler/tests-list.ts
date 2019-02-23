@@ -27,6 +27,7 @@ import "./runtime/libraries/array";
 import "./runtime/libraries/clock";
 import "./runtime/libraries/math";
 import "./runtime/libraries/program";
+import "./runtime/libraries/sound";
 import "./runtime/libraries/stack";
 import "./runtime/libraries/text-window";
 
