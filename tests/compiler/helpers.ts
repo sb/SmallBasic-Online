@@ -101,6 +101,7 @@ export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
 
     private foreground: TextWindowColor = TextWindowColor.White;
     private background: TextWindowColor = TextWindowColor.Black;
+    private title: string = "";
 
     public constructor(
         private readonly input: (string | number)[],
@@ -111,7 +112,13 @@ export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
         // Nothing for now
     }
 
-    public checkInputBuffer(): BaseValue | undefined {
+    public clearOutput(): void {}
+
+    public setVisibility(): void {}
+
+    public getIsVisible(): boolean { return true; }
+
+    public checkInputLines(): BaseValue | undefined {
         if (this.inputIndex < this.input.length) {
             const value = this.input[this.inputIndex++];
             switch (typeof value) {
@@ -122,6 +129,14 @@ export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
         }
 
         return undefined;
+    }
+
+    public checkInputBuffer(): string {
+        return "input";
+    }
+
+    public clearInputBuffer(): void {
+
     }
 
     public writeText(value: string, appendNewLine: boolean): void {
@@ -147,6 +162,14 @@ export class TextWindowTestBuffer implements ITextWindowLibraryPlugin {
 
     public getBackgroundColor(): TextWindowColor {
         return this.background;
+    }
+
+    public getTitle(): string {
+        return this.title;
+    }
+
+    public setTitle(title: string): void {
+        this.title = title;
     }
 
     public setBackgroundColor(color: TextWindowColor): void {

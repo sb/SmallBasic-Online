@@ -178,6 +178,13 @@ export module DocumentationResources {
     export const TextWindow_WriteLine_Data = "The string or number to be written to the text window.";
     export const TextWindow_ForegroundColor = "Gets or sets the foreground color of the text to be output in the text window.";
     export const TextWindow_BackgroundColor = "Gets or sets the background color of the text to be output in the text window.";
+    export const TextWindow_Title = "Gets or sets the title for the text window.";
+    export const TextWindow_Hide = "Hides the text window. Content is preserved when the window is shown again.";
+    export const TextWindow_Show = "Shows the text window and enables interactions with it.";
+    export const TextWindow_Clear = "Clears the text window.";
+    export const TextWindow_Pause = "Waits for user input before returning. Outputs a 'Press any key to continue...' message to the text window.";
+    export const TextWindow_PauseWithoutMessage = "Waits for user input before returning. Does not output a message.";
+    export const TextWindow_PauseIfVisible = "Waits for user input only when the text window is already open.";
     export const Turtle = "The Turtle provides Logo-like functionality to draw shapes by manipulating the properties of a pen and drawing primitives.";
     export const Turtle_Speed = "Specifies how fast the turtle should move. Valid values are 1 to 10. If Speed is set to 10, the turtle moves and rotates instantly.";
     export const Turtle_Angle = "Gets or sets the current angle of the turtle. While setting, this will turn the turtle instantly to the new angle.";

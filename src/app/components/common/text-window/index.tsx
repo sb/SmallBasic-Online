@@ -15,6 +15,8 @@ interface TextWindowComponentProps {
 }
 
 interface TextWindowComponentState {
+    isVisible: boolean;
+
     isCursorVisible: boolean;
 
     foreground: TextWindowColor;
@@ -25,6 +27,8 @@ interface TextWindowComponentState {
 
     inputLines: BaseValue[];
     outputLines: OutputChunk[];
+
+    title: string;
 }
 
 const inputColor: TextWindowColor = TextWindowColor.Gray;
@@ -45,6 +49,8 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.isAlreadyMounted = false;
 
         this.state = {
+            isVisible: true,
+
             isCursorVisible: true,
 
             foreground: TextWindowColor.White,
@@ -54,7 +60,9 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
             inputKind: undefined,
 
             inputLines: [],
-            outputLines: []
+            outputLines: [],
+
+            title: ""
         };
 
         this.props.engine.libraries.TextWindow.plugin = this;
@@ -85,24 +93,30 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.isAlreadyMounted = false;
     }
 
-    public render(): JSX.Element {
+    public render(): JSX.Element | null {
         return (
+            this.state.isVisible ?
             <div
                 className="text-window"
                 onKeyDown={this.onKeyPress.bind(this)}
                 tabIndex={0}
-                style={{ backgroundColor: EditorUtils.textWindowColorToCssColor(this.state.background) }}>
-
-                {this.state.outputLines.map((line, i) => [
-                    <span key={`span_${i}`} style={{ color: EditorUtils.textWindowColorToCssColor(line.color) }}>{line.text}</span>,
-                    line.appendNewLine ? <br key={`br_${i}`} /> : null
-                ])}
-
-                <div style={{ color: EditorUtils.textWindowColorToCssColor(inputColor) }} ref={inputDiv => this.inputDiv = inputDiv!}>
-                    <span>{this.state.inputBuffer}</span>
-                    <span style={{ visibility: this.state.isCursorVisible ? "visible" : "hidden" }}>&#x2588;</span>
+                style={{ backgroundColor: EditorUtils.textWindowColorToCssColor(this.state.background) }}
+                >
+                <div className="text-window-title">
+                    {this.state.title}
                 </div>
-            </div>
+                <div className="text-window-body">
+                    {this.state.outputLines.map((line, i) => [
+                        <span key={`span_${i}`} style={{ color: EditorUtils.textWindowColorToCssColor(line.color) }}>{line.text}</span>,
+                        line.appendNewLine ? <br key={`br_${i}`} /> : null
+                    ])}
+
+                    <div style={{ color: EditorUtils.textWindowColorToCssColor(inputColor) }} ref={inputDiv => this.inputDiv = inputDiv!}>
+                        <span>{this.state.inputBuffer}</span>
+                        <span style={{ visibility: this.state.isCursorVisible ? "visible" : "hidden" }}>&#x2588;</span>
+                    </div>
+                </div>
+            </div> : null
         );
     }
 
@@ -171,6 +185,22 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         }
     }
 
+    public setVisibility(isVisible: boolean): void {
+        this.setState({
+            isVisible
+        });
+    }
+
+    public getIsVisible(): boolean {
+        return this.state.isVisible;
+    }
+
+    public clearOutput(): void {
+        this.setState({
+            outputLines: []
+        });
+    }
+
     public appendOutput(output: OutputChunk): void {
         this.setState({
             outputLines: this.state.outputLines.concat([output])
@@ -187,7 +217,17 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         });
     }
 
-    public checkInputBuffer(): BaseValue | undefined {
+    public clearInputBuffer(): void {
+        this.setState({
+            inputBuffer: ""
+        });
+    }
+
+    public checkInputBuffer(): string {
+        return this.state.inputBuffer;
+    }
+
+    public checkInputLines(): BaseValue | undefined {
         const first = this.state.inputLines.shift();
 
         if (first) {
@@ -225,5 +265,15 @@ export class TextWindowComponent extends React.Component<TextWindowComponentProp
         this.setState({
             background: color
         });
+    }
+
+    public setTitle(title: string): void {
+        this.setState({
+            title
+        });
+    }
+
+    public getTitle(): string {
+        return this.state.title;
     }
 }

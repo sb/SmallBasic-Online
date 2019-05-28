@@ -1,7 +1,19 @@
 .text-window {
-    padding: 5px;
     overflow-y: auto;
     word-break: break-all;
     font-size: 18px;
+    height: 100%;
+}
+
+.text-window-title {
+    padding: 5px;
+    height: 24px;
+    overflow-x: hidden;
+    background-color: #f2f2f2;
+    color: black;
+}
+
+.text-window-body {
+    padding: 5px;
     height: 100%;
 }

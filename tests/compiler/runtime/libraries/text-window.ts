@@ -147,6 +147,21 @@ TextWindow.WriteLine(TextWindow.ForegroundColor)
             ]);
     });
 
+    it("sets title correctly", () => {
+        verifyRuntimeResult(`
+TextWindow.WriteLine(TextWindow.Title)
+TextWindow.Title = "My Program"
+TextWindow.WriteLine(TextWindow.Title)
+TextWindow.Title = 2
+TextWindow.WriteLine(TextWindow.Title)`,
+            [],
+            [
+                "",
+                "My Program",
+                "2"
+            ]);
+    });
+
     it("writes partial chunks", () => {
         verifyRuntimeResult(`
 TextWindow.Write("1")
