@@ -169,6 +169,12 @@ export module DocumentationResources {
     export const Stack_GetCount_StackName = "The name of the stack.";
     export const Stack_PopValue = "Pops a value from the specified stack.";
     export const Stack_PopValue_StackName = "The name of the stack.";
+    export const Text = "The Text object provides helpful operations for working with Text.";
+    export const Text_Append = "Appends two text inputs and returns the result as another text.  This operation is particularly useful when dealing with unknown text in variables which could accidentally be treated as numbers and get added, instead of getting appended.";
+    export const Text_Append_Text1 = "First part of the text to be appended.";
+    export const Text_Append_Text2 = "Second part of the text to be appended.";
+    export const Text_GetLength = "Gets the length of the given text.";
+    export const Text_GetLength_Text = "The text whose length is needed.";
     export const TextWindow = "The TextWindow provides text-related input and output functionalities. For example using this class, it is possible to write or read some text or number to and from the text-based text window.";
     export const TextWindow_Read = "Reads a line of text from the text window. Returns the string entered by the user.";
     export const TextWindow_ReadNumber = "Reads a number from the text window. Returns the number entered by the user.";
